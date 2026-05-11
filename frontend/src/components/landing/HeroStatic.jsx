@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Package, Receipt, Truck, ArrowRight } from "lucide-react";
+import { Package, Receipt, Truck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const ACTIONS = [
@@ -45,7 +45,6 @@ const HeroStatic = () => {
           fetchpriority="high"
           className="w-full h-full object-cover object-center"
         />
-        {/* Refined gradient — strong on left for text legibility, fades to clear on right */}
         <div
           className="absolute inset-0"
           style={{
@@ -56,9 +55,9 @@ const HeroStatic = () => {
       </div>
 
       <div className="relative z-10 max-w-[1200px] mx-auto px-6 lg:px-8 py-20 lg:py-24 min-h-[78vh] flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_580px] gap-10 lg:gap-12 items-center w-full">
           {/* Left: typography stack */}
-          <div className="lg:col-span-7 max-w-[640px]">
+          <div className="max-w-[640px]">
             {/* Eyebrow with red ▮ accent square */}
             <div className="inline-flex items-center gap-2.5 mb-5">
               <span
@@ -74,67 +73,68 @@ const HeroStatic = () => {
               </span>
             </div>
 
-            {/* Headline */}
+            {/* Headline — medium weight, refined size */}
             <h1
               data-testid="hero-headline"
               className="font-display text-white"
               style={{
-                fontSize: "clamp(3.5rem, 7vw, 6rem)",
-                fontWeight: 900,
-                letterSpacing: "-0.025em",
-                lineHeight: 1,
-                textShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                marginBottom: "32px",
+                fontSize: "clamp(2.5rem, 4.5vw, 3.75rem)",
+                fontWeight: 500,
+                letterSpacing: "-0.01em",
+                lineHeight: 1.1,
+                textShadow: "0 1px 2px rgba(0,0,0,0.25)",
+                marginBottom: "24px",
               }}
             >
-              DHL Express
+              Your Express Logistics Partner
             </h1>
 
             {/* Sub */}
             <p
-              className="text-white/95"
+              className="text-white/90"
               style={{
-                fontSize: "clamp(1.125rem, 1.6vw, 1.5rem)",
-                lineHeight: 1.4,
-                maxWidth: "560px",
+                fontSize: "clamp(1rem, 1.4vw, 1.25rem)",
+                fontWeight: 400,
+                lineHeight: 1.5,
+                maxWidth: "520px",
               }}
             >
-              Servicing over 220 countries and territories.
+              A worldwide network covering more than 220 countries — at your fingertips.
             </p>
           </div>
 
-          {/* Right: Get Started Now card */}
-          <div className="lg:col-span-5 flex lg:justify-end">
+          {/* Right: Glass-panel Get Started Now card */}
+          <div className="lg:justify-self-end w-full">
             <div
               data-testid="hero-getstarted-card"
-              className="bg-white overflow-hidden w-full"
+              className="w-full"
               style={{
-                maxWidth: 480,
+                background: "rgba(255, 255, 255, 0.06)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(255, 255, 255, 0.35)",
                 borderRadius: 4,
-                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                padding: "20px 24px",
               }}
             >
-              {/* Yellow ribbon at top of card */}
-              <div
-                aria-hidden="true"
-                style={{ height: 3, backgroundColor: "#FFCC00" }}
-              />
-
               {/* Header */}
-              <div className="px-6 lg:px-8 pt-7 pb-5">
+              <div className="mb-4">
                 <div
-                  className="text-[10px] font-medium uppercase text-gray-500 mb-2"
+                  className="text-[10px] font-medium uppercase text-white/70 mb-1.5"
                   style={{ letterSpacing: "0.15em" }}
                 >
                   Quick Actions
                 </div>
-                <h2 className="font-display text-[#1A1A1A] font-bold text-xl lg:text-2xl leading-tight">
+                <h2
+                  className="font-display text-white"
+                  style={{ fontSize: "1.25rem", fontWeight: 500, lineHeight: 1.15 }}
+                >
                   Get Started Now
                 </h2>
               </div>
 
-              {/* 3 buttons */}
-              <div className="grid grid-cols-3 border-t border-gray-100">
+              {/* 3 button cells */}
+              <div className="grid grid-cols-3">
                 {ACTIONS.map((a, i) => {
                   const Icon = a.icon;
                   return (
@@ -143,26 +143,30 @@ const HeroStatic = () => {
                       key={a.label}
                       onClick={() => go(a.to)}
                       data-testid={a.testId}
-                      className="group relative flex flex-col items-center justify-start text-center px-5 py-5 hover:bg-[#FFFCE8] transition-colors duration-[200ms] ease-out min-h-[160px]"
+                      className="group relative flex flex-col items-center justify-start text-center px-2 py-3 transition-colors duration-[200ms] ease-out"
+                      style={{ minHeight: 110 }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                     >
-                      {/* Vertical divider — 60% height, gray-200 */}
+                      {/* Vertical divider — subtle white at 20% */}
                       {i > 0 && (
                         <span
                           aria-hidden="true"
-                          className="absolute left-0 top-1/2 -translate-y-1/2 w-px bg-gray-200"
-                          style={{ height: "60%" }}
+                          className="absolute left-0 top-1/2 -translate-y-1/2"
+                          style={{
+                            height: "60%",
+                            width: 1,
+                            backgroundColor: "rgba(255,255,255,0.2)",
+                          }}
                         />
                       )}
-                      <Icon
-                        className="w-8 h-8 text-[#2A2A2A] mb-3"
-                        strokeWidth={1.5}
-                      />
-                      <span className="text-[14px] font-semibold text-[#1A1A1A] leading-[1.3] mb-3">
+                      <Icon className="w-6 h-6 text-white mb-2" strokeWidth={1.5} />
+                      <span className="text-[13px] font-medium text-white leading-[1.3] mb-2">
                         {a.label}
                       </span>
                       <span
                         aria-hidden="true"
-                        className="mt-auto inline-block text-[16px] font-bold text-dhl-red transition-transform duration-[200ms] ease-out group-hover:translate-x-1"
+                        className="mt-auto inline-block text-[14px] text-white transition-transform duration-[200ms] ease-out group-hover:translate-x-1"
                       >
                         →
                       </span>
