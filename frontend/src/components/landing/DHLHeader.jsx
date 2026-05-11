@@ -241,7 +241,7 @@ const DHLHeader = () => {
                 type="button"
                 data-testid="header-dashboard-btn"
                 onClick={() => navigate("/dashboard")}
-                className="text-[14px] font-bold text-dhl-red hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-3 py-2"
+                className="text-[14px] font-bold text-dhl-ink hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-3 py-2"
               >
                 My Dashboard
               </button>
@@ -259,7 +259,7 @@ const DHLHeader = () => {
                   type="button"
                   data-testid="header-register-btn"
                   onClick={() => navigate("/register")}
-                  className="text-[14px] font-bold text-dhl-red hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-3 py-2"
+                  className="text-[14px] font-bold text-dhl-ink hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-3 py-2"
                 >
                   Register
                 </button>
@@ -302,7 +302,7 @@ const DHLHeader = () => {
               <Link
                 to="/dashboard"
                 onClick={() => setMobileOpen(false)}
-                className="px-3 py-3 text-center font-bold text-dhl-red hover:underline underline-offset-4 decoration-2 decoration-dhl-red"
+                className="px-3 py-3 text-center font-bold text-dhl-ink hover:underline underline-offset-4 decoration-2 decoration-dhl-red"
               >
                 My Dashboard
               </Link>
@@ -318,7 +318,7 @@ const DHLHeader = () => {
                 <Link
                   to="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="px-3 py-3 text-center font-bold text-dhl-red hover:underline underline-offset-4 decoration-2 decoration-dhl-red"
+                  className="px-3 py-3 text-center font-bold text-dhl-ink hover:underline underline-offset-4 decoration-2 decoration-dhl-red"
                 >
                   Register
                 </Link>
