@@ -1,53 +1,54 @@
-import { useEffect } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import DemoBadge from "@/components/DemoBadge";
+import Landing from "@/pages/Landing";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import ForgotPassword from "@/pages/ForgotPassword";
+import DashboardLayout from "@/components/DashboardLayout";
+import Dashboard from "@/pages/Dashboard";
+import DashboardComingSoon from "@/pages/DashboardComingSoon";
 
 function App() {
   return (
-    <div className="App">
+    <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="track" element={<DashboardComingSoon title="Track Shipment" />} />
+            <Route path="ship" element={<DashboardComingSoon title="Ship Now" />} />
+            <Route path="quote" element={<DashboardComingSoon title="Get a Quote" />} />
+            <Route path="pickup" element={<DashboardComingSoon title="Schedule Pickup" />} />
+            <Route path="shipments" element={<DashboardComingSoon title="My Shipments" />} />
+            <Route path="addresses" element={<DashboardComingSoon title="Address Book" />} />
+            <Route path="invoices" element={<DashboardComingSoon title="Invoices" />} />
+            <Route path="reports" element={<DashboardComingSoon title="Reports" />} />
+            <Route path="customs" element={<DashboardComingSoon title="Customs Documents" />} />
+            <Route path="settings" element={<DashboardComingSoon title="Settings" />} />
           </Route>
+
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <DemoBadge />
+        <Toaster position="top-right" richColors closeButton />
       </BrowserRouter>
-    </div>
+    </AuthProvider>
   );
 }
 
