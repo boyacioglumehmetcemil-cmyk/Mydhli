@@ -35,6 +35,24 @@
       "sub": "Reach more than 200 countries with a team that handles customs documentation, classifications, and clearance on your behalf — so your shipments keep moving.",
       "ctaLabel": "Get Customs Help",
       "cta": { "type": "modal", "title": "Customs Clearance Advice" }
+    },
+    {
+      "src": "../fotolar/fotolar-05.jpg",
+      "alt": "Careful packing",
+      "eyebrow": "Packing",
+      "headline": "Packed with care.",
+      "sub": "Smart packing keeps fragile shipments safe through every handoff. Tips and best practices from the pros.",
+      "ctaLabel": "Packing Guide",
+      "cta": { "type": "modal", "title": "Packing with Care" }
+    },
+    {
+      "src": "../fotolar/fotolar-07.png",
+      "alt": "Aircraft and operations",
+      "eyebrow": "Network",
+      "headline": "Built to travel.",
+      "sub": "From hangars to hubs — our network is engineered for time-definite delivery, every day, in every region.",
+      "ctaLabel": "See the Network",
+      "cta": { "type": "modal", "title": "Our Network" }
     }
   ]
 }

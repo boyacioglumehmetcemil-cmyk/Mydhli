@@ -3,7 +3,7 @@ import ServiceDisruptionBanner from "@/components/landing/ServiceDisruptionBanne
 import HeroStatic from "@/components/landing/HeroStatic";
 import QuickActionStrip from "@/components/landing/QuickActionStrip";
 import SecondarySlider from "@/components/landing/SecondarySlider";
-import { FeaturedRow } from "@/components/landing/InfoCardsRows";
+import InsideNetworkGrid from "@/components/landing/InsideNetworkGrid";
 import SeoBlock from "@/components/landing/SeoBlock";
 import RichFooter from "@/components/landing/RichFooter";
 import FloatingNotificationBell from "@/components/landing/FloatingNotificationBell";
@@ -29,7 +29,7 @@ const Landing = () => {
         <HeroStatic />
         <QuickActionStrip />
         <SecondarySlider />
-        <FeaturedRow />
+        <InsideNetworkGrid />
         <SeoBlock />
       </main>
       <RichFooter />

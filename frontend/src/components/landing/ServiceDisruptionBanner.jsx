@@ -23,7 +23,7 @@ const ServiceDisruptionBanner = () => {
       data-testid="service-disruption-banner"
       className="bg-white border-b border-dhl-border"
     >
-      <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-2.5 flex items-center gap-3">
+      <div className="max-w-[1200px] mx-auto px-6 lg:px-8 py-2.5 flex items-center gap-3">
         <div className="flex-shrink-0 w-6 h-6 bg-dhl-red/10 rounded-sm flex items-center justify-center">
           <AlertTriangle className="w-3.5 h-3.5 text-dhl-red" strokeWidth={2.5} />
         </div>

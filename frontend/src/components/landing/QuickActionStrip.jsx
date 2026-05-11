@@ -22,15 +22,38 @@ const QuickActionStrip = () => {
   };
 
   const CELLS = [
-    { icon: Tag, label: "Get Quote", action: () => goTo("/dashboard/quote"), testId: "qa-quote" },
-    { icon: Package, label: "Delivery Services", action: () => goTo("/dashboard/ship"), testId: "qa-services" },
-    { icon: MapPin, label: "Find a Location", action: () => setLocationModal(true), testId: "qa-location" },
+    {
+      icon: Tag,
+      label: "Get Quote",
+      accent: "Open ▾",
+      action: () => goTo("/dashboard/quote"),
+      testId: "qa-quote",
+    },
+    {
+      icon: Package,
+      label: "Delivery Services",
+      action: () => goTo("/dashboard/ship"),
+      testId: "qa-services",
+    },
+    {
+      icon: MapPin,
+      label: "Find a Location",
+      action: () => setLocationModal(true),
+      testId: "qa-location",
+    },
   ];
 
   return (
-    <section data-testid="quick-action-strip" className="relative -mt-20 z-30 px-4 lg:px-8">
-      <div className="max-w-[1080px] mx-auto bg-white shadow-2xl border border-dhl-border rounded-lg overflow-hidden relative">
-        <div className="grid grid-cols-1 lg:grid-cols-4">
+    <section
+      data-testid="quick-action-strip"
+      className="relative -mt-20 z-30 px-6 lg:px-8"
+    >
+      <div
+        className="max-w-[1200px] mx-auto bg-white rounded overflow-hidden relative"
+        style={{ boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_1fr_360px] lg:min-h-[140px]">
+          {/* 3 action cells */}
           {CELLS.map((c, i) => {
             const Icon = c.icon;
             return (
@@ -39,61 +62,73 @@ const QuickActionStrip = () => {
                 key={c.label}
                 onClick={c.action}
                 data-testid={c.testId}
-                className="group relative flex flex-col items-center justify-center text-center px-5 py-7 lg:py-9 hover:bg-dhl-yellow/10 transition-colors duration-[200ms] ease-out"
+                className="group relative flex flex-col items-center justify-center text-center px-6 py-7 hover:bg-[#FFFCE8] transition-colors duration-[200ms] ease-out"
               >
+                {/* Vertical divider (desktop) — 70% height, gray-200 */}
                 {i > 0 && (
                   <span
                     aria-hidden="true"
                     className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 w-px bg-gray-200"
-                    style={{ height: "60%" }}
+                    style={{ height: "70%" }}
                   />
                 )}
+                {/* Horizontal divider (mobile, between rows) */}
                 {i > 0 && (
                   <span
                     aria-hidden="true"
                     className="lg:hidden absolute top-0 left-6 right-6 h-px bg-gray-200"
                   />
                 )}
-                <Icon className="w-7 h-7 text-dhl-ink mb-3" strokeWidth={1.75} />
-                <div className="font-semibold text-[14px] text-dhl-ink group-hover:text-[#1976D2] transition-colors">
+                <Icon
+                  className="w-8 h-8 text-[#2A2A2A]"
+                  strokeWidth={1.5}
+                />
+                <div className="mt-4 text-[14px] font-medium text-[#2563EB] group-hover:text-[#1D4ED8] transition-colors leading-tight">
                   {c.label}
                 </div>
-                <span className="mt-2 inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-dhl-red opacity-0 group-hover:opacity-100 transition-opacity">
-                  Open <ArrowRight className="ml-1 w-3 h-3" />
-                </span>
+                {c.accent && (
+                  <div
+                    className="mt-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#D40511]"
+                  >
+                    {c.accent}
+                  </div>
+                )}
               </button>
             );
           })}
 
-          {/* Track widget */}
-          <form
-            onSubmit={onTrack}
-            data-testid="qa-track-form"
-            className="bg-dhl-yellow flex flex-col items-stretch justify-center px-5 py-7 lg:py-9 gap-2.5 relative"
-          >
+          {/* Track widget — full-bleed yellow segment */}
+          <div className="bg-dhl-yellow relative">
+            {/* Mobile divider line */}
             <span
               aria-hidden="true"
               className="lg:hidden absolute top-0 left-6 right-6 h-px bg-dhl-ink/10"
             />
-            <label className="text-[11px] font-bold uppercase tracking-wider text-dhl-ink">
-              Track Your Shipments
-            </label>
-            <input
-              type="text"
-              value={awb}
-              onChange={(e) => setAwb(e.target.value)}
-              data-testid="qa-track-input"
-              placeholder="Enter AWB number"
-              className="h-10 px-3 bg-white border-2 border-dhl-ink/20 focus:border-dhl-ink focus:outline-none text-sm placeholder:text-dhl-muted"
-            />
-            <button
-              type="submit"
-              data-testid="qa-track-submit"
-              className="h-10 bg-[#16A34A] hover:bg-[#15803D] text-white font-bold uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-2"
+            <form
+              onSubmit={onTrack}
+              data-testid="qa-track-form"
+              className="flex flex-col h-full justify-center px-6 py-6 gap-3"
             >
-              Track <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </form>
+              <label className="text-[11px] font-bold uppercase tracking-[0.1em] text-dhl-ink">
+                Track Your Shipments
+              </label>
+              <input
+                type="text"
+                value={awb}
+                onChange={(e) => setAwb(e.target.value)}
+                data-testid="qa-track-input"
+                placeholder="Enter AWB number"
+                className="h-11 px-3 bg-white border-0 focus:outline-none focus:ring-2 focus:ring-dhl-ink/40 text-sm placeholder:text-dhl-muted rounded-sm"
+              />
+              <button
+                type="submit"
+                data-testid="qa-track-submit"
+                className="h-11 bg-[#16A34A] hover:bg-[#15803D] text-white font-bold uppercase tracking-[0.05em] text-[13px] transition-colors flex items-center justify-center rounded-sm"
+              >
+                Track <span className="ml-2">→</span>
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 
