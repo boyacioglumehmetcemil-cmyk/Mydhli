@@ -162,7 +162,7 @@ const Gallery = () => {
       ref={sectionRef}
       data-testid="gallery"
       id="gallery"
-      className="bg-[#FAFAFA] py-16 lg:py-[120px]"
+      className="bg-[#FAFAFA] pt-16 lg:pt-[120px] pb-12 lg:pb-[60px]"
     >
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
         <div
