@@ -101,7 +101,7 @@ const SecondarySlider = () => {
       ref={sectionRef}
       data-testid="secondary-slider"
       id="carousel"
-      className="bg-white pt-20 pb-16 lg:pt-[80px] lg:pb-[80px]"
+      className="bg-white pt-20 pb-8 lg:pt-[80px] lg:pb-[20px]"
     >
       <div className="max-w-[1200px] mx-auto px-4 lg:px-8">
         <div
