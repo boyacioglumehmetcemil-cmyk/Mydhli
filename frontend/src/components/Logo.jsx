@@ -1,63 +1,107 @@
 import { Link } from "react-router-dom";
+import { useEffect, useRef } from "react";
 
-// To swap to official DHL logo: drop high-res SVG into /public/images/ and pass
-// assetSrc="/images/logo-official.svg" (or set it as a default below).
-const DEFAULT_ASSET_SRC = undefined;
+// Client-provided wordmark logo. To swap to an even higher-res version, replace this file:
+//   /app/frontend/public/images/logo-user.png
+// (or set DEFAULT_ASSET_SRC to a different path and re-build).
+const DEFAULT_ASSET_SRC = "/images/logo-user.png";
+
+// Native pixel dimensions of the asset above — used to cap rendered size so the
+// logo never up-scales beyond its native resolution (avoids blur).
+const NATIVE_HEIGHT = 31;
 
 /**
  * DHL Express logo.
  *
  * Props:
  *  - to:        Router target (null disables linking, defaults to "/")
- *  - variant:   "default" | "compact" | "icon-only"
- *  - theme:     "light" (default) | "dark" (inverted for use on yellow backgrounds)
- *  - assetSrc:  optional path to a high-res image; renders <img> instead of typography
- *  - size:      legacy alias mapped to variant (sm/md/lg/xl)
- *  - className: extra classes
+ *  - variant:   "default" | "compact" | "icon-only" | "text"
+ *               "text" forces typography fallback even when assetSrc is set.
+ *  - theme:     "light" (default) | "dark" — controls typography color in fallback
+ *               AND whether to wrap the image in a black rounded rect for
+ *               readability on yellow backgrounds.
+ *  - onYellowBg:if true, wraps the image asset in a black rounded rectangle so
+ *               the (typically dark) logo reads cleanly over the DHL yellow header.
+ *  - assetSrc:  optional override for the image path; falls back to DEFAULT_ASSET_SRC.
+ *  - size:      legacy alias mapped to variant.
+ *  - className: extra classes applied to the outer element.
  */
 const Logo = ({
   to = "/",
   variant = "default",
   theme = "light",
-  assetSrc = DEFAULT_ASSET_SRC,
+  onYellowBg = false,
+  assetSrc,
   size,
   className = "",
 }) => {
-  // Map legacy size prop to variant
+  // One-time low-res warning so prod owners notice and replace the file
+  const warned = useRef(false);
+  useEffect(() => {
+    if (warned.current) return;
+    warned.current = true;
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[DHL Demo] Logo asset is 334×31 raster. For production, replace " +
+        "/public/images/logo-user.png with a high-resolution SVG or @2x PNG."
+    );
+  }, []);
+
   const v = size
     ? { sm: "compact", md: "default", lg: "default", xl: "default" }[size] || variant
     : variant;
 
+  // Use the image asset by default unless the caller asked for typography.
+  const useImg = v !== "text" && (assetSrc || DEFAULT_ASSET_SRC);
+
+  // Cap rendered height so we never up-scale beyond native pixels.
   const heightByVariant = {
-    "icon-only": "h-7",
-    compact: "h-8",
-    default: "h-10",
+    "icon-only": "h-6",  // 24px
+    compact: "h-7",      // 28px — under 31 native
+    default: "h-[30px]", // 30px — under 31 native
+    text: "h-10",
   };
 
-  // Asset path mode — client drops a high-res logo file
-  if (assetSrc) {
+  if (useImg) {
+    const src = assetSrc || DEFAULT_ASSET_SRC;
     const img = (
       <img
-        src={assetSrc}
+        src={src}
         alt="DHL Express"
         data-testid="brand-logo"
-        className={`${heightByVariant[v]} w-auto select-none ${className}`}
+        style={{ maxHeight: NATIVE_HEIGHT }}
+        className={`${heightByVariant[v]} w-auto select-none block`}
         draggable={false}
       />
     );
-    if (!to) return img;
-    return (
-      <Link to={to} data-testid="brand-logo-link" className="inline-flex shrink-0">
+
+    // On yellow backgrounds: wrap in a small black rounded rect so the
+    // (transparent-PNG) wordmark with dark surround reads as intentional.
+    const inner = onYellowBg ? (
+      <span
+        data-testid="brand-logo-frame"
+        className="inline-flex items-center bg-dhl-ink px-2 py-1.5 rounded-[4px] leading-none"
+      >
         {img}
+      </span>
+    ) : (
+      img
+    );
+
+    if (!to) return <span className={`inline-flex shrink-0 ${className}`}>{inner}</span>;
+    return (
+      <Link to={to} data-testid="brand-logo-link" className={`inline-flex shrink-0 ${className}`}>
+        {inner}
       </Link>
     );
   }
 
-  // Typography placeholder mode
+  // Typography fallback (used only when variant="text")
   const sizeClasses = {
     compact: "text-sm px-2.5 py-1",
     default: "text-lg px-3 py-1.5",
     "icon-only": "text-base px-2 py-1",
+    text: "text-lg px-3 py-1.5",
   };
 
   const isDark = theme === "dark";
@@ -65,15 +109,13 @@ const Logo = ({
   const dhlColor = isDark ? "text-dhl-yellow" : "text-dhl-ink";
   const expressColor = isDark ? "text-white" : "text-dhl-red";
 
-  const labelText = v === "icon-only" ? "DHL" : null;
-
   const content = (
     <span
       data-testid="brand-logo"
-      className={`inline-flex items-center gap-1.5 font-display font-black tracking-tight leading-none rounded-sm ${bgClass} ${sizeClasses[v]} ${className}`}
+      className={`inline-flex items-center gap-1.5 font-display font-black tracking-tight leading-none rounded-sm ${bgClass} ${sizeClasses[v] || sizeClasses.text} ${className}`}
     >
       <span className={dhlColor}>DHL</span>
-      {!labelText && <span className={expressColor}>Express</span>}
+      <span className={expressColor}>Express</span>
     </span>
   );
 

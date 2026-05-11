@@ -1,11 +1,18 @@
 import DHLHeader from "@/components/landing/DHLHeader";
 import ServiceDisruptionBanner from "@/components/landing/ServiceDisruptionBanner";
-import HeroCarousel from "@/components/landing/HeroCarousel";
+import HeroStatic from "@/components/landing/HeroStatic";
 import QuickActionStrip from "@/components/landing/QuickActionStrip";
 import MyDHLPlatform from "@/components/landing/MyDHLPlatform";
-import InfoCardsRow from "@/components/landing/InfoCardsRow";
+import FeaturedCarousel from "@/components/landing/FeaturedCarousel";
+import {
+  ShippingResourcesRow,
+  SolutionsRow,
+  SelfServiceRow,
+} from "@/components/landing/InfoCardsRows";
 import TrustStrip from "@/components/landing/TrustStrip";
+import SeoBlock from "@/components/landing/SeoBlock";
 import RichFooter from "@/components/landing/RichFooter";
+import FloatingNotificationBell from "@/components/landing/FloatingNotificationBell";
 import useTitle from "@/hooks/useTitle";
 
 const Landing = () => {
@@ -25,13 +32,23 @@ const Landing = () => {
       <ServiceDisruptionBanner />
 
       <main>
-        <HeroCarousel />
+        {/* Calm, static first impression */}
+        <HeroStatic />
         <QuickActionStrip />
         <MyDHLPlatform />
-        <InfoCardsRow />
+
+        {/* Dynamic content lives mid-page where it adds interest as you scroll */}
+        <FeaturedCarousel />
+
+        <ShippingResourcesRow />
+        <SolutionsRow />
+        <SelfServiceRow />
         <TrustStrip />
+        <SeoBlock />
       </main>
       <RichFooter />
+
+      <FloatingNotificationBell />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Tag, Box, Truck, PackageOpen, Bell, ArrowRight } from "lucide-react";
+import { Tag, Box, Truck, PackageOpen, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const CELLS = [
@@ -31,25 +31,10 @@ const QuickActionStrip = () => {
   };
 
   return (
-    <section
-      data-testid="quick-action-strip"
-      className="relative -mt-20 z-30 px-4 lg:px-8"
-    >
-      <div className="max-w-[1280px] mx-auto bg-white shadow-2xl border border-dhl-border relative">
-        {/* Floating notification bell flourish */}
-        <div
-          aria-hidden="true"
-          className="hidden lg:flex absolute -top-5 -right-5 w-16 h-16 bg-dhl-red text-white rounded-full items-center justify-center shadow-lg"
-          style={{ transform: "rotate(-8deg)" }}
-        >
-          <Bell className="w-6 h-6" strokeWidth={2.5} />
-          <span className="absolute -top-1 -right-1 w-6 h-6 bg-dhl-yellow text-dhl-ink text-xs font-black rounded-full flex items-center justify-center border-2 border-white">
-            2
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-5 divide-y lg:divide-y-0 lg:divide-x divide-dhl-border">
-          {/* 4 action cells */}
+    <section data-testid="quick-action-strip" className="relative -mt-20 z-30 px-4 lg:px-8">
+      <div className="max-w-[1280px] mx-auto bg-white shadow-2xl border border-dhl-border rounded-lg overflow-hidden relative">
+        <div className="grid grid-cols-1 lg:grid-cols-5">
+          {/* 4 action cells with vertical 60% dividers */}
           {CELLS.map((c, i) => {
             const Icon = c.icon;
             return (
@@ -58,26 +43,49 @@ const QuickActionStrip = () => {
                 key={c.label}
                 onClick={() => goTo(c)}
                 data-testid={c.testId}
-                className="group flex flex-col items-center justify-center text-center px-5 py-7 lg:py-9 hover:bg-dhl-panel transition-colors relative"
+                className="group relative flex flex-col items-center justify-center text-center px-5 py-7 lg:py-9 hover:bg-dhl-yellow/10 transition-colors duration-[200ms] ease-out"
               >
-                <div className="w-14 h-14 mb-3 bg-dhl-yellow/15 group-hover:bg-dhl-yellow flex items-center justify-center transition-colors">
-                  <Icon className="w-6 h-6 text-dhl-ink" strokeWidth={2} />
+                {/* Vertical divider — 60% height, gray-200 */}
+                {i > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 w-px bg-gray-200"
+                    style={{ height: "60%" }}
+                  />
+                )}
+                {/* Mobile horizontal divider */}
+                {i > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className="lg:hidden absolute top-0 left-6 right-6 h-px bg-gray-200"
+                  />
+                )}
+                <Icon
+                  className="w-7 h-7 text-dhl-ink mb-3 transition-colors"
+                  strokeWidth={1.75}
+                />
+                <div className="font-semibold text-[13px] text-dhl-ink mb-0.5 group-hover:text-[#1976D2] transition-colors">
+                  {c.label}
                 </div>
-                <div className="font-display font-bold text-base text-dhl-ink mb-0.5">{c.label}</div>
-                <div className="text-[11px] uppercase tracking-wider text-dhl-muted font-medium">{c.sub}</div>
-                <span className="mt-3 inline-flex items-center text-[11px] font-bold uppercase tracking-wider text-dhl-red opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="text-[10px] uppercase tracking-wider text-dhl-muted font-medium">{c.sub}</div>
+                <span className="mt-2.5 inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-dhl-red opacity-0 group-hover:opacity-100 transition-opacity">
                   Open <ArrowRight className="ml-1 w-3 h-3" />
                 </span>
               </button>
             );
           })}
 
-          {/* Track widget */}
+          {/* Track widget — yellow bg, green button */}
           <form
             onSubmit={onTrack}
             data-testid="qa-track-form"
-            className="bg-dhl-yellow/95 flex flex-col items-stretch justify-center px-5 py-7 lg:py-9 gap-2.5 lg:col-span-1"
+            className="bg-dhl-yellow flex flex-col items-stretch justify-center px-5 py-7 lg:py-9 gap-2.5 lg:col-span-1 relative"
           >
+            {/* Mobile divider */}
+            <span
+              aria-hidden="true"
+              className="lg:hidden absolute top-0 left-6 right-6 h-px bg-dhl-ink/10"
+            />
             <label className="text-[11px] font-bold uppercase tracking-wider text-dhl-ink">
               Track Your Shipments
             </label>

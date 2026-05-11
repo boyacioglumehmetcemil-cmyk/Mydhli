@@ -1,99 +1,84 @@
+import { useState, useRef, useEffect } from "react";
 import Logo from "@/components/Logo";
 import PngFlagSvg from "./PngFlagSvg";
-import { Twitter, Linkedin, Youtube, Facebook, ChevronDown } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { Twitter, Linkedin, Youtube, Facebook, ChevronDown, X } from "lucide-react";
+import SectionEyebrow from "./SectionEyebrow";
 
 const COLS = [
   {
-    title: "Ship",
+    eyebrow: "Contact and Support",
     links: [
-      { l: "Get a Quote", to: "#" },
-      { l: "Create a Shipment", to: "#" },
-      { l: "Schedule Pickup", to: "#" },
-      { l: "Track", to: "/track" },
-    ],
-  },
-  {
-    title: "Business",
-    links: [
-      { l: "Open Account", to: "/register" },
-      { l: "Enterprise", to: "#" },
-      { l: "API & Integration", to: "#" },
-      { l: "Customs Services", to: "#" },
-    ],
-  },
-  {
-    title: "Support",
-    links: [
-      { l: "Help Center", to: "#" },
-      { l: "Contact Us", to: "#" },
-      { l: "Service Updates", to: "#" },
+      { l: "Help and Support", to: "#" },
       { l: "FAQs", to: "#" },
+      { l: "Contact Us", to: "#" },
+      { l: "Find a Location", to: "#" },
     ],
   },
   {
-    title: "Company",
+    eyebrow: "Legal",
     links: [
-      { l: "About", to: "#" },
-      { l: "Sustainability", to: "#" },
-      { l: "Compliance", to: "#" },
-      { l: "Press", to: "#" },
-      { l: "Careers", to: "#" },
+      { l: "Terms and Conditions", to: "#" },
+      { l: "Privacy Notice", to: "#" },
+      { l: "Cookie Settings", to: "#", action: "cookies" },
+    ],
+  },
+  {
+    eyebrow: "Alerts",
+    links: [
+      { l: "Fraud Awareness", to: "#" },
+      { l: "Important Information", to: "#" },
+      { l: "Service Updates", to: "#" },
     ],
   },
 ];
 
-const COUNTRIES = ["Papua New Guinea (PG)", "Australia (AU)", "Singapore (SG)", "United States (US)", "United Kingdom (GB)"];
+const COUNTRIES = [
+  "Papua New Guinea (PG)",
+  "Australia (AU)",
+  "Singapore (SG)",
+  "United States (US)",
+  "United Kingdom (GB)",
+];
 
 const RichFooter = () => {
   const [countryOpen, setCountryOpen] = useState(false);
   const [country, setCountry] = useState(COUNTRIES[0]);
-  const ref = useRef(null);
+  const [cookieModal, setCookieModal] = useState(false);
+  const [consentModal, setConsentModal] = useState(false);
+  const countryRef = useRef(null);
 
   useEffect(() => {
-    const onClick = (e) => ref.current && !ref.current.contains(e.target) && setCountryOpen(false);
+    const onClick = (e) =>
+      countryRef.current && !countryRef.current.contains(e.target) && setCountryOpen(false);
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
   return (
-    <footer id="contact" data-testid="rich-footer" className="bg-dhl-ink text-white">
+    <footer id="contact" data-testid="rich-footer" className="bg-[#2A2A2A] text-white">
       {/* Top yellow strip */}
       <div className="h-1.5 bg-dhl-yellow" />
 
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16 lg:py-20">
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12">
-          <div className="col-span-2 lg:col-span-1">
-            <Logo variant="default" theme="light" to={null} />
-            <p className="text-sm text-white/60 leading-[1.55] mt-5 mb-5 max-w-xs">
-              Global express logistics. Built for businesses that ship every day.
-            </p>
-            <div className="flex items-center gap-3">
-              {[Twitter, Linkedin, Youtube, Facebook].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  data-testid={`footer-social-${i}`}
-                  className="w-9 h-9 border border-white/20 flex items-center justify-center hover:bg-dhl-yellow hover:text-dhl-ink hover:border-dhl-yellow transition-colors"
-                  aria-label="Social link"
-                >
-                  <Icon className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           {COLS.map((c) => (
-            <div key={c.title}>
-              <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-dhl-yellow mb-4">
-                {c.title}
-              </h4>
-              <ul className="space-y-2.5">
+            <div key={c.eyebrow}>
+              <SectionEyebrow theme="dark" className="mb-5">
+                {c.eyebrow}
+              </SectionEyebrow>
+              <ul className="space-y-3 mt-4">
                 {c.links.map((l) => (
                   <li key={l.l}>
                     <a
                       href={l.to}
+                      onClick={(e) => {
+                        if (l.action === "cookies") {
+                          e.preventDefault();
+                          setCookieModal(true);
+                        }
+                      }}
                       data-testid={`footer-link-${l.l.toLowerCase().replace(/\s+/g, "-")}`}
-                      className="text-sm text-white/70 hover:text-dhl-yellow transition-colors"
+                      className="text-sm text-white/80 hover:text-white hover:underline underline-offset-4 decoration-dhl-yellow decoration-2 transition-all"
                     >
                       {l.l}
                     </a>
@@ -102,65 +87,188 @@ const RichFooter = () => {
               </ul>
             </div>
           ))}
-        </div>
 
-        <div className="pt-8 border-t border-white/10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 text-xs">
-          <div className="text-white/40 flex flex-wrap gap-x-3 gap-y-1.5 items-center">
-            <span>© 2026 DHL Express (Demo)</span>
-            <span className="text-white/20">·</span>
-            <a href="#" className="hover:text-white">Privacy</a>
-            <span className="text-white/20">·</span>
-            <a href="#" className="hover:text-white">Terms</a>
-            <span className="text-white/20">·</span>
-            <a href="#" className="hover:text-white">Cookies</a>
-            <span className="text-white/20">·</span>
-            <a href="#" className="hover:text-white">Site Map</a>
-            <span className="text-white/20">·</span>
-            <a href="#" className="hover:text-white">Sustainability</a>
-            <span className="text-white/20">·</span>
-            <a href="#" className="hover:text-white">Compliance</a>
-          </div>
-
-          <div ref={ref} className="relative">
-            <button
-              type="button"
-              onClick={() => setCountryOpen((v) => !v)}
-              data-testid="footer-country-toggle"
-              className="inline-flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/80"
-            >
-              <PngFlagSvg className="w-5 h-3.5" />
-              <span className="font-semibold text-white">{country}</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${countryOpen ? "rotate-180" : ""}`} />
-            </button>
-            {countryOpen && (
-              <div
-                data-testid="footer-country-menu"
-                className="absolute right-0 bottom-full mb-2 w-60 bg-white text-dhl-text shadow-2xl py-1 z-50 max-h-64 overflow-y-auto"
-              >
-                {COUNTRIES.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => {
-                      setCountry(c);
-                      setCountryOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-dhl-yellow/30 ${
-                      c === country ? "bg-dhl-yellow/20 font-bold" : ""
-                    }`}
+          {/* Brand block */}
+          <div data-testid="footer-brand-block">
+            <Logo variant="compact" theme="dark" to={null} />
+            <p className="text-sm text-white/60 leading-[1.6] mt-5 mb-5 max-w-xs">
+              Global express logistics. Built for businesses that ship every day.
+            </p>
+            <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[12px] text-white/60 mb-6">
+              {["About", "Press", "Careers", "Sustainability", "Legal Notice"].map((mini, i, arr) => (
+                <span key={mini} className="inline-flex items-center">
+                  <a
+                    href="#"
+                    data-testid={`footer-mini-${mini.toLowerCase().replace(/\s+/g, "-")}`}
+                    className="hover:text-white transition-colors"
                   >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+                    {mini}
+                  </a>
+                  {i < arr.length - 1 && <span className="ml-2 text-white/20">·</span>}
+                </span>
+              ))}
+            </div>
 
-        <div className="mt-6 text-[10px] text-white/30 font-mono uppercase tracking-wider text-center">
-          Demo build · Not affiliated with Deutsche Post DHL Group
+            {/* Country selector */}
+            <div ref={countryRef} className="relative inline-block">
+              <button
+                type="button"
+                onClick={() => setCountryOpen((v) => !v)}
+                data-testid="footer-country-toggle"
+                className="inline-flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-white/80 text-sm"
+              >
+                <PngFlagSvg className="w-5 h-3.5" />
+                <span className="font-semibold text-white">{country}</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform ${countryOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {countryOpen && (
+                <div
+                  data-testid="footer-country-menu"
+                  className="absolute left-0 bottom-full mb-2 w-60 bg-white text-dhl-text shadow-2xl py-1 z-50 max-h-64 overflow-y-auto"
+                >
+                  {COUNTRIES.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => {
+                        setCountry(c);
+                        setCountryOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-dhl-yellow/30 ${
+                        c === country ? "bg-dhl-yellow/20 font-bold" : ""
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Bottom bar */}
+      <div className="border-t border-[#444]">
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 min-h-[56px]">
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">
+              Follow Us
+            </span>
+            <div className="flex items-center gap-2">
+              {[
+                { Icon: Facebook, label: "Facebook" },
+                { Icon: Twitter, label: "X / Twitter" },
+                { Icon: Linkedin, label: "LinkedIn" },
+                { Icon: Youtube, label: "YouTube" },
+              ].map(({ Icon, label }, i) => (
+                <a
+                  key={label}
+                  href="#"
+                  data-testid={`footer-social-${i}`}
+                  aria-label={label}
+                  className="w-8 h-8 border border-white/20 flex items-center justify-center hover:bg-dhl-yellow hover:text-dhl-ink hover:border-dhl-yellow transition-colors"
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setConsentModal(true)}
+            data-testid="footer-consent-settings"
+            className="text-sm text-white/70 hover:text-white hover:underline underline-offset-4 decoration-dhl-yellow decoration-2 transition-all"
+          >
+            Consent Settings
+          </button>
+
+          <div className="text-xs text-white/50 text-center md:text-right">
+            © 2026 DHL Express (Demo) — All rights reserved.
+          </div>
+        </div>
+      </div>
+
+      <div className="text-[10px] text-white/30 font-mono uppercase tracking-wider text-center pb-4 px-4">
+        Demo build · Not affiliated with Deutsche Post DHL Group
+      </div>
+
+      {/* Cookie modal */}
+      {cookieModal && (
+        <div
+          data-testid="cookie-modal"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm text-dhl-text"
+          onClick={() => setCookieModal(false)}
+        >
+          <div onClick={(e) => e.stopPropagation()} className="bg-white max-w-lg w-full p-6 shadow-2xl">
+            <div className="flex items-start justify-between mb-4">
+              <h3 className="font-display text-xl font-black">Cookie Settings</h3>
+              <button onClick={() => setCookieModal(false)} className="p-1 hover:bg-dhl-panel rounded">
+                <X className="w-4 h-4 text-dhl-muted" />
+              </button>
+            </div>
+            <p className="text-sm text-dhl-muted leading-[1.6] mb-5">
+              We use cookies to deliver this site and improve your experience. Manage your preferences
+              below.
+            </p>
+            <div className="space-y-3 mb-5">
+              {["Essential", "Analytics", "Marketing"].map((c, i) => (
+                <label key={c} className="flex items-center justify-between p-3 border border-dhl-border">
+                  <div>
+                    <div className="font-bold text-sm">{c}</div>
+                    <div className="text-[11px] text-dhl-muted">
+                      {i === 0 ? "Always active — required for site function" : "Optional"}
+                    </div>
+                  </div>
+                  <input type="checkbox" defaultChecked={i === 0} disabled={i === 0} className="w-4 h-4" />
+                </label>
+              ))}
+            </div>
+            <button
+              onClick={() => setCookieModal(false)}
+              className="w-full h-11 bg-dhl-ink text-dhl-yellow font-bold uppercase tracking-wider text-xs"
+            >
+              Save Preferences
+            </button>
+            <div className="text-[10px] text-dhl-muted italic mt-3 text-center">
+              Demo build — preferences are not persisted.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Consent modal */}
+      {consentModal && (
+        <div
+          data-testid="consent-modal"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm text-dhl-text"
+          onClick={() => setConsentModal(false)}
+        >
+          <div onClick={(e) => e.stopPropagation()} className="bg-white max-w-md w-full p-6 shadow-2xl">
+            <div className="flex items-start justify-between mb-4">
+              <h3 className="font-display text-xl font-black">Consent Settings</h3>
+              <button onClick={() => setConsentModal(false)} className="p-1 hover:bg-dhl-panel rounded">
+                <X className="w-4 h-4 text-dhl-muted" />
+              </button>
+            </div>
+            <p className="text-sm text-dhl-muted leading-[1.6] mb-5">
+              Choose what data we may use to personalise your experience.
+            </p>
+            <button
+              onClick={() => setConsentModal(false)}
+              className="w-full h-11 bg-dhl-red text-white font-bold uppercase tracking-wider text-xs"
+            >
+              Confirm
+            </button>
+            <div className="text-[10px] text-dhl-muted italic mt-3 text-center">
+              Demo build — not persisted.
+            </div>
+          </div>
+        </div>
+      )}
     </footer>
   );
 };

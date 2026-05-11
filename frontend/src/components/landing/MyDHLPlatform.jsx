@@ -47,10 +47,10 @@ const MyDHLPlatform = () => {
           >
             <div className="relative">
               <img
-                src="/images/mydhl-devices.jpg"
+                src="/images/fotolar/fotolar-10.png"
                 alt="MyDHL platform on desktop, tablet, and mobile devices"
                 loading="lazy"
-                className="w-full h-auto max-h-[520px] object-cover object-center"
+                className="w-full h-auto max-h-[520px] object-contain object-center bg-[#F8F8F8]"
               />
               {/* Subtle frame accent */}
               <div className="absolute -bottom-3 -right-3 w-32 h-32 bg-dhl-yellow -z-10 hidden lg:block" />
