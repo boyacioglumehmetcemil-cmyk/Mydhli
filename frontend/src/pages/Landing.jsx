@@ -3,6 +3,7 @@ import ServiceDisruptionBanner from "@/components/landing/ServiceDisruptionBanne
 import HeroStatic from "@/components/landing/HeroStatic";
 import QuickActionStrip from "@/components/landing/QuickActionStrip";
 import SecondarySlider from "@/components/landing/SecondarySlider";
+import MyDHLPlatform from "@/components/landing/MyDHLPlatform";
 import InsideNetworkGrid from "@/components/landing/InsideNetworkGrid";
 import SeoBlock from "@/components/landing/SeoBlock";
 import RichFooter from "@/components/landing/RichFooter";
@@ -29,6 +30,7 @@ const Landing = () => {
         <HeroStatic />
         <QuickActionStrip />
         <SecondarySlider />
+        <MyDHLPlatform />
         <InsideNetworkGrid />
         <SeoBlock />
       </main>

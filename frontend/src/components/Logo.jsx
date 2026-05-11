@@ -58,16 +58,17 @@ const Logo = ({
   const useImg = v !== "text" && (assetSrc || DEFAULT_ASSET_SRC);
 
   // Cap rendered height so we never up-scale beyond native pixels.
-  // Exception: "icon-only" is used in the tall utility bar and intentionally
-  // up-scales to ~44px; we raise its cap accordingly.
+  // (Earlier "icon-only" up-scaled to 44px to fill the tall utility bar; that
+  // produced visible blur on the 31px-native PNG asset. Reverted to 28px so the
+  // logo reads sharp; the tall bar contributes padding around it instead.)
   const heightByVariant = {
-    "icon-only": "h-11", // 44px — tall utility bar
+    "icon-only": "h-7",  // 28px — sharp on the 31-native asset
     compact: "h-7",      // 28px — under 31 native
     default: "h-[30px]", // 30px — under 31 native
     text: "h-10",
   };
   const maxHeightByVariant = {
-    "icon-only": UPSCALED_MAX,
+    "icon-only": NATIVE_HEIGHT,
     compact: NATIVE_HEIGHT,
     default: NATIVE_HEIGHT,
     text: NATIVE_HEIGHT,

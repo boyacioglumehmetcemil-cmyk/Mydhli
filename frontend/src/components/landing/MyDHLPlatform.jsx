@@ -46,7 +46,7 @@ const MyDHLPlatform = () => {
       id="mydhl"
       ref={ref}
       data-testid="mydhl-platform"
-      className="bg-white py-16 lg:py-[120px]"
+      className="bg-white py-10 lg:py-16"
     >
       <div className="max-w-[1200px] mx-auto px-4 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
@@ -58,7 +58,7 @@ const MyDHLPlatform = () => {
           >
             <img
               src="/images/mydhl-devices.jpg"
-              alt="MyDHL platform on desktop, tablet, and mobile devices"
+              alt="MyDHL+ workspace shown on desktop, tablet, and mobile devices"
               loading="lazy"
               className="w-full h-auto max-h-[480px] object-cover object-center"
             />
@@ -72,21 +72,26 @@ const MyDHLPlatform = () => {
           >
             {/* TOP: eyebrow + h2 + sub */}
             <div className="mb-8">
-              <div className="text-[11px] font-bold uppercase tracking-[0.3em] text-dhl-red mb-3">
-                MyDHL Platform
-              </div>
-              <h2 className="font-display text-4xl sm:text-5xl lg:text-[3rem] font-black text-dhl-ink leading-[0.98] tracking-tighter mb-5">
-                Flexible.
-                <br />
-                Powerful.
-                <br />
-                <span className="text-dhl-yellow" style={{ WebkitTextStroke: "1.5px #1A1A1A" }}>
-                  Effortless.
+              <div className="inline-flex items-center gap-2.5 mb-4">
+                <span
+                  aria-hidden="true"
+                  className="block w-3 h-[3px]"
+                  style={{ backgroundColor: "#D40511" }}
+                />
+                <span
+                  className="text-[12px] font-bold uppercase text-dhl-ink"
+                  style={{ letterSpacing: "0.18em" }}
+                >
+                  MyDHL Platform
                 </span>
+              </div>
+              <h2 className="font-display text-3xl sm:text-4xl lg:text-[2.25rem] font-black text-dhl-ink leading-[1.1] tracking-tighter mb-5">
+                Built for everyday shipping
               </h2>
-              <p className="text-base lg:text-[1.05rem] text-dhl-muted leading-[1.55] max-w-[480px]">
-                Your full logistics control center — create shipments, get rates, schedule pickups,
-                manage customs documents, and track everything in one place.
+              <p className="text-base lg:text-[1.05rem] text-dhl-muted leading-[1.55] max-w-[520px]">
+                One workspace for the people who ship every day — create shipments, generate
+                quotes, request pickups, manage tracking, and download paperwork without
+                switching tools.
               </p>
             </div>
 
@@ -104,7 +109,7 @@ const MyDHLPlatform = () => {
                       key={c.label}
                       onClick={c.onClick}
                       data-testid={c.testId}
-                      className="group relative flex flex-col items-center justify-center text-center px-3 py-5 hover:bg-dhl-yellow/10 transition-colors duration-[200ms] ease-out"
+                      className="group relative flex flex-col items-center justify-center text-center px-3 py-5 hover:bg-[#F8F8F8] transition-colors duration-[200ms] ease-out"
                     >
                       {/* Vertical divider on large screens (between cells) */}
                       {i > 0 && (
@@ -128,7 +133,7 @@ const MyDHLPlatform = () => {
                         />
                       )}
                       <Icon className="w-6 h-6 text-dhl-ink mb-2" strokeWidth={1.75} />
-                      <span className="font-semibold text-[13px] text-[#1976D2] group-hover:text-[#0D47A1] transition-colors leading-tight">
+                      <span className="font-medium text-[13px] text-[#0EA5B7] group-hover:text-[#0B8C9C] transition-colors leading-tight">
                         {c.label}
                       </span>
                     </button>
