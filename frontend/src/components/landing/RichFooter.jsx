@@ -56,8 +56,8 @@ const RichFooter = () => {
 
   return (
     <footer id="contact" data-testid="rich-footer" style={{ backgroundColor: "#FAF7F0" }} className="text-[#2A2A2A]">
-      {/* Top yellow strip */}
-      <div className="h-1.5 bg-dhl-yellow" />
+      {/* Top hairline rule — discreet 1px gray-500 frame */}
+      <div data-testid="footer-top-rule" className="h-px bg-[#6B7280]" />
 
       <div className="max-w-[1200px] mx-auto px-6 lg:px-8 py-16 lg:py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
@@ -157,6 +157,9 @@ const RichFooter = () => {
       <div className="text-[10px] text-[#888] font-mono uppercase tracking-wider text-center py-3 px-4" style={{ backgroundColor: "#F0EDE5" }}>
         Demo build · Not affiliated with Deutsche Post DHL Group
       </div>
+
+      {/* Bottom hairline rule — mirrors the top, frames the footer */}
+      <div data-testid="footer-bottom-rule" className="h-px bg-[#6B7280]" />
 
       {/* Cookie modal */}
       {cookieModal && (
