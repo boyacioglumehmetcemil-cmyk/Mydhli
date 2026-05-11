@@ -9,42 +9,6 @@ import ComingSoonModal from "./ComingSoonModal";
 // Themed copy per FOTOLAR photo — image-paired narrative.
 const SLIDES = [
   {
-    image: "/images/fotolar/fotolar-02.jpg",
-    alt: "DHL courier waving from delivery truck",
-    eyebrow: "Last Mile",
-    headline: "On Every Doorstep",
-    sub: "The final mile is the most personal. Meet the couriers who close the loop on every shipment.",
-    ctaLabel: "Follow a Delivery",
-    cta: { type: "modal", title: "Follow a Delivery" },
-  },
-  {
-    image: "/images/fotolar/fotolar-04.jpg",
-    alt: "Warehouse workers measuring a large parcel",
-    eyebrow: "Operations",
-    headline: "Behind the Sort",
-    sub: "Inside the regional sorting hub, every parcel finds its lane — measured, scanned, and routed in seconds.",
-    ctaLabel: "Tour the Hub",
-    cta: { type: "modal", title: "Tour the Hub" },
-  },
-  {
-    image: "/images/fotolar/fotolar-09.jpg",
-    alt: "DHL courier handing parcel to customer",
-    eyebrow: "Customer Moments",
-    headline: "Where the Day Begins",
-    sub: "Real businesses, real shipments — what gets handed off, hour by hour, store by store.",
-    ctaLabel: "Read Stories",
-    cta: { type: "modal", title: "Customer Stories" },
-  },
-  {
-    image: "/images/fotolar/fotolar-03.jpg",
-    alt: "Small business owner packing in shop",
-    eyebrow: "Small Business",
-    headline: "Built for the Underdogs",
-    sub: "From the kitchen table to the shop counter — the parcel network that grows with you.",
-    ctaLabel: "Open an Account",
-    cta: { type: "route", to: "/register" },
-  },
-  {
     image: "/images/fotolar/fotolar-05.jpg",
     alt: "Hands wrapping a fragile bottle for shipping",
     eyebrow: "Care",
@@ -72,15 +36,6 @@ const SLIDES = [
     cta: { type: "modal", title: "Packaging Standards" },
   },
   {
-    image: "/images/fotolar/fotolar-01.jpg",
-    alt: "Stylised world map showing global parcel routes",
-    eyebrow: "Worldwide",
-    headline: "One Global Network",
-    sub: "More than 220 countries, one accountable partner — same network, same promise, anywhere.",
-    ctaLabel: "Explore Coverage",
-    cta: { type: "modal", title: "Network Coverage" },
-  },
-  {
     image: "/images/fotolar/fotolar-07.png",
     alt: "DHL aircraft over a world map with clearance icons",
     eyebrow: "Aviation",
@@ -88,15 +43,6 @@ const SLIDES = [
     sub: "Time-definite delivery starts in the sky. A look at the aviation backbone of express logistics.",
     ctaLabel: "See the Fleet",
     cta: { type: "modal", title: "The Aviation Network" },
-  },
-  {
-    image: "/images/fotolar/fotolar-10.png",
-    alt: "MyDHL+ platform on desktop, tablet, and mobile",
-    eyebrow: "Platform",
-    headline: "All Your Tools, One Screen",
-    sub: "Quotes, labels, customs, tracking — modern shipping starts inside MyDHL.",
-    ctaLabel: "Open MyDHL",
-    cta: { type: "route", to: "/register" },
   },
 ];
 
