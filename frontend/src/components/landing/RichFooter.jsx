@@ -94,7 +94,7 @@ const RichFooter = () => {
             <p className="text-sm text-[#555] leading-[1.6] mt-5 mb-5 max-w-xs">
               Global express logistics. Built for businesses that ship every day.
             </p>
-            <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[12px] text-[#555] mb-6">
+            <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[12px] text-[#555]">
               {["About", "Press", "Careers", "Sustainability", "Legal Notice"].map((mini, i, arr) => (
                 <span key={mini} className="inline-flex items-center">
                   <a
@@ -107,44 +107,6 @@ const RichFooter = () => {
                   {i < arr.length - 1 && <span className="ml-2 text-[#999]">·</span>}
                 </span>
               ))}
-            </div>
-
-            {/* Country selector */}
-            <div ref={countryRef} className="relative inline-block">
-              <button
-                type="button"
-                onClick={() => setCountryOpen((v) => !v)}
-                data-testid="footer-country-toggle"
-                className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-[#E0DCD0] hover:bg-[#F0EDE5] transition-colors text-[#333] text-sm rounded-sm"
-              >
-                <PngFlagSvg className="w-5 h-3.5" />
-                <span className="font-semibold text-[#1A1A1A]">{country}</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform ${countryOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-              {countryOpen && (
-                <div
-                  data-testid="footer-country-menu"
-                  className="absolute left-0 bottom-full mb-2 w-60 bg-white text-dhl-text shadow-2xl py-1 z-50 max-h-64 overflow-y-auto border border-[#E0DCD0]"
-                >
-                  {COUNTRIES.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => {
-                        setCountry(c);
-                        setCountryOpen(false);
-                      }}
-                      className={`w-full text-left px-4 py-2 text-sm hover:bg-dhl-yellow/30 ${
-                        c === country ? "bg-dhl-yellow/20 font-bold" : ""
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>
