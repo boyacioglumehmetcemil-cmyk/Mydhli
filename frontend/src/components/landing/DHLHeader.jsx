@@ -235,13 +235,13 @@ const DHLHeader = () => {
             })}
           </nav>
 
-          <div className="hidden lg:flex items-center gap-2 ml-2 pl-4 border-l border-dhl-ink/20">
+          <div className="hidden lg:flex items-center gap-6 ml-2 pl-4 border-l border-dhl-ink/20">
             {isAuthenticated ? (
               <button
                 type="button"
                 data-testid="header-dashboard-btn"
                 onClick={() => navigate("/dashboard")}
-                className="h-10 px-5 bg-dhl-ink text-dhl-yellow font-bold text-sm rounded-sm hover:bg-black transition-all hover:-translate-y-0.5"
+                className="text-[14px] font-bold text-dhl-red hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-3 py-2"
               >
                 My Dashboard
               </button>
@@ -251,7 +251,7 @@ const DHLHeader = () => {
                   type="button"
                   data-testid="header-login-btn"
                   onClick={() => navigate("/login")}
-                  className="h-10 px-5 border-2 border-dhl-ink text-dhl-ink font-bold text-sm rounded-sm hover:bg-dhl-ink hover:text-white transition-colors"
+                  className="text-[14px] font-medium text-dhl-ink hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-3 py-2"
                 >
                   Login
                 </button>
@@ -259,7 +259,7 @@ const DHLHeader = () => {
                   type="button"
                   data-testid="header-register-btn"
                   onClick={() => navigate("/register")}
-                  className="h-10 px-5 bg-dhl-red text-white font-bold text-sm rounded-sm hover:bg-dhl-red-dark transition-all hover:-translate-y-0.5 shadow-sm"
+                  className="text-[14px] font-bold text-dhl-red hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-3 py-2"
                 >
                   Register
                 </button>
@@ -302,7 +302,7 @@ const DHLHeader = () => {
               <Link
                 to="/dashboard"
                 onClick={() => setMobileOpen(false)}
-                className="px-3 py-3 bg-dhl-ink text-dhl-yellow font-bold text-center rounded-sm"
+                className="px-3 py-3 text-center font-bold text-dhl-red hover:underline underline-offset-4 decoration-2 decoration-dhl-red"
               >
                 My Dashboard
               </Link>
@@ -311,14 +311,14 @@ const DHLHeader = () => {
                 <Link
                   to="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="px-3 py-3 border-2 border-dhl-ink font-bold text-center rounded-sm"
+                  className="px-3 py-3 text-center font-medium text-dhl-ink hover:underline underline-offset-4 decoration-2 decoration-dhl-red"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="px-3 py-3 bg-dhl-red text-white font-bold text-center rounded-sm"
+                  className="px-3 py-3 text-center font-bold text-dhl-red hover:underline underline-offset-4 decoration-2 decoration-dhl-red"
                 >
                   Register
                 </Link>
