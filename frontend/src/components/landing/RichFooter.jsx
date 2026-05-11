@@ -112,8 +112,11 @@ const RichFooter = () => {
         </div>
       </div>
 
+      {/* Mid hairline rule — boundary between main columns and the bottom bar */}
+      <div data-testid="footer-mid-rule" className="h-px bg-[#6B7280]" />
+
       {/* Bottom bar — slightly darker cream */}
-      <div style={{ backgroundColor: "#F0EDE5" }} className="border-t border-[#E0DCD0]">
+      <div style={{ backgroundColor: "#F0EDE5" }}>
         <div className="max-w-[1200px] mx-auto px-6 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 min-h-[56px]">
           <div className="flex items-center gap-3">
             <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#666]">
