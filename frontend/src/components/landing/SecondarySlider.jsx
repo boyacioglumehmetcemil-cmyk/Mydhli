@@ -1,37 +1,37 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import SectionEyebrow from "./SectionEyebrow";
+import SlideContent from "./SlideContent";
+import ComingSoonModal from "./ComingSoonModal";
 
-// Reads /images/fotolar2/manifest.json at mount. If the manifest is missing,
-// empty, or fetch fails, the section hides itself entirely.
-//
-// To add new photos:
-//   1. Drop files into /app/frontend/public/images/fotolar2/
-//   2. Add their filenames + alt text to manifest.json
-//
-// Smaller / lighter visual treatment than the main <Gallery /> so the two
-// sliders don't compete for attention.
+// Reads /images/fotolar2/manifest.json at mount. Manifest entries include
+// optional eyebrow / headline / sub / ctaLabel / cta data so each slide can
+// render the full image+text+CTA layout. If the manifest is empty or fails
+// to load, the entire section is hidden.
 
 const MANIFEST_URL = "/images/fotolar2/manifest.json";
 const BASE = "/images/fotolar2/";
 const AUTO_MS = 7000;
 
 const SecondarySlider = () => {
-  const [photos, setPhotos] = useState(null); // null = loading, [] = empty/hide
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const [photos, setPhotos] = useState(null);
   const [index, setIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
+  const [modal, setModal] = useState(null);
   const sectionRef = useRef(null);
   const timer = useRef(null);
 
-  // Load manifest once
   useEffect(() => {
     let cancelled = false;
     fetch(MANIFEST_URL, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : { images: [] }))
       .then((data) => {
         if (cancelled) return;
-        const list = Array.isArray(data?.images) ? data.images : [];
-        setPhotos(list);
+        setPhotos(Array.isArray(data?.images) ? data.images : []);
       })
       .catch(() => !cancelled && setPhotos([]));
     return () => {
@@ -48,14 +48,12 @@ const SecondarySlider = () => {
   const next = useCallback(() => goTo(index + 1), [index, goTo]);
   const prev = useCallback(() => goTo(index - 1), [index, goTo]);
 
-  // Auto-advance
   useEffect(() => {
     if (hovered || count < 2) return undefined;
     timer.current = setTimeout(next, AUTO_MS);
     return () => clearTimeout(timer.current);
   }, [index, hovered, count, next]);
 
-  // Keyboard arrows when in viewport
   useEffect(() => {
     if (count < 2) return undefined;
     let inView = false;
@@ -64,7 +62,6 @@ const SecondarySlider = () => {
       { threshold: 0.4 }
     );
     if (sectionRef.current) io.observe(sectionRef.current);
-
     const onKey = (e) => {
       if (!inView) return;
       if (e.key === "ArrowRight") {
@@ -83,9 +80,26 @@ const SecondarySlider = () => {
     };
   }, [count, next, prev]);
 
-  // Hide section entirely when manifest is empty or unavailable
-  if (photos === null) return null; // still loading — render nothing to avoid flash
+  if (photos === null) return null;
   if (count === 0) return null;
+
+  const handleCta = (slide) => {
+    if (slide.cta?.type === "route") navigate(slide.cta.to);
+    else if (slide.cta?.type === "auth-route") {
+      navigate(isAuthenticated ? slide.cta.to : `/login?redirect=${slide.cta.to}`);
+    } else setModal({ title: slide.cta?.title || slide.headline });
+  };
+
+  const slides = photos.map((p) => ({
+    image: `${BASE}${p.src}`,
+    alt: p.alt || "",
+    eyebrow: p.eyebrow,
+    headline: p.headline,
+    sub: p.sub,
+    ctaLabel: p.ctaLabel,
+    onCta: () =>
+      handleCta({ cta: p.cta, headline: p.headline }),
+  }));
 
   return (
     <section
@@ -114,23 +128,18 @@ const SecondarySlider = () => {
         >
           <div
             data-testid="secondary-frame"
-            className="relative w-full bg-[#F4F4F4] rounded-lg overflow-hidden shadow-lg"
-            style={{ height: "min(50vh, 340px)" }}
+            className="relative w-full bg-white rounded-lg overflow-hidden shadow-lg border border-dhl-border"
+            style={{ height: "min(55vh, 360px)" }}
           >
-            {photos.map((p, i) => (
+            {slides.map((s, i) => (
               <div
-                key={p.src}
+                key={i}
                 data-testid={`secondary-slide-${i}`}
                 className={`absolute inset-0 transition-opacity duration-700 ease-out ${
                   i === index ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
                 }`}
               >
-                <img
-                  src={`${BASE}${p.src}`}
-                  alt={p.alt || ""}
-                  loading={i === 0 ? "eager" : "lazy"}
-                  className="w-full h-full object-cover"
-                />
+                <SlideContent slide={s} compact />
               </div>
             ))}
 
@@ -141,7 +150,7 @@ const SecondarySlider = () => {
                   onClick={prev}
                   data-testid="secondary-prev"
                   aria-label="Previous photo"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 bg-white hover:bg-dhl-yellow text-dhl-ink rounded-full shadow-md flex items-center justify-center transition-all hover:scale-105"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 bg-white hover:bg-dhl-yellow text-dhl-ink rounded-full shadow-md flex items-center justify-center transition-all hover:scale-105 border border-dhl-border"
                 >
                   <ChevronLeft className="w-4 h-4" strokeWidth={2.5} />
                 </button>
@@ -150,7 +159,7 @@ const SecondarySlider = () => {
                   onClick={next}
                   data-testid="secondary-next"
                   aria-label="Next photo"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 bg-white hover:bg-dhl-yellow text-dhl-ink rounded-full shadow-md flex items-center justify-center transition-all hover:scale-105"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 bg-white hover:bg-dhl-yellow text-dhl-ink rounded-full shadow-md flex items-center justify-center transition-all hover:scale-105 border border-dhl-border"
                 >
                   <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
                 </button>
@@ -170,9 +179,9 @@ const SecondarySlider = () => {
               data-testid="secondary-dots"
               className="mt-4 flex items-center justify-center gap-2"
             >
-              {photos.map((p, i) => (
+              {photos.map((_, i) => (
                 <button
-                  key={p.src}
+                  key={i}
                   type="button"
                   onClick={() => goTo(i)}
                   data-testid={`secondary-dot-${i}`}
@@ -186,6 +195,12 @@ const SecondarySlider = () => {
           )}
         </div>
       </div>
+
+      <ComingSoonModal
+        open={!!modal}
+        onClose={() => setModal(null)}
+        title={modal?.title || ""}
+      />
     </section>
   );
 };

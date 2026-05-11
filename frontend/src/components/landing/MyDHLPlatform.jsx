@@ -1,10 +1,45 @@
 import { useNavigate } from "react-router-dom";
-import { Eye, Settings, ArrowRight } from "lucide-react";
+import { PackageOpen, UserPlus, Info, Sparkles } from "lucide-react";
+import { useState } from "react";
 import { useReveal } from "@/hooks/useReveal";
+import { useAuth } from "@/contexts/AuthContext";
+import ComingSoonModal from "./ComingSoonModal";
 
 const MyDHLPlatform = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const { ref, visible } = useReveal(0);
+  const [modal, setModal] = useState(null);
+
+  const goAuth = (to) =>
+    isAuthenticated ? navigate(to) : navigate(`/login?redirect=${to}`);
+
+  const CELLS = [
+    {
+      icon: PackageOpen,
+      label: "Create Shipment",
+      onClick: () => goAuth("/dashboard/ship"),
+      testId: "mydhl-cell-ship",
+    },
+    {
+      icon: UserPlus,
+      label: "Create a Login",
+      onClick: () => navigate("/register"),
+      testId: "mydhl-cell-register",
+    },
+    {
+      icon: Info,
+      label: "About MyDHL+",
+      onClick: () => setModal({ title: "About MyDHL+" }),
+      testId: "mydhl-cell-about",
+    },
+    {
+      icon: Sparkles,
+      label: "What's New",
+      onClick: () => setModal({ title: "What's New in MyDHL+" }),
+      testId: "mydhl-cell-whatsnew",
+    },
+  ];
 
   return (
     <section
@@ -52,12 +87,11 @@ const MyDHLPlatform = () => {
                 loading="lazy"
                 className="w-full h-auto max-h-[520px] object-cover object-center"
               />
-              {/* Subtle frame accent */}
               <div className="absolute -bottom-3 -right-3 w-32 h-32 bg-dhl-yellow -z-10 hidden lg:block" />
             </div>
           </div>
 
-          {/* Copy */}
+          {/* Copy + 4-cell action card */}
           <div
             className={`lg:col-span-5 transition-all duration-1000 delay-200 ${
               visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
@@ -81,44 +115,62 @@ const MyDHLPlatform = () => {
               businesses ship.
             </p>
 
-            <div className="grid grid-cols-2 gap-3 mb-8">
-              <button
-                type="button"
-                onClick={() => navigate("/register")}
-                data-testid="mydhl-about-btn"
-                className="group p-4 border border-dhl-border bg-white hover:border-dhl-yellow hover:-translate-y-0.5 transition-all text-left"
-              >
-                <Eye className="w-5 h-5 text-dhl-red mb-2" />
-                <div className="font-display font-bold text-sm text-dhl-ink mb-1">About MyDHL</div>
-                <div className="text-[11px] text-[#1976D2] font-semibold inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Take the tour <ArrowRight className="w-3 h-3" />
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/register")}
-                data-testid="mydhl-whatsnew-btn"
-                className="group p-4 border border-dhl-border bg-white hover:border-dhl-yellow hover:-translate-y-0.5 transition-all text-left"
-              >
-                <Settings className="w-5 h-5 text-dhl-red mb-2" />
-                <div className="font-display font-bold text-sm text-dhl-ink mb-1">What's New</div>
-                <div className="text-[11px] text-[#1976D2] font-semibold inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Latest updates <ArrowRight className="w-3 h-3" />
-                </div>
-              </button>
-            </div>
-
-            <button
-              type="button"
-              data-testid="mydhl-cta"
-              onClick={() => navigate("/register")}
-              className="inline-flex items-center gap-2 h-12 px-7 bg-dhl-red hover:bg-dhl-red-dark text-white font-bold text-sm uppercase tracking-wider rounded-sm transition-all hover:-translate-y-0.5 shadow-md"
+            {/* 4-cell inline action row */}
+            <div
+              data-testid="mydhl-actions-card"
+              className="bg-white rounded-lg shadow-lg border border-dhl-border overflow-hidden"
             >
-              Open MyDHL Account <ArrowRight className="w-4 h-4" />
-            </button>
+              <div className="grid grid-cols-2 lg:grid-cols-4">
+                {CELLS.map((c, i) => {
+                  const Icon = c.icon;
+                  return (
+                    <button
+                      type="button"
+                      key={c.label}
+                      onClick={c.onClick}
+                      data-testid={c.testId}
+                      className="group relative flex flex-col items-center justify-center text-center px-3 py-5 hover:bg-dhl-yellow/10 transition-colors duration-[200ms] ease-out"
+                    >
+                      {/* Vertical divider (large screens) */}
+                      {i > 0 && (
+                        <span
+                          aria-hidden="true"
+                          className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 w-px bg-gray-200"
+                          style={{ height: "60%" }}
+                        />
+                      )}
+                      {/* Horizontal divider when wrapped to 2x2 */}
+                      {i >= 2 && (
+                        <span
+                          aria-hidden="true"
+                          className="lg:hidden absolute top-0 left-6 right-6 h-px bg-gray-200"
+                        />
+                      )}
+                      {(i === 1 || i === 3) && (
+                        <span
+                          aria-hidden="true"
+                          className="lg:hidden absolute left-0 top-[20%] bottom-[20%] w-px bg-gray-200"
+                        />
+                      )}
+                      <Icon className="w-7 h-7 text-dhl-ink mb-2" strokeWidth={1.75} />
+                      <span className="font-semibold text-[13px] text-[#1976D2] group-hover:text-[#0D47A1] transition-colors leading-tight">
+                        {c.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      <ComingSoonModal
+        open={!!modal}
+        onClose={() => setModal(null)}
+        title={modal?.title || ""}
+        body="The MyDHL+ feature you're looking at is part of the live platform. Sign in or open an account to access it."
+      />
     </section>
   );
 };
