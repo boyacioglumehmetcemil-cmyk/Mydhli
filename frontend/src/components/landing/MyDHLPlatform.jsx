@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { PackageOpen, UserPlus, Info, Sparkles } from "lucide-react";
+import { PackageOpen, UserPlus, Info, Sparkles, Receipt, CalendarClock } from "lucide-react";
 import { useState } from "react";
 import { useReveal } from "@/hooks/useReveal";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +20,18 @@ const MyDHLPlatform = () => {
       label: "Create Shipment",
       onClick: () => goAuth("/dashboard/ship"),
       testId: "mydhl-cell-ship",
+    },
+    {
+      icon: Receipt,
+      label: "Get a Quote",
+      onClick: () => goAuth("/dashboard/quote"),
+      testId: "mydhl-cell-quote",
+    },
+    {
+      icon: CalendarClock,
+      label: "Schedule Pickup",
+      onClick: () => goAuth("/dashboard/pickup"),
+      testId: "mydhl-cell-pickup",
     },
     {
       icon: UserPlus,
@@ -91,7 +103,7 @@ const MyDHLPlatform = () => {
             </div>
           </div>
 
-          {/* Copy + 4-cell action card */}
+          {/* Copy column (no action card here anymore) */}
           <div
             className={`lg:col-span-5 transition-all duration-1000 delay-200 ${
               visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
@@ -109,58 +121,37 @@ const MyDHLPlatform = () => {
                 Effortless.
               </span>
             </h2>
-            <p className="text-base lg:text-lg text-dhl-muted leading-[1.55] mb-8">
+            <p className="text-base lg:text-lg text-dhl-muted leading-[1.55]">
               Your full logistics control center — create shipments, get rates, schedule pickups,
               manage customs documents, and track everything in one place. Built for the way modern
               businesses ship.
             </p>
+          </div>
+        </div>
 
-            {/* 4-cell inline action row */}
-            <div
-              data-testid="mydhl-actions-card"
-              className="bg-white rounded-lg shadow-lg border border-dhl-border overflow-hidden"
-            >
-              <div className="grid grid-cols-2 lg:grid-cols-4">
-                {CELLS.map((c, i) => {
-                  const Icon = c.icon;
-                  return (
-                    <button
-                      type="button"
-                      key={c.label}
-                      onClick={c.onClick}
-                      data-testid={c.testId}
-                      className="group relative flex flex-col items-center justify-center text-center px-3 py-5 hover:bg-dhl-yellow/10 transition-colors duration-[200ms] ease-out"
-                    >
-                      {/* Vertical divider (large screens) */}
-                      {i > 0 && (
-                        <span
-                          aria-hidden="true"
-                          className="hidden lg:block absolute left-0 top-1/2 -translate-y-1/2 w-px bg-gray-200"
-                          style={{ height: "60%" }}
-                        />
-                      )}
-                      {/* Horizontal divider when wrapped to 2x2 */}
-                      {i >= 2 && (
-                        <span
-                          aria-hidden="true"
-                          className="lg:hidden absolute top-0 left-6 right-6 h-px bg-gray-200"
-                        />
-                      )}
-                      {(i === 1 || i === 3) && (
-                        <span
-                          aria-hidden="true"
-                          className="lg:hidden absolute left-0 top-[20%] bottom-[20%] w-px bg-gray-200"
-                        />
-                      )}
-                      <Icon className="w-7 h-7 text-dhl-ink mb-2" strokeWidth={1.75} />
-                      <span className="font-semibold text-[13px] text-[#1976D2] group-hover:text-[#0D47A1] transition-colors leading-tight">
-                        {c.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+        {/* Full-width 6-cell action row — single row on desktop, responsive grid below */}
+        <div
+          data-testid="mydhl-actions-card"
+          className="mt-10 lg:mt-14 bg-white rounded-lg shadow-lg border border-dhl-border overflow-hidden max-w-[1200px] mx-auto"
+        >
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-gray-200">
+            {CELLS.map((c) => {
+              const Icon = c.icon;
+              return (
+                <button
+                  type="button"
+                  key={c.label}
+                  onClick={c.onClick}
+                  data-testid={c.testId}
+                  className="group bg-white flex flex-col items-center justify-center text-center px-3 py-6 hover:bg-dhl-yellow/10 transition-colors duration-[200ms] ease-out"
+                >
+                  <Icon className="w-7 h-7 text-dhl-ink mb-2" strokeWidth={1.75} />
+                  <span className="font-semibold text-[13px] text-[#1976D2] group-hover:text-[#0D47A1] transition-colors leading-tight">
+                    {c.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

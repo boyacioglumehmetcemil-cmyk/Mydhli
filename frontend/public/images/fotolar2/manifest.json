@@ -26,6 +26,15 @@
       "sub": "Single-entry consolidation reduces border friction for multi-receiver shipments and speeds clearance.",
       "ctaLabel": "See Customs Tools",
       "cta": { "type": "modal", "title": "Customs Tools" }
+    },
+    {
+      "src": "fotolar2-04.jpg",
+      "alt": "Customs specialist on a phone call",
+      "eyebrow": "Customs Expertise",
+      "headline": "Borders, sorted.",
+      "sub": "Reach more than 200 countries with a team that handles customs documentation, classifications, and clearance on your behalf — so your shipments keep moving.",
+      "ctaLabel": "Get Customs Help",
+      "cta": { "type": "modal", "title": "Customs Clearance Advice" }
     }
   ]
 }

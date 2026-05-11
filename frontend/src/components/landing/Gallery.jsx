@@ -165,16 +165,6 @@ const Gallery = () => {
       className="bg-[#FAFAFA] py-16 lg:py-[120px]"
     >
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
-        <div className="mb-10 lg:mb-12 max-w-[720px]">
-          <SectionEyebrow className="mb-4">Our Network in Action</SectionEyebrow>
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-dhl-ink tracking-tighter leading-[1.05]">
-            Behind the scenes
-          </h2>
-          <p className="mt-4 text-sm lg:text-base text-dhl-muted leading-[1.6] max-w-[560px]">
-            Real moments from the people, vehicles, and platforms that move every shipment.
-          </p>
-        </div>
-
         <div
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
