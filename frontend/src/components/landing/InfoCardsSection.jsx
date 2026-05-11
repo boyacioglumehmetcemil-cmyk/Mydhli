@@ -27,7 +27,7 @@ const InfoCardsSection = ({ id, testId, eyebrow, title, cards, background = "pan
   };
 
   return (
-    <section id={id} data-testid={testId} className={`${bgClass} pt-12 lg:pt-[60px] pb-12 lg:pb-[60px]`}>
+    <section id={id} data-testid={testId} className={`${bgClass} py-16 lg:py-[120px]`}>
       <div ref={ref} className="max-w-[1400px] mx-auto px-4 lg:px-8">
         <div
           className={`mb-12 lg:mb-16 max-w-[720px] transition-all duration-700 ${
