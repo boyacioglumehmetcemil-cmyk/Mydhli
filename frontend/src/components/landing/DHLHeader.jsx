@@ -74,7 +74,11 @@ const DHLHeader = () => {
           scrolled ? "h-0 opacity-0" : "h-10 opacity-100"
         }`}
       >
-        <div className="max-w-[1200px] mx-auto h-10 px-6 lg:px-8 flex items-center justify-end text-[13px] text-dhl-ink">
+        <div className="max-w-[1200px] mx-auto h-10 px-6 lg:px-8 flex items-center justify-between text-[13px] text-dhl-ink">
+          {/* Logo on the LEFT side of the utility bar */}
+          <Logo variant="icon-only" theme="light" />
+
+          <div className="flex items-center">
           <a
             href="#contact"
             data-testid="util-help"
@@ -180,18 +184,22 @@ const DHLHeader = () => {
               </div>
             )}
           </div>
+          </div>
         </div>
       </div>
 
       {/* White hairline */}
       <div className={`h-0.5 bg-white transition-all duration-300 ${scrolled ? "opacity-0" : "opacity-100"}`} />
 
-      {/* Main bar */}
+      {/* Main bar — Nav (LEFT) + Login/Register (RIGHT). Logo appears here only when scrolled (carried forward from collapsed utility bar). */}
       <div className={`bg-dhl-yellow transition-all duration-300 ${scrolled ? "h-16" : "h-20"}`}>
         <div className="max-w-[1200px] mx-auto h-full px-6 lg:px-8 flex items-center justify-between gap-4">
-          <Logo variant={scrolled ? "compact" : "default"} theme="light" />
+          {/* Logo (only when scrolled — carried forward from collapsed utility bar) */}
+          {scrolled && (
+            <Logo variant="compact" theme="light" className="mr-4" />
+          )}
 
-          <nav data-testid="main-nav" className="hidden lg:flex items-center gap-1 ml-auto">
+          <nav data-testid="main-nav" className={`hidden lg:flex items-center gap-1 ${scrolled ? "" : "mr-auto"}`}>
             {NAV.map((item) => {
               const cls =
                 "relative px-4 py-2 text-[15px] font-semibold text-dhl-ink hover:text-dhl-red transition-colors group";
