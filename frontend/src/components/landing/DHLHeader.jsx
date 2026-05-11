@@ -11,7 +11,7 @@ const NAV = [
   { label: "Track", href: "/track", kind: "route" },
 ];
 
-const LANGS = ["English", "Tok Pisin"];
+const LANGS = ["English"];
 const COUNTRIES = ["Papua New Guinea", "Australia", "Fiji", "Singapore", "United States"];
 
 const LS_LANG_KEY = "dhl_ui_lang";
