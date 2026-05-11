@@ -3,14 +3,8 @@ import ServiceDisruptionBanner from "@/components/landing/ServiceDisruptionBanne
 import HeroStatic from "@/components/landing/HeroStatic";
 import QuickActionStrip from "@/components/landing/QuickActionStrip";
 import MyDHLPlatform from "@/components/landing/MyDHLPlatform";
-import FeaturedCarousel from "@/components/landing/FeaturedCarousel";
 import Gallery from "@/components/landing/Gallery";
-import {
-  ShippingResourcesRow,
-  SolutionsRow,
-  SelfServiceRow,
-} from "@/components/landing/InfoCardsRows";
-import TrustStrip from "@/components/landing/TrustStrip";
+import { FeaturedRow } from "@/components/landing/InfoCardsRows";
 import SeoBlock from "@/components/landing/SeoBlock";
 import RichFooter from "@/components/landing/RichFooter";
 import FloatingNotificationBell from "@/components/landing/FloatingNotificationBell";
@@ -33,21 +27,11 @@ const Landing = () => {
       <ServiceDisruptionBanner />
 
       <main>
-        {/* Calm, static first impression */}
         <HeroStatic />
         <QuickActionStrip />
         <MyDHLPlatform />
-
-        {/* Mid-page dynamic content */}
-        <FeaturedCarousel />
-
-        {/* Single Gallery slider holding ALL user-supplied FOTOLAR photos */}
         <Gallery />
-
-        <ShippingResourcesRow />
-        <SolutionsRow />
-        <SelfServiceRow />
-        <TrustStrip />
+        <FeaturedRow />
         <SeoBlock />
       </main>
       <RichFooter />

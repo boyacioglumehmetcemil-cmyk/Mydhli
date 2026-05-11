@@ -27,14 +27,14 @@ const InfoCardsSection = ({ id, testId, eyebrow, title, cards, background = "pan
   };
 
   return (
-    <section id={id} data-testid={testId} className={`${bgClass} py-20 lg:py-28`}>
+    <section id={id} data-testid={testId} className={`${bgClass} py-16 lg:py-[120px]`}>
       <div ref={ref} className="max-w-[1400px] mx-auto px-4 lg:px-8">
         <div
           className={`mb-12 lg:mb-16 max-w-[720px] transition-all duration-700 ${
             visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
-          <SectionEyebrow className="mb-4">{eyebrow}</SectionEyebrow>
+          {eyebrow && <SectionEyebrow className="mb-4">{eyebrow}</SectionEyebrow>}
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-dhl-ink tracking-tighter leading-[1.05]">
             {title}
           </h2>

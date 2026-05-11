@@ -70,7 +70,7 @@ const Gallery = () => {
       ref={sectionRef}
       data-testid="gallery"
       id="gallery"
-      className="bg-white py-20 lg:py-24"
+      className="bg-[#FAFAFA] py-16 lg:py-[120px]"
     >
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
         <div className="mb-10 lg:mb-12 max-w-[720px]">

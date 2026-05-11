@@ -189,7 +189,7 @@ const DHLHeader = () => {
       {/* Main bar */}
       <div className={`bg-dhl-yellow transition-all duration-300 ${scrolled ? "h-16" : "h-20"}`}>
         <div className="max-w-[1400px] mx-auto h-full px-4 lg:px-8 flex items-center justify-between gap-4">
-          <Logo variant={scrolled ? "compact" : "default"} theme="light" onYellowBg />
+          <Logo variant={scrolled ? "compact" : "default"} theme="light" />
 
           <nav data-testid="main-nav" className="hidden lg:flex items-center gap-1 ml-auto">
             {NAV.map((item) => {

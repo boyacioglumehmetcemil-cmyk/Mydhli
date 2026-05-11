@@ -11,7 +11,7 @@ const MyDHLPlatform = () => {
       id="mydhl"
       ref={ref}
       data-testid="mydhl-platform"
-      className="relative bg-white py-24 lg:py-32 overflow-hidden"
+      className="relative bg-white py-16 lg:py-[120px] overflow-hidden"
     >
       {/* Decorative yellow swoosh */}
       <svg
