@@ -1,7 +1,7 @@
 import SectionEyebrow from "./SectionEyebrow";
 
 const SeoBlock = () => (
-  <section data-testid="seo-block" className="bg-white py-16">
+  <section data-testid="seo-block" className="bg-white py-10 lg:py-16">
     <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
       <div
         className="rounded-lg p-8 lg:p-12"

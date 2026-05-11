@@ -35,8 +35,7 @@ const HeroStatic = () => {
   return (
     <section
       data-testid="hero-static"
-      className="relative w-full bg-dhl-ink overflow-hidden"
-      style={{ minHeight: "78vh" }}
+      className="relative w-full bg-dhl-ink overflow-hidden lg:min-h-[560px]"
     >
       <div className="absolute inset-0">
         <img
@@ -54,7 +53,7 @@ const HeroStatic = () => {
         />
       </div>
 
-      <div className="relative z-10 max-w-[1200px] mx-auto px-6 lg:px-8 py-20 lg:py-24 min-h-[78vh] flex items-center">
+      <div className="relative z-10 max-w-[1200px] mx-auto px-6 lg:px-8 py-14 lg:py-20 lg:min-h-[560px] flex items-center">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_580px] gap-10 lg:gap-12 items-center w-full">
           {/* Left: typography stack */}
           <div className="max-w-[640px]">

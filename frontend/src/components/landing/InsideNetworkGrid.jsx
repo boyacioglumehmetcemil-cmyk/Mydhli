@@ -146,7 +146,7 @@ const InsideNetworkGrid = () => {
       ref={sectionRef}
       id="inside-network"
       data-testid="inside-network-slider"
-      className="bg-white py-16 lg:py-[120px]"
+      className="bg-white py-10 lg:py-16"
     >
       <div ref={revealRef} className="max-w-[1200px] mx-auto px-6 lg:px-8">
         <div
