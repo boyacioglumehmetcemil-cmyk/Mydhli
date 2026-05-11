@@ -77,7 +77,7 @@ const HeroStatic = () => {
               data-testid="hero-headline"
               className="font-display text-white"
               style={{
-                fontSize: "clamp(2.5rem, 4.5vw, 3.75rem)",
+                fontSize: "clamp(2rem, 3.2vw, 2.75rem)",
                 fontWeight: 500,
                 letterSpacing: "-0.01em",
                 lineHeight: 1.1,
