@@ -11,15 +11,27 @@ const NAV = [
   { label: "Track", href: "/track", kind: "route" },
 ];
 
+const LANGS = ["English", "Tok Pisin"];
+const COUNTRIES = ["Papua New Guinea", "Australia", "Fiji", "Singapore", "United States"];
+
+const LS_LANG_KEY = "dhl_ui_lang";
+const LS_COUNTRY_KEY = "dhl_ui_country";
+
+const Divider = () => (
+  <span aria-hidden="true" className="inline-block w-px h-4 bg-dhl-ink/30 mx-3" />
+);
+
 const DHLHeader = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [lang, setLang] = useState(() => localStorage.getItem(LS_LANG_KEY) || LANGS[0]);
+  const [country, setCountry] = useState(() => localStorage.getItem(LS_COUNTRY_KEY) || COUNTRIES[0]);
   const searchRef = useRef(null);
-  const langRef = useRef(null);
+  const countryRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -31,12 +43,22 @@ const DHLHeader = () => {
   // Click-outside for popovers
   useEffect(() => {
     const onClick = (e) => {
-      if (langRef.current && !langRef.current.contains(e.target)) setLangOpen(false);
+      if (countryRef.current && !countryRef.current.contains(e.target)) setCountryOpen(false);
       if (searchRef.current && !searchRef.current.contains(e.target)) setSearchOpen(false);
     };
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
+
+  const pickLang = (l) => {
+    setLang(l);
+    localStorage.setItem(LS_LANG_KEY, l);
+  };
+  const pickCountry = (c) => {
+    setCountry(c);
+    localStorage.setItem(LS_COUNTRY_KEY, c);
+    setCountryOpen(false);
+  };
 
   return (
     <header
@@ -52,7 +74,7 @@ const DHLHeader = () => {
           scrolled ? "h-0 opacity-0" : "h-10 opacity-100"
         }`}
       >
-        <div className="max-w-[1400px] mx-auto h-10 px-4 lg:px-8 flex items-center justify-end gap-6 text-[13px] text-dhl-ink">
+        <div className="max-w-[1400px] mx-auto h-10 px-4 lg:px-8 flex items-center justify-end text-[13px] text-dhl-ink">
           <a
             href="#contact"
             data-testid="util-help"
@@ -60,20 +82,22 @@ const DHLHeader = () => {
           >
             <LifeBuoy className="w-3.5 h-3.5" /> Help and Support
           </a>
+          <span className="hidden md:inline-block w-1" />
           <a
             href="#info-cards"
             data-testid="util-location"
-            className="hidden md:inline-flex items-center gap-1.5 hover:underline underline-offset-4 decoration-2 transition-all"
+            className="hidden md:inline-flex items-center gap-1.5 ml-4 hover:underline underline-offset-4 decoration-2 transition-all"
           >
             <MapPin className="w-3.5 h-3.5" /> Find a Location
           </a>
+          <span className="hidden md:inline"><Divider /></span>
           <div ref={searchRef} className="relative">
             <button
               type="button"
               onClick={() => setSearchOpen((v) => !v)}
               data-testid="util-search-toggle"
               aria-label="Search"
-              className="p-1 hover:bg-dhl-ink/10 rounded-sm transition-colors"
+              className="p-1 hover:bg-dhl-ink/10 rounded-sm transition-colors inline-flex"
             >
               <Search className="w-4 h-4" />
             </button>
@@ -89,33 +113,70 @@ const DHLHeader = () => {
               </div>
             )}
           </div>
-          <span className="hidden md:inline w-px h-4 bg-dhl-ink/30" />
-          <div ref={langRef} className="relative">
-            <button
-              type="button"
-              onClick={() => setLangOpen((v) => !v)}
-              data-testid="util-lang-toggle"
-              className="inline-flex items-center gap-2 hover:bg-dhl-ink/10 px-2 py-1 rounded-sm transition-colors"
-            >
-              <PngFlagSvg className="w-5 h-3.5" />
-              <span className="font-medium">English</span>
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
-            {langOpen && (
-              <div
-                data-testid="util-lang-menu"
-                className="absolute right-0 top-9 w-44 bg-white border border-dhl-border shadow-lg py-1 z-50"
-              >
-                {["English", "Tok Pisin", "Bahasa"].map((l) => (
+          <Divider />
+          {/* Two languages side-by-side with thin vertical divider */}
+          <div data-testid="util-lang-row" className="inline-flex items-center">
+            {LANGS.map((l, i) => {
+              const active = l === lang;
+              return (
+                <span key={l} className="inline-flex items-center">
                   <button
-                    key={l}
                     type="button"
-                    onClick={() => setLangOpen(false)}
-                    className="w-full text-left px-3 py-1.5 text-sm hover:bg-dhl-yellow/30 text-dhl-ink"
+                    onClick={() => pickLang(l)}
+                    data-testid={`util-lang-${l.toLowerCase().replace(/\s+/g, "-")}`}
+                    aria-pressed={active}
+                    className={`px-1.5 py-0.5 rounded-sm transition-all ${
+                      active
+                        ? "text-dhl-ink font-bold"
+                        : "text-dhl-ink/55 font-normal hover:text-dhl-ink/85"
+                    }`}
                   >
                     {l}
                   </button>
-                ))}
+                  {i < LANGS.length - 1 && (
+                    <span aria-hidden="true" className="inline-block w-px h-3.5 bg-dhl-ink/25 mx-1.5" />
+                  )}
+                </span>
+              );
+            })}
+          </div>
+          <span className="inline-block w-2" />
+          {/* Country selector with chevron + PNG flag */}
+          <div ref={countryRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setCountryOpen((v) => !v)}
+              data-testid="util-country-toggle"
+              aria-label={`Country: ${country}`}
+              className="inline-flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-dhl-ink/10 rounded-sm transition-colors"
+            >
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform ${countryOpen ? "rotate-180" : ""}`}
+              />
+              <PngFlagSvg className="w-6 h-4" title={country} />
+            </button>
+            {countryOpen && (
+              <div
+                data-testid="util-country-menu"
+                className="absolute right-0 top-9 w-52 bg-white border border-dhl-border shadow-lg py-1 z-50"
+              >
+                {COUNTRIES.map((c) => {
+                  const active = c === country;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => pickCountry(c)}
+                      data-testid={`util-country-${c.toLowerCase().replace(/\s+/g, "-")}`}
+                      className={`w-full text-left px-3 py-1.5 text-sm hover:bg-dhl-yellow/30 text-dhl-ink inline-flex items-center justify-between ${
+                        active ? "bg-dhl-yellow/20 font-bold" : ""
+                      }`}
+                    >
+                      <span>{c}</span>
+                      {active && <span className="text-dhl-red">✓</span>}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

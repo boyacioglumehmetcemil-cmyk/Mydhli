@@ -1,10 +1,13 @@
 import { AlertTriangle, Globe, ShieldCheck, Thermometer, FileSearch, PackageCheck, RefreshCw } from "lucide-react";
 import InfoCardsSection from "./InfoCardsSection";
 
+// All cards revert to AI-generated stock — the user's FOTOLAR photos now live in <Gallery />
+// (single carousel) rather than being scattered across multiple card rows.
+
 // Row 1 — Shipping Resources
 export const SHIPPING_RESOURCES_CARDS = [
   {
-    image: "/images/fotolar/fotolar-03.jpg",
+    image: "/images/hero-courier.jpg",
     eyebrow: "Business Accounts",
     headline: "Save up to 30% on Frequent Shipping",
     body: "Open a business account and unlock preferred rates, flexible billing, and dedicated support.",
@@ -13,7 +16,7 @@ export const SHIPPING_RESOURCES_CARDS = [
     testId: "info-card-business",
   },
   {
-    image: "/images/fotolar/fotolar-08.jpg",
+    image: "/images/dangerous-goods-box.jpg",
     eyebrow: "Compliance",
     headline: "Shipping Batteries Safely",
     body: "Lithium-ion batteries are classified as Dangerous Goods. Learn the regulations before you ship.",
@@ -31,7 +34,7 @@ export const SHIPPING_RESOURCES_CARDS = [
     testId: "info-card-batteries",
   },
   {
-    image: "/images/fotolar/fotolar-07.png",
+    image: "/images/customs-world-illustration.jpg",
     eyebrow: "Customs",
     headline: "Customs Regulatory Updates",
     body: "Stay current on import and export regulations changes that affect international shipments.",
@@ -53,7 +56,7 @@ export const SHIPPING_RESOURCES_CARDS = [
 // Row 2 — Solutions
 export const SOLUTIONS_CARDS = [
   {
-    image: "/images/fotolar/fotolar-05.jpg",
+    image: "/images/card-protection.jpg",
     headline: "Send With Added Reassurance",
     body: "Optional shipment value protection helps cover parcels and documents from pickup to delivery, so unexpected setbacks stay manageable.",
     cta: "See Protection Options",
@@ -87,7 +90,7 @@ export const SOLUTIONS_CARDS = [
     testId: "info-card-coldchain",
   },
   {
-    image: "/images/fotolar/fotolar-01.jpg",
+    image: "/images/card-customs.jpg",
     headline: "Smoother Customs, Faster Clearance",
     body: "Multi-shipment consolidation, expert documentation, and direct broker links reduce holds at the border and speed delivery.",
     cta: "Discover Customs Solutions",
@@ -108,7 +111,7 @@ export const SOLUTIONS_CARDS = [
 // Row 3 — Self-Service Tools
 export const SELFSERVICE_CARDS = [
   {
-    image: "/images/fotolar/fotolar-04.jpg",
+    image: "/images/mydhl-devices.jpg",
     headline: "Bring Imports Under Your Control",
     body: "Flexible inbound tools let importers schedule, consolidate, and track inbound shipments from any origin — all from one workspace.",
     cta: "Manage Your Imports",
@@ -125,7 +128,7 @@ export const SELFSERVICE_CARDS = [
     testId: "info-card-imports",
   },
   {
-    image: "/images/fotolar/fotolar-02.jpg",
+    image: "/images/card-courier-wave.jpg",
     headline: "Reschedule On Your Terms",
     body: "Missed a delivery? Choose a new day, redirect to a pickup point, or leave instructions for your courier — without picking up the phone.",
     cta: "Adjust a Delivery",
@@ -142,7 +145,7 @@ export const SELFSERVICE_CARDS = [
     testId: "info-card-reschedule",
   },
   {
-    image: "/images/fotolar/fotolar-09.jpg",
+    image: "/images/customs-world-illustration.jpg",
     headline: "Follow Every Step of the Journey",
     body: "From the moment a parcel is picked up to the second it lands at the receiver's door — see each handover in real time.",
     cta: "How Tracking Works",

@@ -4,6 +4,7 @@ import HeroStatic from "@/components/landing/HeroStatic";
 import QuickActionStrip from "@/components/landing/QuickActionStrip";
 import MyDHLPlatform from "@/components/landing/MyDHLPlatform";
 import FeaturedCarousel from "@/components/landing/FeaturedCarousel";
+import Gallery from "@/components/landing/Gallery";
 import {
   ShippingResourcesRow,
   SolutionsRow,
@@ -37,8 +38,11 @@ const Landing = () => {
         <QuickActionStrip />
         <MyDHLPlatform />
 
-        {/* Dynamic content lives mid-page where it adds interest as you scroll */}
+        {/* Mid-page dynamic content */}
         <FeaturedCarousel />
+
+        {/* Single Gallery slider holding ALL user-supplied FOTOLAR photos */}
+        <Gallery />
 
         <ShippingResourcesRow />
         <SolutionsRow />
