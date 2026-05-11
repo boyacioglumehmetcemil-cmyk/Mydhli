@@ -8,6 +8,7 @@ const SeoBlock = () => (
         style={{
           backgroundColor: "#FAFAF7",
           boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+          border: "1px solid #6B7280",
         }}
       >
         <SectionEyebrow className="mb-3">Worldwide Logistics</SectionEyebrow>
@@ -17,13 +18,10 @@ const SeoBlock = () => (
         <p className="italic text-[#666] mb-5 text-[15px]">
           Fast. Door-to-door. Backed by a global network.
         </p>
-        <p className="text-[1rem] text-[#444] leading-[1.7] max-w-[920px]">
-          Sending parcels and documents around the world should feel effortless. With express
-          services tuned for time-critical shipments, on-demand pickup, integrated customs
-          support, and real-time visibility from the moment a parcel is picked up — businesses
-          get the speed of next-flight transit and the confidence of a single accountable
-          partner. From a single envelope to recurring multi-piece freight, every shipment is
-          moved with the same care.
+        <p className="text-[1rem] text-[#444] leading-[1.55] max-w-[920px]">
+          Sending parcels and documents around the world should feel effortless. From a single
+          envelope to recurring freight, every shipment moves with the speed of next-flight
+          transit and the confidence of a single accountable partner.
         </p>
       </div>
     </div>
