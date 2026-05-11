@@ -27,15 +27,15 @@ const ServiceDisruptionBanner = () => {
         <div className="flex-shrink-0 w-6 h-6 bg-dhl-red/10 rounded-sm flex items-center justify-center">
           <AlertTriangle className="w-3.5 h-3.5 text-dhl-red" strokeWidth={2.5} />
         </div>
-        <div className="flex-1 text-sm text-dhl-text">
+        <div className="flex-1 text-sm text-dhl-red">
           <span className="font-semibold">Service updates:</span>{" "}
-          <span className="text-dhl-muted">
+          <span>
             Some lanes may experience longer transit times during peak season.
           </span>
           <a
             href="#info-cards"
             data-testid="disruption-learn-more"
-            className="ml-2 text-[#1976D2] font-semibold hover:underline whitespace-nowrap"
+            className="ml-2 text-dhl-red font-semibold hover:underline decoration-2 underline-offset-4 whitespace-nowrap"
           >
             Learn More →
           </a>
