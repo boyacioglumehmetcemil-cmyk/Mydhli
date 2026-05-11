@@ -4,7 +4,9 @@
 - Auth-required list/detail endpoints (full PII)
 - Seed function — populates 25 mock shipments for the demo user on first boot
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime, timezone, timedelta
@@ -204,6 +206,15 @@ class ShipmentListResponse(BaseModel):
     pageSize: int
 
 
+class ShipmentCreate(BaseModel):
+    sender: AddressModel
+    receiver: AddressModel
+    package: PackageModel
+    service: str
+    paymentMethod: str = "account"
+    costPGK: float = Field(default=0, ge=0)
+
+
 # ============ HELPERS ============
 def _normalize_shipment(doc: dict) -> dict:
     """Strip Mongo _id, convert ISO strings back to datetimes."""
@@ -321,6 +332,87 @@ def build_router(db, get_current_user_dep):
             raise HTTPException(status_code=404, detail="Shipment not found")
         normalized = _normalize_shipment(doc)
         return Shipment(**normalized)
+
+    @router.post("/shipments", response_model=Shipment, status_code=201)
+    async def create_shipment(
+        payload: ShipmentCreate,
+        current_user: dict = Depends(get_current_user_dep),
+    ):
+        # Validate service
+        if payload.service not in ("EXPRESS_WORLDWIDE", "EXPRESS_12_00", "ECONOMY_SELECT"):
+            raise HTTPException(status_code=400, detail="Invalid service code")
+
+        # Resolve origin/destination location codes
+        from business_module import CITIES
+        def _resolve_loc(country: str, city: str):
+            for c in CITIES.get(country.upper(), []):
+                if c["city"].lower() == city.lower():
+                    return {"city": c["city"], "country": country.upper(), "code": c["code"]}
+            return {"city": city, "country": country.upper(), "code": city[:3].upper()}
+
+        origin = _resolve_loc(payload.sender.country, payload.sender.city)
+        destination = _resolve_loc(payload.receiver.country, payload.receiver.city)
+
+        # Generate unique AWB
+        for _ in range(8):
+            awb = "DHL" + "".join(str(random.randint(0, 9)) for _ in range(10))
+            existing = await db.shipments.find_one({"awb": awb})
+            if not existing:
+                break
+
+        # ETA per service (rough)
+        eta_days = {"EXPRESS_12_00": 1, "EXPRESS_WORLDWIDE": 3, "ECONOMY_SELECT": 6}[payload.service]
+        now = datetime.now(timezone.utc)
+        eta = now + timedelta(days=eta_days)
+
+        events = [{
+            "timestamp": now.isoformat(),
+            "status": "OC",
+            "location": f"{origin['city']}, {origin['country']}",
+            "description": "Shipment information received",
+            "code": "OC",
+        }]
+
+        doc = {
+            "awb": awb,
+            "userId": current_user["id"],
+            "sender": payload.sender.model_dump(),
+            "receiver": payload.receiver.model_dump(),
+            "package": payload.package.model_dump(),
+            "service": payload.service,
+            "status": "PENDING",
+            "origin": origin,
+            "destination": destination,
+            "events": events,
+            "estimatedDelivery": eta.isoformat(),
+            "actualDelivery": None,
+            "costPGK": payload.costPGK or 150.0,
+            "createdAt": now.isoformat(),
+            "updatedAt": now.isoformat(),
+        }
+        await db.shipments.insert_one(doc)
+        return Shipment(**_normalize_shipment(doc))
+
+    @router.get("/shipments/{awb}/label.pdf")
+    async def shipment_label(
+        awb: str,
+        request: Request,
+        current_user: dict = Depends(get_current_user_dep),
+    ):
+        doc = await db.shipments.find_one(
+            {"awb": awb.upper(), "userId": current_user["id"]},
+            {"_id": 0},
+        )
+        if not doc:
+            raise HTTPException(status_code=404, detail="Shipment not found")
+        from labels_module import render_shipping_label
+        track_url = f"{request.base_url}track/{awb.upper()}".replace("/api/", "/")
+        pdf_bytes = render_shipping_label(doc, track_url)
+        return StreamingResponse(
+            BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'inline; filename="label-{awb.upper()}.pdf"'},
+        )
 
     return router
 

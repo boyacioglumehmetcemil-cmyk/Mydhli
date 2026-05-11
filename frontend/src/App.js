@@ -11,9 +11,18 @@ import ForgotPassword from "@/pages/ForgotPassword";
 import Track from "@/pages/Track";
 import Shipments from "@/pages/Shipments";
 import ShipmentDetail from "@/pages/ShipmentDetail";
+import ShipNow from "@/pages/ShipNow";
+import Quote from "@/pages/Quote";
+import Addresses from "@/pages/Addresses";
+import Pickup from "@/pages/Pickup";
+import Pickups from "@/pages/Pickups";
+import Invoices from "@/pages/Invoices";
+import Reports from "@/pages/Reports";
+import Customs from "@/pages/Customs";
+import Settings from "@/pages/Settings";
 import DashboardLayout from "@/components/DashboardLayout";
 import Dashboard from "@/pages/Dashboard";
-import DashboardComingSoon from "@/pages/DashboardComingSoon";
+import NotFound from "@/pages/NotFound";
 
 function App() {
   return (
@@ -36,20 +45,21 @@ function App() {
             }
           >
             <Route index element={<Dashboard />} />
-            <Route path="track" element={<DashboardComingSoon title="Track Shipment" />} />
-            <Route path="ship" element={<DashboardComingSoon title="Ship Now" />} />
-            <Route path="quote" element={<DashboardComingSoon title="Get a Quote" />} />
-            <Route path="pickup" element={<DashboardComingSoon title="Schedule Pickup" />} />
+            <Route path="track" element={<Navigate to="/track" replace />} />
+            <Route path="ship" element={<ShipNow />} />
+            <Route path="quote" element={<Quote />} />
+            <Route path="pickup" element={<Pickup />} />
+            <Route path="pickups" element={<Pickups />} />
             <Route path="shipments" element={<Shipments />} />
             <Route path="shipments/:awb" element={<ShipmentDetail />} />
-            <Route path="addresses" element={<DashboardComingSoon title="Address Book" />} />
-            <Route path="invoices" element={<DashboardComingSoon title="Invoices" />} />
-            <Route path="reports" element={<DashboardComingSoon title="Reports" />} />
-            <Route path="customs" element={<DashboardComingSoon title="Customs Documents" />} />
-            <Route path="settings" element={<DashboardComingSoon title="Settings" />} />
+            <Route path="addresses" element={<Addresses />} />
+            <Route path="invoices" element={<Invoices />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="customs" element={<Customs />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <DemoBadge />
         <Toaster position="top-right" richColors closeButton />

@@ -119,6 +119,10 @@ const Dashboard = () => {
       description: "Phase 3 wires up the full module.",
     });
 
+  const quickShip = () => navigate("/dashboard/ship");
+  const quickQuote = () => navigate("/dashboard/quote");
+  const quickPickup = () => navigate("/dashboard/pickup");
+
   return (
     <div className="max-w-7xl mx-auto" data-testid="dashboard-page">
       {/* Welcome */}
@@ -185,7 +189,7 @@ const Dashboard = () => {
             icon={Send}
             label="Ship Now"
             sub="Create a new shipment"
-            onClick={() => comingSoon("Ship Now")}
+            onClick={quickShip}
             testId="quick-ship-now"
           />
           <QuickAction
@@ -199,14 +203,14 @@ const Dashboard = () => {
             icon={Calculator}
             label="Get Quote"
             sub="Estimate rates instantly"
-            onClick={() => comingSoon("Get Quote")}
+            onClick={quickQuote}
             testId="quick-quote"
           />
           <QuickAction
             icon={CalendarClock}
             label="Schedule Pickup"
             sub="Book a courier visit"
-            onClick={() => comingSoon("Schedule Pickup")}
+            onClick={quickPickup}
             testId="quick-pickup"
           />
         </div>

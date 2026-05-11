@@ -13,6 +13,8 @@ from datetime import datetime, timezone, timedelta
 import jwt
 from passlib.context import CryptContext
 from shipments_module import build_router as build_shipments_router, seed_shipments
+from business_module import build_router as build_business_router, seed_addresses_and_pickups
+from invoices_module import build_router as build_invoices_router, seed_invoices
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -87,6 +89,26 @@ class UserLogin(BaseModel):
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
+
+
+class ProfileUpdate(BaseModel):
+    firstName: Optional[str] = Field(default=None, min_length=1, max_length=50)
+    lastName: Optional[str] = Field(default=None, min_length=1, max_length=50)
+    companyName: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    phone: Optional[str] = Field(default=None, min_length=5, max_length=25)
+
+
+class PasswordChange(BaseModel):
+    currentPassword: str
+    newPassword: str = Field(..., min_length=8, max_length=72)
+
+
+class NotificationPrefs(BaseModel):
+    shipmentCreated: dict = Field(default_factory=lambda: {"email": True, "sms": False})
+    outForDelivery: dict = Field(default_factory=lambda: {"email": True, "sms": True})
+    delivered: dict = Field(default_factory=lambda: {"email": True, "sms": False})
+    invoiceIssued: dict = Field(default_factory=lambda: {"email": True, "sms": False})
+    pickupConfirmation: dict = Field(default_factory=lambda: {"email": True, "sms": True})
 
 
 class UserPublic(BaseModel):
@@ -279,12 +301,71 @@ async def logout(current_user: dict = Depends(get_current_user)):
     return {"success": True, "message": "Logged out"}
 
 
+@api_router.put("/auth/me", response_model=UserPublic)
+async def update_profile(payload: ProfileUpdate, current_user: dict = Depends(get_current_user)):
+    update = {k: v.strip() for k, v in payload.model_dump(exclude_none=True).items() if isinstance(v, str)}
+    if not update:
+        return serialize_user(current_user)
+    update["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    await db.users.update_one({"id": current_user["id"]}, {"$set": update})
+    new_doc = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "password": 0})
+    return serialize_user(new_doc)
+
+
+@api_router.put("/auth/password")
+async def change_password(payload: PasswordChange, current_user: dict = Depends(get_current_user)):
+    user_full = await db.users.find_one({"id": current_user["id"]})
+    if not user_full or not verify_password(payload.currentPassword, user_full["password"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    if len(payload.newPassword) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
+    has_letter = any(c.isalpha() for c in payload.newPassword)
+    has_digit = any(c.isdigit() for c in payload.newPassword)
+    if not (has_letter and has_digit):
+        raise HTTPException(status_code=400, detail="Password must contain both letters and digits")
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"password": hash_password(payload.newPassword),
+                  "updatedAt": datetime.now(timezone.utc).isoformat()}},
+    )
+    return {"success": True, "message": "Password updated"}
+
+
+@api_router.get("/notifications/preferences")
+async def get_notif_prefs(current_user: dict = Depends(get_current_user)):
+    doc = await db.notification_prefs.find_one({"userId": current_user["id"]}, {"_id": 0})
+    if not doc:
+        defaults = NotificationPrefs().model_dump()
+        return defaults
+    doc.pop("userId", None)
+    return doc
+
+
+@api_router.put("/notifications/preferences")
+async def update_notif_prefs(payload: NotificationPrefs, current_user: dict = Depends(get_current_user)):
+    doc = payload.model_dump()
+    doc["userId"] = current_user["id"]
+    doc["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    await db.notification_prefs.update_one(
+        {"userId": current_user["id"]}, {"$set": doc}, upsert=True
+    )
+    return payload.model_dump()
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
 # Mount shipments router (uses /api prefix internally)
 shipments_router = build_shipments_router(db, get_current_user)
 app.include_router(shipments_router)
+
+# Mount business router (addresses, pickups, payments, quotes, locations, services)
+business_router = build_business_router(db, get_current_user)
+app.include_router(business_router)
+
+# Mount invoices/reports/customs router
+invoices_router = build_invoices_router(db, get_current_user)
+app.include_router(invoices_router)
 
 # CORS
 app.add_middleware(

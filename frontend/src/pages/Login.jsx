@@ -171,41 +171,31 @@ const Login = () => {
       </div>
 
       {/* Right — branded panel */}
-      <div className="hidden lg:flex lg:w-[42%] bg-dhl-yellow relative overflow-hidden">
-        <svg
-          className="absolute inset-0 w-full h-full opacity-10"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 400 400"
-        >
-          <defs>
-            <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1.5" fill="#1A1A1A" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#dots)" />
-        </svg>
+      <div className="hidden lg:flex lg:w-[42%] relative overflow-hidden">
+        <img src="/images/hero-world-routes.jpg" alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-dhl-ink/80" />
 
-        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          <div className="font-mono text-xs font-bold uppercase tracking-[0.3em] text-dhl-ink/70">
-            MyDHL · v0.1 · PNG
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full text-white">
+          <div className="font-mono text-xs font-bold uppercase tracking-[0.3em] text-dhl-yellow/80">
+            MyDHL · Global Logistics
           </div>
 
           <div>
-            <div className="font-display text-7xl font-black text-dhl-ink leading-none tracking-tighter">
+            <div className="font-display text-6xl xl:text-7xl font-black leading-none tracking-tighter">
               Move.
               <br />
               Track.
               <br />
-              <span className="text-dhl-red">Deliver.</span>
+              <span className="text-dhl-yellow">Deliver.</span>
             </div>
-            <div className="mt-8 max-w-sm text-sm text-dhl-ink/80 leading-relaxed">
-              A new logistics control room built for the businesses keeping PNG moving — from Lae
-              to Port Moresby, Mt. Hagen to Singapore.
+            <div className="mt-8 max-w-sm text-sm text-white/75 leading-relaxed">
+              Express logistics across 220+ countries. Real-time tracking, dedicated couriers,
+              and dependable next-day delivery options.
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs font-mono text-dhl-ink/60">
-            <span className="w-8 h-px bg-dhl-ink/40" />
+          <div className="flex items-center gap-3 text-xs font-mono text-white/40">
+            <span className="w-8 h-px bg-white/30" />
             DEMO BUILD — TYPOGRAPHIC LOGO PLACEHOLDER
           </div>
         </div>
