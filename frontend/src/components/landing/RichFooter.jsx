@@ -1,8 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import Logo from "@/components/Logo";
 import PngFlagSvg from "./PngFlagSvg";
 import { Twitter, Linkedin, Youtube, Facebook, ChevronDown, X } from "lucide-react";
 import SectionEyebrow from "./SectionEyebrow";
+
+// Footer brand-column logo asset is a 166×70 raster PNG. Capped at 56px rendered
+// height so the browser only ever downscales (never upscales) — keeps edges crisp.
+// eslint-disable-next-line no-console
+console.warn("Footer logo asset is raster; supply a high-res SVG for production polish.");
 
 const COLS = [
   {
@@ -90,7 +94,14 @@ const RichFooter = () => {
 
           {/* Brand block */}
           <div data-testid="footer-brand-block">
-            <Logo variant="compact" to={null} />
+            <img
+              src="/images/logo-footer.png"
+              alt="DHL Group"
+              data-testid="footer-brand-logo"
+              className="block w-auto select-none"
+              style={{ maxHeight: 56 }}
+              draggable={false}
+            />
             <p className="text-sm text-[#555] leading-[1.6] mt-5 mb-5 max-w-xs">
               Global express logistics. Built for businesses that ship every day.
             </p>
