@@ -16,15 +16,25 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import StatusBadge from "@/components/StatusBadge";
+import MiniSparkline from "@/components/MiniSparkline";
+import useTitle from "@/hooks/useTitle";
 import api from "@/lib/api";
 import { formatDate, formatPGK, SERVICE_LABELS } from "@/lib/shipmentUtils";
 
 const ACTIVE_STATUSES = ["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY"];
 
-const KpiCard = ({ icon: Icon, label, value, suffix, accent, sub, loading, testId }) => (
+// Deterministic 7-day mock sparkline data for visual storytelling
+const sparkData = {
+  active: [3, 4, 6, 5, 8, 12, 15],
+  pickups: [0, 1, 0, 2, 1, 0, 0],
+  spend: [0, 0, 0, 1200, 880, 3400, 9100],
+  balance: [4200, 3800, 3500, 2900, 2100, 1500, 0],
+};
+
+const KpiCard = ({ icon: Icon, label, value, suffix, accent, sub, loading, testId, spark, sparkColor }) => (
   <div
     data-testid={testId || `kpi-${label.toLowerCase().replace(/\s+/g, "-")}`}
-    className="group bg-white border border-dhl-border p-6 relative transition-all hover:border-dhl-yellow"
+    className="group bg-white border border-dhl-border p-6 relative transition-all hover:border-dhl-yellow hover:-translate-y-0.5 hover:shadow-md"
   >
     <div className="absolute top-0 left-0 right-0 h-0.5 bg-dhl-yellow scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
     <div className="flex items-start justify-between mb-5">
@@ -35,13 +45,18 @@ const KpiCard = ({ icon: Icon, label, value, suffix, accent, sub, loading, testI
         <Icon className="w-4 h-4" strokeWidth={2} />
       </div>
     </div>
-    <div className="font-display text-5xl font-black text-dhl-text leading-none">
+    <div className="font-display text-5xl font-black text-dhl-text leading-none tabular-nums tracking-tight">
       {loading ? <Loader2 className="w-7 h-7 animate-spin text-dhl-muted" /> : value}
       {!loading && suffix && (
         <span className="text-base font-bold text-dhl-muted ml-1.5">{suffix}</span>
       )}
     </div>
-    <div className="mt-3 text-[11px] text-dhl-muted">{sub || "—"}</div>
+    {spark && !loading && (
+      <div className="mt-3 -mx-1">
+        <MiniSparkline data={spark} color={sparkColor || "#FFCC00"} height={26} />
+      </div>
+    )}
+    <div className="mt-2 text-[11px] text-dhl-muted">{sub || "—"}</div>
   </div>
 );
 
@@ -66,6 +81,7 @@ const QuickAction = ({ icon: Icon, label, sub, onClick, testId }) => (
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  useTitle("Dashboard");
 
   const [stats, setStats] = useState({ active: 0, monthSpend: 0, total: 0, loading: true });
   const [recent, setRecent] = useState([]);
@@ -148,6 +164,8 @@ const Dashboard = () => {
           accent="bg-dhl-yellow text-dhl-ink"
           loading={stats.loading}
           sub={stats.active > 0 ? "In motion right now" : "No active shipments"}
+          spark={sparkData.active}
+          sparkColor="#FFCC00"
         />
         <KpiCard
           icon={Truck}
@@ -155,6 +173,8 @@ const Dashboard = () => {
           value="0"
           accent="bg-dhl-ink text-dhl-yellow"
           sub="No pickups scheduled"
+          spark={sparkData.pickups}
+          sparkColor="#1A1A1A"
         />
         <KpiCard
           icon={CircleDollarSign}
@@ -163,6 +183,8 @@ const Dashboard = () => {
           suffix="PGK"
           accent="bg-dhl-red text-white"
           sub={stats.monthSpend > 0 ? "Current billing period" : "No charges yet"}
+          spark={sparkData.spend}
+          sparkColor="#D40511"
         />
         <KpiCard
           icon={Wallet}
@@ -171,6 +193,8 @@ const Dashboard = () => {
           suffix="PGK"
           accent="bg-dhl-panel text-dhl-text border border-dhl-border"
           sub="Prepaid balance"
+          spark={sparkData.balance}
+          sparkColor="#666666"
         />
       </div>
 

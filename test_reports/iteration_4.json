@@ -1,0 +1,37 @@
+{
+  "summary": "Frontend polish-pass validation for DHL Express PNG demo (iteration 4). Comprehensive Playwright UI testing on landing IA redesign, hero carousel, dismissible disruption banner, quick-action strip, MyDHL section, info-card modals, trust strip, refined footer with country dropdown, dashboard KPI sparklines, per-route page titles, refined 404, and regression on all existing routes. ALL 13 spec items PASS. Backend skipped as instructed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Dashboard KPI cards", "issues": ["Recharts ResponsiveContainer logs 8x warning: 'width(-1) and height(-1) of chart should be greater than 0' on each sparkline mount. Charts still render visually correctly but warning indicates the sparkline container's initial measurement returns -1 — likely a 0px parent during first paint or missing minWidth/minHeight. Cosmetic console noise; not a user-facing bug. Consider wrapping MiniSparkline in a fixed-size div (e.g., width:80, height:24) instead of width=100% on ResponsiveContainer."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Optional cleanup: silence Recharts -1 width/height warnings on MiniSparkline (use fixed dimensions instead of ResponsiveContainer 100%)."
+  ],
+  "critical_code_review_comments": [
+    "Landing IA refactor is clean — Landing.jsx is a thin composer (39 lines) delegating to DHLHeader / ServiceDisruptionBanner / HeroCarousel / QuickActionStrip / MyDHLPlatform / InfoCardsRow / TrustStrip / RichFooter. Good separation.",
+    "HeroCarousel autoplay uses single setTimeout that resets on index change — correct pattern. Pause-on-hover works (verified via mouseenter). Progress bar key={index} forces CSS animation restart per slide — good UX.",
+    "DHLHeader sticky shrink: utility-bar collapses from 40px → 0 and main bar from 80px → 64px past scrollY 80px — verified visually. Spacer div h-[120px] in Landing.jsx is sized for the unshrunk header.",
+    "InfoCardsRow uses one action contract {type:'route'|'modal'} per card — clean. Business CTA navigates to /register (route), Batteries/Customs CTAs open shared info-modal — both modal triggers verified working with close.",
+    "ServiceDisruptionBanner persists dismissal via localStorage key dhl_disruption_banner_dismissed_v1 — verified survives reload.",
+    "Regional-leak fix VERIFIED — no POM/SYD/Port Moresby/Sydney text appears anywhere on / or /track (empty state). /track/DHL1234567890 still shows those for the actual shipment — correct privacy-scoped behavior.",
+    "/favicon.svg returns 200. <title> updates per route correctly: '/' → 'Express Shipping & Logistics | DHL Express', '/dashboard' → 'Dashboard | DHL Express', any unknown route → 'Lost in Transit | DHL Express'.",
+    "NotFound page renders with notfound-page testid, correct title and CTA buttons.",
+    "Mobile drawer (viewport 390px) shows Home / Ship / Track + Login + Register buttons — drawer test verified."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "skipped per request", "frontend": "100% (13/13 spec items pass)"},
+  "test_credentials": "demo@dhlpng.com / Demo@2026 — verified login redirects /dashboard with welcome state. Token stored at localStorage 'dhl_auth_token'.",
+  "seed_data_creation": "None — read-only UI testing.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All landing polish features confirmed working. Verified items: (1) Landing structure — all 40+ testids present (dhl-header, utility-bar, main-nav, service-disruption-banner, hero-carousel, hero-slide-0..3, hero-slide-cta-0..3, hero-prev/next, hero-dot-0..3, hero-dots, quick-action-strip, qa-quote/shipments/pickups/create/track-form/track-input/track-submit, mydhl-platform, info-cards-row, info-card-business/batteries/customs and -cta variants, trust-strip, rich-footer, footer-country-toggle/menu, header-login-btn/register-btn/mobile-toggle, util-search-toggle/lang-toggle/lang-menu, disruption-dismiss/learn-more). (2) Carousel — next click advances, dot-3 click jumps to slide 3, autoplay advances slide after 6s when not hovered. (3) Disruption banner — dismiss hides + localStorage 'dhl_disruption_banner_dismissed_v1' set to '1' + persists across reload. (4) Util bar — search opens util-search-input, lang menu shows English/Tok Pisin/Bahasa. (5) Footer — country toggle opens 5-option menu, selecting changes label from 'Papua New Guinea (PG)' → 'Australia (AU)'. (6) Header — header-login-btn navigates to /login. (7) Header shrink — utility bar 40→0, main bar 80→64 past 80px scroll. (8) Mobile drawer opens at 390px viewport. (9) CTA0 scrolls to #mydhl, CTA1 navigates to /login?redirect=/dashboard/quote (auth-route while logged out), CTA3 navigates to /track. (10) Info modals — batteries and customs CTAs open shared info-modal, info-modal-close dismisses. Business CTA navigates to /register (route, not modal — by design). (11) Login flow with demo creds reaches /dashboard. (12) Dashboard title is 'Dashboard | DHL Express', 4 sparklines rendered (one per KPI card). (13) /favicon.svg HTTP 200. (14) NotFound: visiting /zzzz-not-real-route renders notfound-page testid with title 'Lost in Transit | DHL Express'. (15) All 15 existing routes load 200 with no error overlay and no NotFound fallback: /track, /track/DHL1234567890, /login, /register, /forgot-password, /dashboard/shipments, /dashboard/ship, /dashboard/quote, /dashboard/addresses, /dashboard/pickup, /dashboard/pickups, /dashboard/invoices, /dashboard/reports, /dashboard/customs, /dashboard/settings. (16) Regional leak fix — body innerText scan on / and /track (empty) returns ZERO matches for POM/SYD/Port Moresby/Sydney. Only console warnings observed: Recharts width(-1) height(-1) on sparklines (cosmetic). No fatal errors.",
+  "rca_of_the_issue": "N/A — all features pass. Recharts sparkline width(-1) warning RCA: ResponsiveContainer's first measurement before parent flex/grid layout settles returns -1 sizes; Recharts logs a warning but recovers and renders. Quick fix: replace ResponsiveContainer with fixed width/height props on the inner LineChart, or wrap MiniSparkline in a div with explicit pixel dimensions."
+}

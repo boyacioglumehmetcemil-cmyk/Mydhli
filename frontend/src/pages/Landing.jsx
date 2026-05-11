@@ -1,25 +1,35 @@
-import GlobalNavbar from "@/components/landing/GlobalNavbar";
-import HeroSection from "@/components/landing/HeroSection";
-import AnimatedStats from "@/components/landing/AnimatedStats";
-import ServicesGrid from "@/components/landing/ServicesGrid";
-import GlobalNetwork from "@/components/landing/GlobalNetwork";
-import WhyBlocks from "@/components/landing/WhyBlocks";
-import Testimonials from "@/components/landing/Testimonials";
-import FinalCTA from "@/components/landing/FinalCTA";
+import DHLHeader from "@/components/landing/DHLHeader";
+import ServiceDisruptionBanner from "@/components/landing/ServiceDisruptionBanner";
+import HeroCarousel from "@/components/landing/HeroCarousel";
+import QuickActionStrip from "@/components/landing/QuickActionStrip";
+import MyDHLPlatform from "@/components/landing/MyDHLPlatform";
+import InfoCardsRow from "@/components/landing/InfoCardsRow";
+import TrustStrip from "@/components/landing/TrustStrip";
 import RichFooter from "@/components/landing/RichFooter";
+import useTitle from "@/hooks/useTitle";
 
 const Landing = () => {
+  useTitle("Express Shipping & Logistics");
+
   return (
-    <div className="min-h-screen bg-white" data-testid="landing-page" style={{ scrollBehavior: "smooth" }}>
-      <GlobalNavbar variant="transparent" />
+    <div
+      className="min-h-screen bg-white"
+      data-testid="landing-page"
+      style={{ scrollBehavior: "smooth" }}
+    >
+      <DHLHeader />
+
+      {/* Spacer for fixed header (utility 40 + main 80 = 120) */}
+      <div className="h-[120px]" aria-hidden="true" />
+
+      <ServiceDisruptionBanner />
+
       <main>
-        <HeroSection />
-        <AnimatedStats />
-        <ServicesGrid />
-        <GlobalNetwork />
-        <WhyBlocks />
-        <Testimonials />
-        <FinalCTA />
+        <HeroCarousel />
+        <QuickActionStrip />
+        <MyDHLPlatform />
+        <InfoCardsRow />
+        <TrustStrip />
       </main>
       <RichFooter />
     </div>
