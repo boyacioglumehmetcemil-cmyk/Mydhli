@@ -11,7 +11,7 @@ const LandingNavbar = () => {
   const [open, setOpen] = useState(false);
 
   const navLinks = [
-    { label: "Track", href: "#track" },
+    { label: "Track", href: "/track", route: true },
     { label: "Ship", href: "#ship" },
     { label: "Rates", href: "#rates" },
     { label: "Help", href: "#help" },
@@ -26,16 +26,27 @@ const LandingNavbar = () => {
         <div className="flex items-center gap-12">
           <Logo size="md" />
           <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((l) => (
-              <a
-                key={l.label}
-                href={l.href}
-                data-testid={`navlink-${l.label.toLowerCase()}`}
-                className="text-sm font-semibold text-dhl-text hover:text-dhl-red transition-colors uppercase tracking-wider"
-              >
-                {l.label}
-              </a>
-            ))}
+            {navLinks.map((l) =>
+              l.route ? (
+                <Link
+                  key={l.label}
+                  to={l.href}
+                  data-testid={`navlink-${l.label.toLowerCase()}`}
+                  className="text-sm font-semibold text-dhl-text hover:text-dhl-red transition-colors uppercase tracking-wider"
+                >
+                  {l.label}
+                </Link>
+              ) : (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  data-testid={`navlink-${l.label.toLowerCase()}`}
+                  className="text-sm font-semibold text-dhl-text hover:text-dhl-red transition-colors uppercase tracking-wider"
+                >
+                  {l.label}
+                </a>
+              ),
+            )}
           </nav>
         </div>
 
@@ -84,17 +95,29 @@ const LandingNavbar = () => {
       {open && (
         <div className="lg:hidden border-t border-dhl-border bg-white">
           <div className="px-4 py-4 space-y-3">
-            {navLinks.map((l) => (
-              <a
-                key={l.label}
-                href={l.href}
-                data-testid={`mobile-navlink-${l.label.toLowerCase()}`}
-                onClick={() => setOpen(false)}
-                className="block py-2 text-sm font-semibold text-dhl-text uppercase tracking-wider"
-              >
-                {l.label}
-              </a>
-            ))}
+            {navLinks.map((l) =>
+              l.route ? (
+                <Link
+                  key={l.label}
+                  to={l.href}
+                  data-testid={`mobile-navlink-${l.label.toLowerCase()}`}
+                  onClick={() => setOpen(false)}
+                  className="block py-2 text-sm font-semibold text-dhl-text uppercase tracking-wider"
+                >
+                  {l.label}
+                </Link>
+              ) : (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  data-testid={`mobile-navlink-${l.label.toLowerCase()}`}
+                  onClick={() => setOpen(false)}
+                  className="block py-2 text-sm font-semibold text-dhl-text uppercase tracking-wider"
+                >
+                  {l.label}
+                </a>
+              ),
+            )}
             <div className="pt-3 border-t border-dhl-border space-y-2">
               {isAuthenticated ? (
                 <Button

@@ -110,5 +110,32 @@ curl -s -X POST "$API_URL/api/auth/logout" -H "Authorization: Bearer $TOKEN"
 ### Coming Soon pages (`/dashboard/*`)
 - `coming-soon-page`, `coming-soon-icon`, `coming-soon-notify`, `coming-soon-back`
 
+### Tracking (`/track`, `/track/:awb`) — PUBLIC
+- `track-headline`, `track-form`, `track-input`, `track-submit`, `demo-awb-button`
+- `track-loading`, `track-notfound`, `track-retry`, `track-network-error`, `track-network-retry`
+- `tracking-detail`, `status-banner`, `route-visual`, `milestone-timeline`, `timeline-dot-{idx}`
+
+### My Shipments (`/dashboard/shipments`)
+- `shipments-page`, `shipments-count`
+- `shipments-search-input`, `shipments-status-filter`, `shipments-date-from`, `shipments-date-to`, `shipments-reset-filters`
+- `shipments-loading`, `shipments-empty`, `shipments-empty-reset`
+- `shipments-table` (desktop), `shipments-cards` (mobile)
+- `shipment-row-{awb}`, `shipment-card-{awb}`
+- `shipments-pagination`, `shipments-page-prev`, `shipments-page-next`
+
+### Shipment Detail (`/dashboard/shipments/:awb`)
+- `shipment-detail-page`, `shipment-detail-loading`, `shipment-detail-notfound`
+- `shipment-back-link`, `breadcrumb-shipments`
+- `action-download-label`, `action-schedule-pickup`, `action-get-help`
+- Reuses `tracking-detail`, `status-banner`, `route-visual`, `milestone-timeline`
+
+### Status badges (reused everywhere)
+- `status-badge-{status-lowercase}` — e.g. `status-badge-in_transit`, `status-badge-delivered`
+
+### Dashboard Recent Shipments
+- `recent-shipments-loading`, `recent-shipments-empty`
+- `recent-shipments-table` (desktop), `recent-shipments-cards` (mobile)
+- `recent-row-{awb}`, `view-all-shipments`
+
 ### Global
 - `demo-mode-badge` (fixed bottom-right on every page)

@@ -93,9 +93,10 @@ const DashboardLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = async () => {
+    // Navigate to landing FIRST so ProtectedRoute doesn't intercept once user state clears
+    navigate("/", { replace: true });
     await logout();
     toast.success("Signed out successfully");
-    navigate("/");
   };
 
   const initials =

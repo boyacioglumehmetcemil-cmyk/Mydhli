@@ -12,6 +12,7 @@ import uuid
 from datetime import datetime, timezone, timedelta
 import jwt
 from passlib.context import CryptContext
+from shipments_module import build_router as build_shipments_router, seed_shipments
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -281,6 +282,10 @@ async def logout(current_user: dict = Depends(get_current_user)):
 # Include the router in the main app
 app.include_router(api_router)
 
+# Mount shipments router (uses /api prefix internally)
+shipments_router = build_shipments_router(db, get_current_user)
+app.include_router(shipments_router)
+
 # CORS
 app.add_middleware(
     CORSMiddleware,
@@ -338,6 +343,14 @@ async def startup_seed():
         logger.info(f"[SEED] Demo user created: {demo_email} / {demo_pwd}")
     else:
         logger.info(f"[SEED] Demo user already exists: {demo_email}")
+
+    # Seed shipments for demo user
+    demo_user = await db.users.find_one({"email": demo_email})
+    if demo_user:
+        try:
+            await seed_shipments(db, demo_user["id"])
+        except Exception as e:
+            logger.error(f"[SEED] Shipment seeding failed: {e}")
 
 
 @app.on_event("shutdown")

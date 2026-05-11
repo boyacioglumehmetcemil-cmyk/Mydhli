@@ -8,6 +8,9 @@ import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
+import Track from "@/pages/Track";
+import Shipments from "@/pages/Shipments";
+import ShipmentDetail from "@/pages/ShipmentDetail";
 import DashboardLayout from "@/components/DashboardLayout";
 import Dashboard from "@/pages/Dashboard";
 import DashboardComingSoon from "@/pages/DashboardComingSoon";
@@ -21,6 +24,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/track" element={<Track />} />
+          <Route path="/track/:awb" element={<Track />} />
 
           <Route
             path="/dashboard"
@@ -35,7 +40,8 @@ function App() {
             <Route path="ship" element={<DashboardComingSoon title="Ship Now" />} />
             <Route path="quote" element={<DashboardComingSoon title="Get a Quote" />} />
             <Route path="pickup" element={<DashboardComingSoon title="Schedule Pickup" />} />
-            <Route path="shipments" element={<DashboardComingSoon title="My Shipments" />} />
+            <Route path="shipments" element={<Shipments />} />
+            <Route path="shipments/:awb" element={<ShipmentDetail />} />
             <Route path="addresses" element={<DashboardComingSoon title="Address Book" />} />
             <Route path="invoices" element={<DashboardComingSoon title="Invoices" />} />
             <Route path="reports" element={<DashboardComingSoon title="Reports" />} />

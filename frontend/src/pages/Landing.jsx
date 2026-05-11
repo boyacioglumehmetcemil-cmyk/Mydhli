@@ -14,13 +14,12 @@ const Landing = () => {
 
   const handleTrack = (e) => {
     e.preventDefault();
-    if (!awb.trim()) {
+    const trimmed = awb.trim();
+    if (!trimmed) {
       toast.error("Please enter a tracking number");
       return;
     }
-    toast.info("Tracking comes online in the next phase", {
-      description: "Phase 2 will plug in live tracking. Hang tight!",
-    });
+    navigate(`/track/${encodeURIComponent(trimmed.toUpperCase())}`);
   };
 
   const features = [

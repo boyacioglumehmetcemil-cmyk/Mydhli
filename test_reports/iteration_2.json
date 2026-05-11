@@ -1,0 +1,98 @@
+{
+  "summary": "Phase 2 DHL PNG Demo — comprehensive backend + frontend testing. Backend: 19/19 pytest tests passing in /app/backend/tests/test_shipments_api.py (public scrubbed /track, list pagination + status filter + search, detail with full PII, auth gating, 404 handling, regression auth tests). Frontend: all Phase 2 flows verified including logout-bug-fix, /track public page, scrubbed PII view, invalid AWB empty state, demo button auto-track, /dashboard/shipments list with search/status/reset/pagination, detail with PII + action buttons + back link + demo badge, landing navbar TRACK link, landing hero widget, dashboard Active KPI=15, dashboard recent shipments count=5, sidebar My Shipments link. No critical bugs found.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_shipments_api.py",
+    "/app/backend/tests/test_auth_api.py",
+    "/app/test_reports/pytest/pytest_shipments_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "shipments_module.py is well-factored — privacy scrub via _scrub_for_public() correctly removes name/company/address/phone/email/postalCode, package details (dimensions/description/declaredValueUSD), costPGK, and userId. Verified via test_public_track_demo_awb_returns_scrubbed.",
+    "ShipmentPublic.package is typed as dict; consider a PackagePublicModel with explicit pieces+weightKg for stronger typing. Non-blocking.",
+    "Auth gating verified: /api/shipments and /api/shipments/{awb} return 401 without Bearer; /api/track/{awb} works without auth.",
+    "Status filter is case-insensitive on backend (status.upper()) — works with lowercase too.",
+    "_id correctly stripped from responses; ObjectId never leaks.",
+    "Logout fix verified: handleLogout in DashboardLayout.jsx now navigates to '/' BEFORE awaiting logout(), so ProtectedRoute does not interject /login.",
+    "Frontend correctly maps recent shipments on /dashboard with testid 'recent-row-{awb}' (5 visible), and main list page on /dashboard/shipments with testid 'shipment-row-{awb}'."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_shipments_api.py (new — 19 tests)"
+  ],
+  "success_rate": {
+    "backend": "100% (19/19) — plus prior 16/16 auth tests still passing",
+    "frontend": "100% on all tested critical flows for Phase 2"
+  },
+  "test_credentials": "demo@dhlpng.com / Demo@2026 (seeded). Demo AWB: DHL1234567890 (IN_TRANSIT, POM->SYD).",
+  "seed_data_creation": "Backend seed (random.seed(42)) produces deterministic 25 shipments. Confirmed status counts: DELIVERED=5, IN_TRANSIT=8, OUT_FOR_DELIVERY=4, PICKED_UP=3, PENDING=2, ON_HOLD=2, EXCEPTION=1. No new test data created.",
+  "test_coverage_details": {
+    "backend_passed": [
+      "GET /api/track/DHL1234567890 (no auth) -> 200, status=IN_TRANSIT, origin=POM, dest=SYD",
+      "Public track sender/receiver only have city+country (no name/company/address/phone/email/postalCode)",
+      "Public track package only has pieces+weightKg (no dimensions/description/declaredValueUSD)",
+      "Public track has no costPGK, no userId",
+      "GET /api/track/INVALID_AWB -> 404",
+      "Public track works WITHOUT Authorization header",
+      "GET /api/shipments (no auth) -> 401/403",
+      "GET /api/shipments default -> total=25, page=1, pageSize=20, len(items)=20",
+      "GET /api/shipments?status=IN_TRANSIT -> total=8 (all items.status == IN_TRANSIT)",
+      "GET /api/shipments?status=DELIVERED -> total=5",
+      "GET /api/shipments?status=OUT_FOR_DELIVERY -> total=4",
+      "GET /api/shipments?status=PICKED_UP -> total=3",
+      "GET /api/shipments?status=PENDING -> total=2",
+      "GET /api/shipments?status=ON_HOLD -> total=2",
+      "GET /api/shipments?status=EXCEPTION -> total=1",
+      "GET /api/shipments?search=Sydney -> >=1 result including DHL1234567890",
+      "GET /api/shipments?page=2&pageSize=10 -> page=2, pageSize=10, total=25, len(items)=10",
+      "GET /api/shipments/DHL1234567890 (auth) -> full PII (name, company, address, phone, email, postalCode), costPGK>0, package.dimensions+declaredValueUSD+description",
+      "GET /api/shipments/INVALID_AWB (auth) -> 404",
+      "GET /api/shipments/DHL1234567890 (no auth) -> 401/403",
+      "Regression: login + /me still work"
+    ],
+    "frontend_passed": [
+      "/track (no AWB) renders track-headline, track-input, track-submit, demo-awb-button; no tracking-detail shown",
+      "/track type DHL1234567890 + submit -> navigates to /track/DHL1234567890",
+      "/track/DHL1234567890 auto-loads tracking-detail with status-banner 'In Transit', AWB, Est. Delivery 15 May 2026",
+      "route-visual shows POM (Port Moresby, PG) -> SYD (Sydney, AU) with 55% progress + plane icon",
+      "milestone-timeline visible with LATEST marker",
+      "PUBLIC /track view does NOT leak sender/receiver email/phone/full address (verified no @niuginitrading/@pacificcoast/+675 leak)",
+      "/track/DHL0000000000 (invalid) shows track-notfound + 'Try Another AWB' button",
+      "demo-awb-button on /track auto-tracks to /track/DHL1234567890",
+      "DEMO MODE badge visible on public /track",
+      "Login with demo creds -> /dashboard",
+      "Dashboard Active Shipments KPI shows '15' (PICKED_UP+IN_TRANSIT+OUT_FOR_DELIVERY = 3+8+4)",
+      "Dashboard Recent Shipments shows 5 rows via recent-row-{awb} testids; click navigates to /dashboard/shipments/{awb}",
+      "Quick Track action -> /track",
+      "Sidebar 'My Shipments' link -> /dashboard/shipments (NOT coming-soon)",
+      "/dashboard/shipments shipments-count='25 shipments', table shows 20 rows on page 1",
+      "Search 'Sydney' returns 5 rows including DHL1234567890",
+      "Reset filters returns to 20 rows",
+      "Status filter -> In Transit returns exactly 8 rows; count='8 shipments matching your filters'",
+      "Pagination Next -> page 2 with 5 rows",
+      "Row click navigates to /dashboard/shipments/{awb}",
+      "/dashboard/shipments/DHL1234567890 detail shows PII email (@), back-link, action-download-label, action-schedule-pickup, demo-mode-badge",
+      "/dashboard/shipments/INVALID shows 'not found' state",
+      "LOGOUT BUG FIX VERIFIED: account-dropdown -> logout -> URL='https://.../', NOT /login. localStorage 'dhl_auth_token' is null after logout.",
+      "Unauth navigate to /dashboard/shipments -> redirects to /login",
+      "Landing navbar TRACK link href=/track, click navigates to /track",
+      "Landing hero widget: type DHL1234567890 + submit -> /track/DHL1234567890"
+    ],
+    "notes": [
+      "Earlier test iteration showed 0 shipments on shipments-count due to too-fast querying before data fetch; subsequent run with 2.5s wait after wait_for_selector('shipments-table') confirms data loads correctly.",
+      "Cost is rendered as 'K {amount}' (e.g., 'K 173.27') on the detail and list pages; backend test confirms costPGK > 0 in /api/shipments/{awb} response.",
+      "Non-fatal passlib bcrypt '__about__' warning at login remains from Phase 1 — does not affect functionality."
+    ]
+  },
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Phase 2 fully validated. Test files: /app/backend/tests/test_auth_api.py (Phase 1, 16 tests) and /app/backend/tests/test_shipments_api.py (Phase 2, 19 tests). Combined regression run: cd /app && pytest backend/tests/ -v --junitxml=/app/test_reports/pytest/pytest_results.xml. Frontend new testids: track-headline, track-form, track-input, track-submit, track-notfound, demo-awb-button, tracking-detail, status-banner, route-visual, milestone-timeline, shipments-page, shipments-search-input, shipments-status-filter, shipments-reset-filters, shipments-count, shipments-table, shipments-pagination, shipments-page-prev/next, shipment-row-{awb}, shipment-detail-page, shipment-back-link, action-download-label, action-schedule-pickup, demo-mode-badge. Dashboard recent shipments use 'recent-row-{awb}' not 'shipment-row-{awb}'.",
+  "rca of the issue": "No bugs found requiring RCA. Logout bug fix was verified working as intended."
+}
