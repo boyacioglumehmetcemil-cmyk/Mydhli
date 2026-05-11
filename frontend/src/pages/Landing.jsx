@@ -21,7 +21,7 @@ const Landing = () => {
       <DHLHeader />
 
       {/* Spacer for fixed header (utility 40 + main 80 = 120) */}
-      <div className="h-[120px]" aria-hidden="true" />
+      <div className="h-[126px]" aria-hidden="true" />
 
       <ServiceDisruptionBanner />
 

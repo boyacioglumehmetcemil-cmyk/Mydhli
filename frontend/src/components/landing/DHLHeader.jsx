@@ -67,14 +67,14 @@ const DHLHeader = () => {
         scrolled ? "shadow-md" : ""
       }`}
     >
-      {/* Utility bar */}
+      {/* Utility bar — now the TALLER of the two (84px). Carries the logo. */}
       <div
         data-testid="utility-bar"
         className={`bg-dhl-yellow transition-all duration-300 overflow-hidden ${
-          scrolled ? "h-0 opacity-0" : "h-10 opacity-100"
+          scrolled ? "h-0 opacity-0" : "h-[84px] opacity-100"
         }`}
       >
-        <div className="max-w-[1200px] mx-auto h-10 px-6 lg:px-8 flex items-center justify-between text-[13px] text-dhl-ink">
+        <div className="max-w-[1200px] mx-auto h-[84px] px-6 lg:px-8 flex items-center justify-between text-[13px] text-dhl-ink">
           {/* Logo on the LEFT side of the utility bar */}
           <Logo variant="icon-only" theme="light" />
 
@@ -191,8 +191,8 @@ const DHLHeader = () => {
       {/* White hairline */}
       <div className={`h-0.5 bg-white transition-all duration-300 ${scrolled ? "opacity-0" : "opacity-100"}`} />
 
-      {/* Main bar — Nav (LEFT) + Login/Register (RIGHT). Logo appears here only when scrolled (carried forward from collapsed utility bar). */}
-      <div className={`bg-dhl-yellow transition-all duration-300 ${scrolled ? "h-16" : "h-20"}`}>
+      {/* Main bar — now the SLIM one (40px). Nav (LEFT) + Login/Register (RIGHT). Logo appears here only when scrolled (carried forward from collapsed utility bar). */}
+      <div className={`bg-dhl-yellow transition-all duration-300 ${scrolled ? "h-12" : "h-10"}`}>
         <div className="max-w-[1200px] mx-auto h-full px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Logo (only when scrolled — carried forward from collapsed utility bar) */}
           {scrolled && (
@@ -202,9 +202,9 @@ const DHLHeader = () => {
           <nav data-testid="main-nav" className={`hidden lg:flex items-center gap-1 ${scrolled ? "" : "mr-auto"}`}>
             {NAV.map((item) => {
               const cls =
-                "relative px-4 py-2 text-[15px] font-semibold text-dhl-ink hover:text-dhl-red transition-colors group";
+                "relative px-3 py-1 text-[13px] font-semibold text-dhl-ink hover:text-dhl-red transition-colors group";
               const underline = (
-                <span className="absolute left-4 right-4 -bottom-0.5 h-0.5 bg-dhl-red scale-x-0 group-hover:scale-x-100 origin-left transition-transform" />
+                <span className="absolute left-3 right-3 -bottom-0.5 h-0.5 bg-dhl-red scale-x-0 group-hover:scale-x-100 origin-left transition-transform" />
               );
               if (item.kind === "route") {
                 return (
@@ -235,13 +235,13 @@ const DHLHeader = () => {
             })}
           </nav>
 
-          <div className="hidden lg:flex items-center gap-6 ml-2 pl-4 border-l border-dhl-ink/20">
+          <div className="hidden lg:flex items-center gap-4 ml-2 pl-3 border-l border-dhl-ink/20">
             {isAuthenticated ? (
               <button
                 type="button"
                 data-testid="header-dashboard-btn"
                 onClick={() => navigate("/dashboard")}
-                className="text-[14px] font-bold text-dhl-ink hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-3 py-2"
+                className="text-[13px] font-bold text-dhl-ink hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-2 py-1"
               >
                 My Dashboard
               </button>
@@ -251,7 +251,7 @@ const DHLHeader = () => {
                   type="button"
                   data-testid="header-login-btn"
                   onClick={() => navigate("/login")}
-                  className="text-[14px] font-medium text-dhl-ink hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-3 py-2"
+                  className="text-[13px] font-medium text-dhl-ink hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-2 py-1"
                 >
                   Login
                 </button>
@@ -259,7 +259,7 @@ const DHLHeader = () => {
                   type="button"
                   data-testid="header-register-btn"
                   onClick={() => navigate("/register")}
-                  className="text-[14px] font-bold text-dhl-ink hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-3 py-2"
+                  className="text-[13px] font-bold text-dhl-ink hover:underline underline-offset-4 decoration-2 decoration-dhl-red transition-all px-2 py-1"
                 >
                   Register
                 </button>

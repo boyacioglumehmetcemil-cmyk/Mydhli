@@ -9,6 +9,9 @@ const DEFAULT_ASSET_SRC = "/images/logo-user.png";
 // Native pixel dimensions of the asset above — used to cap rendered size so the
 // logo never up-scales beyond its native resolution (avoids blur).
 const NATIVE_HEIGHT = 31;
+// Variants that intentionally up-scale beyond NATIVE_HEIGHT (used in the tall
+// utility bar). Capped at a slightly higher max to keep blur tolerable.
+const UPSCALED_MAX = 44;
 
 /**
  * DHL Express logo.
@@ -55,11 +58,19 @@ const Logo = ({
   const useImg = v !== "text" && (assetSrc || DEFAULT_ASSET_SRC);
 
   // Cap rendered height so we never up-scale beyond native pixels.
+  // Exception: "icon-only" is used in the tall utility bar and intentionally
+  // up-scales to ~44px; we raise its cap accordingly.
   const heightByVariant = {
-    "icon-only": "h-6",  // 24px
+    "icon-only": "h-11", // 44px — tall utility bar
     compact: "h-7",      // 28px — under 31 native
     default: "h-[30px]", // 30px — under 31 native
     text: "h-10",
+  };
+  const maxHeightByVariant = {
+    "icon-only": UPSCALED_MAX,
+    compact: NATIVE_HEIGHT,
+    default: NATIVE_HEIGHT,
+    text: NATIVE_HEIGHT,
   };
 
   if (useImg) {
@@ -69,7 +80,7 @@ const Logo = ({
         src={src}
         alt="DHL Express"
         data-testid="brand-logo"
-        style={{ maxHeight: NATIVE_HEIGHT }}
+        style={{ maxHeight: maxHeightByVariant[v] ?? NATIVE_HEIGHT }}
         className={`${heightByVariant[v]} w-auto select-none block`}
         draggable={false}
       />
