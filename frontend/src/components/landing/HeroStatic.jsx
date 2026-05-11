@@ -54,7 +54,7 @@ const HeroStatic = () => {
       </div>
 
       <div className="relative z-10 max-w-[1200px] mx-auto px-6 lg:px-8 py-14 lg:py-20 lg:min-h-[560px] flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_580px] gap-10 lg:gap-12 items-center w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_480px] gap-10 lg:gap-12 items-center w-full">
           {/* Left: typography stack */}
           <div className="max-w-[640px]">
             {/* Eyebrow with red ▮ accent square */}
@@ -113,20 +113,20 @@ const HeroStatic = () => {
                 WebkitBackdropFilter: "blur(12px)",
                 border: "1px solid rgba(255, 255, 255, 0.35)",
                 borderRadius: 4,
-                padding: "20px 24px",
+                padding: "16px 20px",
               }}
             >
               {/* Header */}
-              <div className="mb-4">
+              <div className="mb-3">
                 <div
-                  className="text-[10px] font-medium uppercase text-white/70 mb-1.5"
+                  className="text-[9px] font-medium uppercase text-white/70 mb-1.5"
                   style={{ letterSpacing: "0.15em" }}
                 >
                   Quick Actions
                 </div>
                 <h2
                   className="font-display text-white"
-                  style={{ fontSize: "1.25rem", fontWeight: 500, lineHeight: 1.15 }}
+                  style={{ fontSize: "1rem", fontWeight: 500, lineHeight: 1.15 }}
                 >
                   Get Started Now
                 </h2>
@@ -142,8 +142,8 @@ const HeroStatic = () => {
                       key={a.label}
                       onClick={() => go(a.to)}
                       data-testid={a.testId}
-                      className="group relative flex flex-col items-center justify-start text-center px-2 py-3 transition-colors duration-[200ms] ease-out"
-                      style={{ minHeight: 110 }}
+                      className="group relative flex flex-col items-center justify-start text-center px-2.5 py-2 transition-colors duration-[200ms] ease-out"
+                      style={{ minHeight: 88 }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                     >
@@ -160,7 +160,7 @@ const HeroStatic = () => {
                         />
                       )}
                       <Icon className="w-6 h-6 text-white mb-2" strokeWidth={1.5} />
-                      <span className="text-[13px] font-medium text-white leading-[1.3] mb-2">
+                      <span className="text-[12px] font-medium text-white leading-[1.3] mb-2">
                         {a.label}
                       </span>
                       <span
