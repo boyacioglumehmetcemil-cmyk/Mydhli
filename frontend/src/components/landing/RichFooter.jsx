@@ -59,7 +59,7 @@ const RichFooter = () => {
   }, []);
 
   return (
-    <footer id="contact" data-testid="rich-footer" style={{ backgroundColor: "#FAF7F0" }} className="text-[#2A2A2A]">
+    <footer id="contact" data-testid="rich-footer" style={{ backgroundColor: "#FFFFFF" }} className="text-[#2A2A2A]">
       {/* Top hairline rule — discreet 1px gray-500 frame */}
       <div data-testid="footer-top-rule" className="h-px bg-[#6B7280]" />
 
@@ -99,7 +99,7 @@ const RichFooter = () => {
               alt="DHL Group"
               data-testid="footer-brand-logo"
               className="block w-auto select-none"
-              style={{ maxHeight: 56 }}
+              style={{ maxHeight: 70 }}
               draggable={false}
             />
             <p className="text-sm text-[#555] leading-[1.6] mt-5 mb-5 max-w-xs">
@@ -127,7 +127,7 @@ const RichFooter = () => {
       <div data-testid="footer-mid-rule" className="h-px bg-[#6B7280]" />
 
       {/* Bottom bar — slightly darker cream */}
-      <div style={{ backgroundColor: "#F0EDE5" }}>
+      <div style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-[1200px] mx-auto px-6 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 min-h-[56px]">
           <div className="flex items-center gap-3">
             <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#666]">
@@ -168,7 +168,7 @@ const RichFooter = () => {
         </div>
       </div>
 
-      <div className="text-[10px] text-[#888] font-mono uppercase tracking-wider text-center py-3 px-4" style={{ backgroundColor: "#F0EDE5" }}>
+      <div className="text-[10px] text-[#888] font-mono uppercase tracking-wider text-center py-3 px-4" style={{ backgroundColor: "#FFFFFF" }}>
         Demo build · Not affiliated with Deutsche Post DHL Group
       </div>
 
