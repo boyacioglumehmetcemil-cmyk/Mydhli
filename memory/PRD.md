@@ -82,20 +82,30 @@ A pitch demo for DHL Papua New Guinea that mirrors MyDHL Express functionality. 
 - [x] Phase 1 regression: all 16 auth tests still passing
 
 ## Prioritized Backlog (Phase 3+)
-### P0 (next phase)
-- Ship Now wizard (origin/destination/dimensions/payment)
-- Get a Quote calculator
-- Schedule Pickup form
-- Download Label (PDF) for shipments
-### P1
-- Address Book CRUD
-- Invoices list + PDF stub
-- Real PGK billing/account balance integration mock
-- Multi-leg/transfer support in route visualization
-### P2
-- Reports dashboard with charts (recharts already installed)
-- Customs documents generation
-- Settings module (profile, password change, notifications)
-- Email integration for real forgot-password
-- Swap typographic logo for official DHL asset when user provides it
-- Sortable table headers + per-page configurable size on My Shipments
+### Now Implemented (Parts A–E) — 2026-05-11
+- **Backend modules**
+  - `labels_module.py` — A6 shipping labels (Code128 barcode + QR), A4 invoices, customs docs, account reports (reportlab + qrcode + python-barcode). **FIXED:** ImageReader bug on shipping label PDF.
+  - `business_module.py` — quotes (PGK pricing with chargeable+volumetric+distance factor), addresses CRUD with default sender/receiver kinds, pickups CRUD with PU####### confirmation, mock card charge (Luhn + 4111 success / 4000 decline).
+  - `invoices_module.py` — invoices list/get/pay/PDF, reports overview (monthlySpend, shipmentsByService, shipmentsByStatus, topDestinations, **dailyVolume** — renamed from volumeOverTime to match spec), reports PDF, customs CRUD + PDF.
+  - Seeded: 8 invoices (PAID/UNPAID/OVERDUE mix), 4 addresses, 3 pickups, notifications preferences.
+- **Frontend pages wired in `App.js`**
+  - `/dashboard/ship` — 5-step Ship Now wizard
+  - `/dashboard/quote` — live debounced Get a Quote calculator (**FIXED:** useQuote → applyQuote hook-lint)
+  - `/dashboard/addresses` — Address Book cards with edit/delete/default
+  - `/dashboard/pickup` and `/dashboard/pickups` — schedule + list/cancel
+  - `/dashboard/invoices` — list + Pay Now modal + PDF download
+  - `/dashboard/reports` — 4 recharts (monthly bar, by service donut, by status, daily volume line) + PDF export
+  - `/dashboard/customs` — create + list + PDF
+  - `/dashboard/settings` — Profile / Business / Security / Notifications / API tabs
+  - `*` NotFound
+- **Landing page global redesign** — `/app/frontend/src/components/landing/` (GlobalNavbar, HeroSection cargo-plane, AnimatedStats, ServicesGrid, GlobalNetwork, WhyBlocks, Testimonials, FinalCTA, RichFooter). **FIXED:** GlobalNavbar changed sticky → fixed so transparent navbar overlays hero (Sign In / nav links now visible over dark hero).
+- **Login page** — split-screen with world-routes visual on right
+- **Testing:** 28/30 backend pytests passing (`test_parts_a_to_e.py`). Frontend all 9 dashboard routes load, KPIs populate, charts render.
+
+### Future Backlog
+- P1: Multi-leg/transfer routing in route visualization
+- P2: Real email integration for forgot-password (Resend/SendGrid)
+- P2: Sortable table headers on My Shipments
+- P2: Swap typographic logo for official DHL asset when user provides it
+- P2: Email/SMS notifications hooked to actual provider (currently preference toggles only)
+

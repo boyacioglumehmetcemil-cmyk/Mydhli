@@ -31,7 +31,7 @@ const GlobalNavbar = ({ variant = "transparent" }) => {
   return (
     <header
       data-testid="global-navbar"
-      className={`sticky top-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled ? "bg-white shadow-md border-b border-dhl-border" : "bg-transparent"
       }`}
     >

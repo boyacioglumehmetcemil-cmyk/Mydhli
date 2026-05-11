@@ -220,7 +220,7 @@ def build_router(db, get_current_user_dep):
             "shipmentsByService": by_service_list,
             "shipmentsByStatus": by_status,
             "topDestinations": top_destinations,
-            "volumeOverTime": volume_over_time,
+            "dailyVolume": volume_over_time,
         }
 
     @router.get("/reports/pdf")

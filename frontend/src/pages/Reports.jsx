@@ -77,7 +77,7 @@ const Reports = () => {
         {/* Volume over time */}
         <ChartCard title="Daily Volume" subtitle="Last 30 days">
           <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={data.volumeOverTime}>
+            <LineChart data={data.dailyVolume}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis dataKey="date" tick={{ fontSize: 9 }} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 11 }} />
