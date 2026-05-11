@@ -209,7 +209,7 @@ const InsideNetworkGrid = () => {
                       type="button"
                       onClick={() => setModal({ title: c.headline })}
                       data-testid={`grid-card-${i}-cta`}
-                      className="inline-flex items-center gap-1.5 text-sm font-bold text-[#2563EB] hover:text-[#1D4ED8] transition-colors group/cta self-start mt-auto"
+                      className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0EA5B7] hover:text-[#0B8C9C] transition-colors group/cta self-start mt-auto"
                     >
                       Learn More
                       <ArrowRight className="w-3.5 h-3.5 transition-transform duration-[250ms] ease-out group-hover/cta:translate-x-1" />

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="8" fill="#FFCC00"/>
-  <text x="50%" y="56%" text-anchor="middle" dominant-baseline="middle"
-        font-family="'Cabinet Grotesk', 'Inter', sans-serif" font-weight="900"
-        font-size="40" fill="#D40511">D</text>
-  <rect x="6" y="46" width="52" height="6" fill="#1A1A1A"/>
-</svg>
