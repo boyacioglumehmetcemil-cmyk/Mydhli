@@ -40,9 +40,18 @@ def _qr_png(data: str) -> BytesIO:
     return buf
 
 
+def _safe(d, key, default=""):
+    """Return d[key] if present and non-None, else default."""
+    if not isinstance(d, dict):
+        return default
+    v = d.get(key)
+    return default if v is None else v
+
+
 # ============ SHIPPING LABEL (A6 portrait) ============
 def render_shipping_label(shipment: dict, track_url: str) -> bytes:
-    """Generate an A6 portrait shipping label PDF."""
+    """Generate an A6 portrait shipping label PDF. Tolerant of missing
+    or None optional fields on any shipment record."""
     buf = BytesIO()
     W, H = A6  # 105 x 148 mm
     c = canvas.Canvas(buf, pagesize=A6)
@@ -59,11 +68,18 @@ def render_shipping_label(shipment: dict, track_url: str) -> bytes:
     c.setFont("Helvetica", 7)
     c.drawString(6 * mm, H - 15 * mm, "Demo Shipping Label · Not for actual carrier use")
 
+    awb = str(_safe(shipment, "awb", "—"))
+    service = str(_safe(shipment, "service", "")).replace("_", " ") or "—"
+    origin = shipment.get("origin") or {}
+    dest = shipment.get("destination") or {}
+    o_code = _safe(origin, "code", "—")
+    d_code = _safe(dest, "code", "—")
+
     # Service + origin/dest
     y = H - 24 * mm
     c.setFont("Helvetica-Bold", 9)
-    c.drawString(6 * mm, y, f"Service: {shipment['service'].replace('_', ' ')}")
-    c.drawRightString(W - 6 * mm, y, f"{shipment['origin']['code']} → {shipment['destination']['code']}")
+    c.drawString(6 * mm, y, f"Service: {service}")
+    c.drawRightString(W - 6 * mm, y, f"{o_code} → {d_code}")
     y -= 4 * mm
     c.setStrokeColor(DHL_INK)
     c.setLineWidth(0.5)
@@ -75,10 +91,14 @@ def render_shipping_label(shipment: dict, track_url: str) -> bytes:
     c.drawString(6 * mm, y, "FROM")
     c.setFont("Helvetica", 8)
     y -= 4 * mm
-    s = shipment["sender"]
-    for line in [s["name"], s["company"], s["address"], f"{s['city']}, {s['country']} {s['postalCode']}", s["phone"]]:
+    s = shipment.get("sender") or {}
+    s_city_line = f"{_safe(s, 'city')}, {_safe(s, 'country')} {_safe(s, 'postalCode')}".strip(", ")
+    for line in [
+        _safe(s, "name"), _safe(s, "company"), _safe(s, "address"),
+        s_city_line, _safe(s, "phone"),
+    ]:
         if line:
-            c.drawString(6 * mm, y, line[:50])
+            c.drawString(6 * mm, y, str(line)[:50])
             y -= 3.5 * mm
 
     # Receiver block (larger, prominent)
@@ -91,50 +111,61 @@ def render_shipping_label(shipment: dict, track_url: str) -> bytes:
     c.drawString(6 * mm, y, "TO")
     c.setFont("Helvetica-Bold", 11)
     y -= 5 * mm
-    r = shipment["receiver"]
-    c.drawString(6 * mm, y, r["name"][:35])
+    r = shipment.get("receiver") or {}
+    c.drawString(6 * mm, y, str(_safe(r, "name", "—"))[:35])
     y -= 4.5 * mm
     c.setFont("Helvetica", 9)
-    c.drawString(6 * mm, y, r["company"][:40])
+    c.drawString(6 * mm, y, str(_safe(r, "company"))[:40])
     y -= 4 * mm
     c.setFont("Helvetica", 8)
-    c.drawString(6 * mm, y, r["address"][:50])
+    c.drawString(6 * mm, y, str(_safe(r, "address"))[:50])
     y -= 4 * mm
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(6 * mm, y, f"{r['city']}, {r['country']} {r['postalCode']}")
+    r_city_line = f"{_safe(r, 'city')}, {_safe(r, 'country')} {_safe(r, 'postalCode')}".strip(", ")
+    c.drawString(6 * mm, y, r_city_line)
     y -= 4 * mm
     c.setFont("Helvetica", 8)
-    c.drawString(6 * mm, y, r["phone"])
+    c.drawString(6 * mm, y, str(_safe(r, "phone")))
 
     # Package info
     y -= 5 * mm
     c.setStrokeColor(DHL_INK)
     c.line(6 * mm, y, W - 6 * mm, y)
     y -= 4 * mm
-    pkg = shipment["package"]
+    pkg = shipment.get("package") or {}
     c.setFont("Helvetica-Bold", 7)
     c.drawString(6 * mm, y, "PIECES")
     c.drawString(25 * mm, y, "WEIGHT")
     c.drawString(50 * mm, y, "DECLARED VALUE")
     y -= 4 * mm
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(6 * mm, y, str(pkg["pieces"]))
-    c.drawString(25 * mm, y, f"{pkg['weightKg']} kg")
-    c.drawString(50 * mm, y, f"USD {pkg.get('declaredValueUSD', 0):.0f}")
+    c.drawString(6 * mm, y, str(_safe(pkg, "pieces", "—")))
+    weight = _safe(pkg, "weightKg", 0)
+    c.drawString(25 * mm, y, f"{weight} kg")
+    declared = _safe(pkg, "declaredValueUSD", 0)
+    c.drawString(50 * mm, y, f"USD {float(declared):.0f}")
 
-    # Barcode
-    bc_buf = _barcode_png(shipment["awb"])
-    c.drawImage(ImageReader(bc_buf),
-                6 * mm, 10 * mm, width=70 * mm, height=18 * mm, preserveAspectRatio=True, mask='auto')
+    # Barcode (skip cleanly if AWB invalid)
+    try:
+        bc_buf = _barcode_png(awb)
+        c.drawImage(ImageReader(bc_buf),
+                    6 * mm, 10 * mm, width=70 * mm, height=18 * mm,
+                    preserveAspectRatio=True, mask='auto')
+    except Exception:
+        pass
 
     # AWB number text
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(6 * mm, 7 * mm, f"AWB {shipment['awb']}")
+    c.drawString(6 * mm, 7 * mm, f"AWB {awb}")
 
-    # QR code (links to public track page)
-    qr_buf = _qr_png(track_url)
-    c.drawImage(ImageReader(qr_buf),
-                W - 30 * mm, 8 * mm, width=24 * mm, height=24 * mm, preserveAspectRatio=True, mask='auto')
+    # QR code (links to public track page) — skip cleanly if URL invalid
+    try:
+        qr_buf = _qr_png(track_url)
+        c.drawImage(ImageReader(qr_buf),
+                    W - 30 * mm, 8 * mm, width=24 * mm, height=24 * mm,
+                    preserveAspectRatio=True, mask='auto')
+    except Exception:
+        pass
 
     c.showPage()
     c.save()
