@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import api from "@/lib/api";
 import { formatDate, formatPGK } from "@/lib/shipmentUtils";
+import { downloadAuthedPdf } from "@/lib/downloadPdf";
 
 const statusTone = {
   PAID: "bg-green-100 text-green-900 border-green-600",
@@ -161,9 +162,20 @@ const Invoices = () => {
                     </td>
                     <td className="px-5 py-3 text-right">
                       <div className="inline-flex items-center gap-2">
-                        <a href={`${BACKEND}/api/invoices/${inv.invoiceNumber}/pdf`} target="_blank" rel="noreferrer" data-testid={`inv-pdf-${inv.invoiceNumber}`} className="text-xs font-bold uppercase tracking-wider text-dhl-text hover:text-dhl-red flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            downloadAuthedPdf({
+                              path: `/api/invoices/${inv.invoiceNumber}/pdf`,
+                              filename: `${inv.invoiceNumber}.pdf`,
+                              niceLabel: `Invoice ${inv.invoiceNumber}`,
+                            })
+                          }
+                          data-testid={`inv-pdf-${inv.invoiceNumber}`}
+                          className="text-xs font-bold uppercase tracking-wider text-dhl-text hover:text-dhl-red flex items-center gap-1"
+                        >
                           <FileText className="w-3.5 h-3.5" /> PDF
-                        </a>
+                        </button>
                         {inv.status !== "PAID" && (
                           <button onClick={() => setPayInv(inv)} data-testid={`inv-pay-${inv.invoiceNumber}`} className="text-xs font-bold uppercase tracking-wider text-dhl-red hover:underline flex items-center gap-1">
                             <CreditCard className="w-3.5 h-3.5" /> Pay Now

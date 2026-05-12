@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 import { formatPGK, SERVICE_LABELS } from "@/lib/shipmentUtils";
+import { downloadAuthedPdf } from "@/lib/downloadPdf";
 
 const COLORS = ["#FFCC00", "#D40511", "#1A1A1A", "#666666", "#FFE066"];
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
@@ -29,9 +30,20 @@ const Reports = () => {
           <h1 className="font-display text-3xl lg:text-4xl font-black text-dhl-text leading-tight tracking-tighter">Reports</h1>
           <p className="text-sm text-dhl-muted mt-2">Your account analytics across spend, services, and destinations.</p>
         </div>
-        <a href={`${BACKEND}/api/reports/pdf`} target="_blank" rel="noreferrer" data-testid="reports-pdf" className="inline-flex items-center justify-center h-11 bg-dhl-ink text-white hover:bg-dhl-red font-bold uppercase tracking-wider text-xs px-5">
+        <button
+          type="button"
+          data-testid="reports-pdf"
+          onClick={() =>
+            downloadAuthedPdf({
+              path: "/api/reports/pdf",
+              filename: "dhl-reports.pdf",
+              niceLabel: "Reports PDF",
+            })
+          }
+          className="inline-flex items-center justify-center h-11 bg-dhl-ink text-white hover:bg-dhl-red font-bold uppercase tracking-wider text-xs px-5"
+        >
           <Download className="mr-2 w-4 h-4" /> Export PDF Report
-        </a>
+        </button>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-5">

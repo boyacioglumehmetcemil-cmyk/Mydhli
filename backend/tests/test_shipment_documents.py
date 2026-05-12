@@ -123,6 +123,83 @@ def test_demo_user_shipments_intact():
     assert r2.json()["total"] >= 25
 
 
+# ===== Invoice + Customs PDF endpoints (auth bug regression) =====
+@pytest.mark.parametrize(
+    "email,pwd",
+    [("demo@dhlpng.com", "Demo@2026"), ("shipper@dhlpng.com", "Shipper@2026")],
+)
+def test_invoice_pdf_endpoint_authed_returns_valid_pdf(email, pwd):
+    """For each seeded user, every invoice's /pdf endpoint returns a valid PDF
+    when the Bearer JWT is attached."""
+    tok = _login(email, pwd)
+    invs = requests.get(f"{API}/invoices?pageSize=20",
+                       headers={"Authorization": f"Bearer {tok}"}, timeout=10).json()
+    items = invs["items"]
+    assert items, f"no invoices for {email}"
+    for inv in items[:5]:
+        r = requests.get(f"{API}/invoices/{inv['invoiceNumber']}/pdf",
+                         headers={"Authorization": f"Bearer {tok}"}, timeout=15)
+        assert r.status_code == 200, f"{email} / {inv['invoiceNumber']}: {r.status_code}"
+        assert r.headers.get("content-type") == "application/pdf"
+        assert r.content[:5] == b"%PDF-"
+        assert len(r.content) > 3000
+
+
+@pytest.mark.parametrize(
+    "email,pwd",
+    [("demo@dhlpng.com", "Demo@2026"), ("shipper@dhlpng.com", "Shipper@2026")],
+)
+def test_customs_pdf_endpoint_authed_returns_valid_pdf(email, pwd):
+    """For each seeded user, every customs doc's /pdf endpoint returns a valid
+    PDF when the Bearer JWT is attached."""
+    tok = _login(email, pwd)
+    cus = requests.get(f"{API}/customs",
+                       headers={"Authorization": f"Bearer {tok}"}, timeout=10).json()
+    assert cus, f"no customs docs for {email}"
+    for c in cus:
+        r = requests.get(f"{API}/customs/{c['id']}/pdf",
+                         headers={"Authorization": f"Bearer {tok}"}, timeout=15)
+        assert r.status_code == 200, f"{email} / {c['id']}: {r.status_code}"
+        assert r.headers.get("content-type") == "application/pdf"
+        assert r.content[:5] == b"%PDF-"
+        # Sparse customs docs (single item, minimal parties) compress to ~2.4 KB.
+        # 1500 still excludes blank PDFs (~600 bytes) and proves real content.
+        assert len(r.content) > 1500
+
+
+def test_invoice_pdf_requires_auth():
+    """Sanity check: no auth → 401 (so the frontend MUST attach the JWT)."""
+    # Login briefly to get a valid invoice number
+    tok = _login("demo@dhlpng.com", "Demo@2026")
+    inv = requests.get(f"{API}/invoices?pageSize=1",
+                       headers={"Authorization": f"Bearer {tok}"}, timeout=10).json()
+    inv_no = inv["items"][0]["invoiceNumber"]
+    r = requests.get(f"{API}/invoices/{inv_no}/pdf", timeout=10)
+    assert r.status_code in (401, 403)
+
+
+def test_customs_pdf_requires_auth():
+    """Sanity check: no auth → 401."""
+    tok = _login("demo@dhlpng.com", "Demo@2026")
+    cus = requests.get(f"{API}/customs",
+                       headers={"Authorization": f"Bearer {tok}"}, timeout=10).json()
+    cus_id = cus[0]["id"]
+    r = requests.get(f"{API}/customs/{cus_id}/pdf", timeout=10)
+    assert r.status_code in (401, 403)
+
+
+def test_shipper_user_has_invoices_and_customs():
+    """Bug fix regression: shipper user must have at least 5 invoices and 4
+    customs documents seeded."""
+    tok = _login("shipper@dhlpng.com", "Shipper@2026")
+    inv = requests.get(f"{API}/invoices",
+                       headers={"Authorization": f"Bearer {tok}"}, timeout=10).json()
+    cus = requests.get(f"{API}/customs",
+                       headers={"Authorization": f"Bearer {tok}"}, timeout=10).json()
+    assert inv["total"] >= 5, f"expected >=5 invoices, got {inv['total']}"
+    assert len(cus) >= 4, f"expected >=4 customs, got {len(cus)}"
+
+
 # ===== Notifications tests =====
 def _login(email, pwd):
     r = requests.post(f"{API}/auth/login",

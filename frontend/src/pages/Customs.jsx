@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDate } from "@/lib/shipmentUtils";
+import { downloadAuthedPdf } from "@/lib/downloadPdf";
 
 const DOC_TYPES = {
   COMMERCIAL_INVOICE: "Commercial Invoice",
@@ -64,8 +65,12 @@ const Customs = () => {
       toast.success("Customs document created");
       setModal(false);
       load();
-      // Open the PDF in a new tab
-      window.open(`${BACKEND}/api/customs/${res.data.id}/pdf`, "_blank");
+      // Trigger an authenticated download for the just-created customs PDF
+      await downloadAuthedPdf({
+        path: `/api/customs/${res.data.id}/pdf`,
+        filename: `customs-${res.data.id}.pdf`,
+        niceLabel: "Customs document",
+      });
     } catch (err) {
       toast.error("Could not save");
     }
@@ -116,9 +121,20 @@ const Customs = () => {
                   <td className="px-5 py-3 text-right font-mono">{d.currency} {d.totalValueUSD.toLocaleString()}</td>
                   <td className="px-5 py-3 text-dhl-muted">{formatDate(d.createdAt)}</td>
                   <td className="px-5 py-3 text-right">
-                    <a href={`${BACKEND}/api/customs/${d.id}/pdf`} target="_blank" rel="noreferrer" data-testid={`customs-pdf-${d.id}`} className="text-xs font-bold uppercase tracking-wider text-dhl-red hover:underline">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        downloadAuthedPdf({
+                          path: `/api/customs/${d.id}/pdf`,
+                          filename: `customs-${d.shipmentAwb || d.id}.pdf`,
+                          niceLabel: "Customs document",
+                        })
+                      }
+                      data-testid={`customs-pdf-${d.id}`}
+                      className="text-xs font-bold uppercase tracking-wider text-dhl-red hover:underline"
+                    >
                       Download PDF
-                    </a>
+                    </button>
                   </td>
                 </tr>
               ))}
