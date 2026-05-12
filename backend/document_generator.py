@@ -314,78 +314,328 @@ def generate_air_waybill(shipment: dict, user: dict) -> bytes:
 
 
 # ============ DOCUMENT 2 — PROFORMA INVOICE ============
-def generate_proforma_invoice(shipment: dict, user: dict) -> bytes:
+# Friendly expansions for Incoterms (Incoterms 2020 + common usage)
+INCOTERMS_LABEL = {
+    "EXW": "Ex Works",
+    "FCA": "Free Carrier",
+    "FAS": "Free Alongside Ship",
+    "FOB": "Free On Board",
+    "CFR": "Cost and Freight",
+    "CIF": "Cost, Insurance and Freight",
+    "CPT": "Carriage Paid To",
+    "CIP": "Carriage and Insurance Paid To",
+    "DAP": "Delivered at Place",
+    "DPU": "Delivered at Place Unloaded",
+    "DDP": "Delivered Duty Paid",
+}
+
+# Friendly expansions for "Reason for Export" codes
+REASON_LABEL = {
+    "SALE": "Sale of Goods",
+    "GIFT": "Gift / Personal",
+    "SAMPLE": "Commercial Sample (no value)",
+    "RETURN": "Return for Repair or Replacement",
+    "REPAIR": "Temporary Export for Testing & Repair",
+    "INTERCOMPANY": "Intercompany Transfer",
+    "DOCUMENTS": "Documents (no commercial value)",
+}
+
+# Friendly expansions for package "type"
+PACKAGE_TYPE_LABEL = {
+    "DOCUMENT": "Document(s)",
+    "PARCEL": "Parcel(s)",
+    "PALLET": "Pallet(s)",
+    "BOX": "Box(es)",
+    "ENVELOPE": "Envelope(s)",
+}
+
+# Fixed mock FX rate for the demo (USD → PGK)
+_USD_TO_PGK = 3.7
+
+
+def _proforma_invoice_number(awb: str) -> str:
+    last6 = awb[-6:] if len(awb) >= 6 else awb
+    return f"PRO-{last6}-{datetime.now(timezone.utc).strftime('%y%m%d')}"
+
+
+def _expand_incoterms(code: Optional[str]) -> str:
+    if not code:
+        return "DAP (Delivered at Place)"
+    code_up = code.upper().strip()
+    label = INCOTERMS_LABEL.get(code_up)
+    return f"{code_up} ({label})" if label else code_up
+
+
+def _expand_reason(code: Optional[str]) -> str:
+    if not code:
+        return "Commercial Sale"
+    label = REASON_LABEL.get(code.upper().strip())
+    return label or code
+
+
+def _expand_package_type(code: Optional[str]) -> str:
+    if not code:
+        return "Parcel(s)"
+    return PACKAGE_TYPE_LABEL.get(code.upper().strip(), "Parcel(s)")
+
+
+def _addr_kv_block(addr: dict, contact_label: str = "Contact",
+                   tax_label: str = "Tax ID", tax_value: Optional[str] = None) -> Table:
+    """Render a sender/receiver block as a clean label/value grid."""
+    rows = [
+        ("Company", addr.get("company") or "—"),
+        ("Address", addr.get("address") or "—"),
+        ("City / State", addr.get("city") or "—"),
+        ("Country", addr.get("country") or "—"),
+        (contact_label, addr.get("name") or "—"),
+        ("Phone", addr.get("phone") or "—"),
+        (tax_label, tax_value or "—"),
+    ]
+    data = [
+        [Paragraph(lab.upper(), _S_LABEL), Paragraph(str(val), _S_BODY)]
+        for lab, val in rows
+    ]
+    tbl = Table(data, colWidths=[26 * mm, 53 * mm])
+    tbl.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ("LINEBELOW", (0, 0), (-1, -1), 0.25, colors.HexColor("#E5E7EB")),
+    ]))
+    return tbl
+
+
+def generate_proforma_invoice(shipment: dict, user: dict,
+                              customs_doc: Optional[dict] = None) -> bytes:
+    """Proforma Invoice aligned with the client's template structure.
+
+    Sections (in order): brand header strip, doc header (right), SENDER/RECEIVER
+    side-by-side, SHIPMENT DETAILS, LINE ITEM DETAILS + total, DECLARATION,
+    signature block.
+
+    Data sources, in priority order: customs_doc record → shipment → user.
+    No example-template data is hard-coded; "—" is shown where no real data
+    exists.
+    """
     awb = shipment.get("awb", "—")
     doc, buf = _build_doc(awb)
-    pkg = shipment.get("package", {})
-    qty = pkg.get("pieces", 1)
-    unit_value_usd = pkg.get("declaredValueUSD", 0)
-    subtotal_usd = qty * unit_value_usd
+    pkg = shipment.get("package", {}) or {}
+    sender = shipment.get("sender", {}) or {}
+    receiver = shipment.get("receiver", {}) or {}
 
-    story = [_header_band("PROFORMA INVOICE", awb), Spacer(1, 6 * mm)]
+    # Today (and shipment.createdAt fallback for the visible Date field)
+    created = shipment.get("createdAt") or ""
+    if isinstance(created, str) and len(created) >= 10:
+        try:
+            d = datetime.fromisoformat(created.replace("Z", "+00:00"))
+            doc_date_str = d.strftime("%d %b %Y")
+        except Exception:
+            doc_date_str = datetime.now(timezone.utc).strftime("%d %b %Y")
+    else:
+        doc_date_str = datetime.now(timezone.utc).strftime("%d %b %Y")
 
-    story.append(_section_title(1, "Seller & Buyer"))
-    story.append(_two_col_addr(
-        _fmt_addr_block(shipment.get("sender", {}), "SELLER"),
-        _fmt_addr_block(shipment.get("receiver", {}), "BUYER"),
-    ))
-    story.append(Spacer(1, 5 * mm))
+    # ===== Brand strip + header block =====
+    story = [_header_band("PROFORMA INVOICE", awb), Spacer(1, 5 * mm)]
 
-    story.append(_section_title(2, "Shipment Reference"))
-    story.append(_kv_grid([
-        ("Air Waybill No.", awb),
-        ("Date of Issue", datetime.now(timezone.utc).strftime("%Y-%m-%d")),
-        ("Currency", "USD"),
-        ("Terms of Trade", "FOB (Free On Board)"),
-        ("Reason for Export", "Commercial sale"),
-    ]))
-    story.append(Spacer(1, 5 * mm))
-
-    story.append(_section_title(3, "Estimated Goods"))
-    rows = [
-        ["#", "Description", "HS Code", "Qty", "Unit Value (USD)", "Line Total (USD)"],
-        ["1",
-         pkg.get("description", "General merchandise"),
-         pkg.get("hsCode", "9999.99"),
-         str(qty),
-         f"{unit_value_usd:,.2f}",
-         f"{subtotal_usd:,.2f}"],
+    # Header block — right-aligned key facts (Date / Invoice # / Waybill #)
+    inv_no = _proforma_invoice_number(awb)
+    hdr_rows = [
+        ("Date", doc_date_str),
+        ("Invoice Number", inv_no),
+        ("DHL Waybill Number", awb),
     ]
-    items_tbl = Table(rows, colWidths=[10 * mm, 70 * mm, 22 * mm, 14 * mm, 30 * mm, 30 * mm])
-    items_tbl.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), DHL_INK),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 8),
-        ("ALIGN", (3, 0), (-1, -1), "RIGHT"),
-        ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#E5E7EB")),
-        ("TOPPADDING", (0, 0), (-1, -1), 5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+    hdr_data = [
+        [Paragraph(lab.upper(), _S_LABEL), Paragraph(str(val), _S_BODY_BOLD)]
+        for lab, val in hdr_rows
+    ]
+    hdr_tbl = Table(hdr_data, colWidths=[40 * mm, 50 * mm], hAlign="RIGHT")
+    hdr_tbl.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("LINEBELOW", (0, 0), (-1, -1), 0.25, colors.HexColor("#E5E7EB")),
     ]))
-    story.append(items_tbl)
-    story.append(Spacer(1, 4 * mm))
-    total_tbl = Table([
-        ["Estimated Total Value", f"USD {subtotal_usd:,.2f}"]
-    ], colWidths=[121 * mm, 55 * mm])
-    total_tbl.setStyle(TableStyle([
-        ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 10),
-        ("ALIGN", (-1, 0), (-1, -1), "RIGHT"),
-        ("BACKGROUND", (0, 0), (-1, -1), DHL_YELLOW),
+    story.append(hdr_tbl)
+    story.append(Spacer(1, 6 * mm))
+
+    # ===== SENDER (SHIPPER) / RECEIVER (CONSIGNEE) — side-by-side 50/50 =====
+    sender_tax = (user or {}).get("companyTaxId")
+    importer = ((customs_doc or {}).get("importer") or {}) if customs_doc else {}
+    receiver_tax = importer.get("taxId") or importer.get("abn")
+
+    left_block = [
+        Paragraph("SENDER (SHIPPER)", _S_SECTION),
+        _addr_kv_block(sender, contact_label="Contact",
+                       tax_label="Tax ID", tax_value=sender_tax),
+    ]
+    right_block = [
+        Paragraph("RECEIVER (CONSIGNEE)", _S_SECTION),
+        _addr_kv_block(receiver, contact_label="Contact",
+                       tax_label="ABN / Tax ID", tax_value=receiver_tax),
+    ]
+    two_col = Table(
+        [[left_block, right_block]],
+        colWidths=[91 * mm, 91 * mm],
+    )
+    two_col.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#E5E7EB")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#E5E7EB")),
         ("LEFTPADDING", (0, 0), (-1, -1), 8),
         ("RIGHTPADDING", (0, 0), (-1, -1), 8),
         ("TOPPADDING", (0, 0), (-1, -1), 8),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
     ]))
+    story.append(two_col)
+    story.append(Spacer(1, 5 * mm))
+
+    # ===== SHIPMENT DETAILS =====
+    story.append(Paragraph("SHIPMENT DETAILS", _S_SECTION))
+    reason = _expand_reason((customs_doc or {}).get("reasonForExport"))
+    incoterms = _expand_incoterms(
+        (customs_doc or {}).get("termsOfTrade") or pkg.get("termsOfTrade")
+    )
+    pkg_type = _expand_package_type(pkg.get("type"))
+    pieces = pkg.get("pieces") or 1
+    weight = pkg.get("weightKg")
+    weight_str = f"{weight} kg" if weight is not None else "—"
+    total_pkgs = f"{pieces} {pkg_type}"
+
+    story.append(_kv_grid([
+        ("Reason for Export", reason),
+        ("Incoterms", incoterms),
+        ("Total Packages", total_pkgs),
+        ("Total Weight", weight_str),
+        ("Currency", "PGK (Papua New Guinea Kina)"),
+    ]))
+    story.append(Spacer(1, 5 * mm))
+
+    # ===== LINE ITEM DETAILS =====
+    story.append(Paragraph("LINE ITEM DETAILS", _S_SECTION))
+    items_header = ["Description of Goods", "HS Code", "Qty",
+                    "Unit Value (PGK)", "Total Value (PGK)", "Origin"]
+    rows = [items_header]
+    grand_total_pgk = 0.0
+
+    customs_items = (customs_doc or {}).get("items") or []
+    if customs_items:
+        # Treat customs_doc.currency as the source unit-value currency.
+        src_currency = (customs_doc or {}).get("currency", "USD").upper()
+        for it in customs_items:
+            qty = it.get("quantity") or 1
+            unit_val = float(it.get("unitValue") or 0)
+            unit_pgk = unit_val * (_USD_TO_PGK if src_currency == "USD" else 1.0)
+            line_pgk = qty * unit_pgk
+            grand_total_pgk += line_pgk
+            rows.append([
+                it.get("description") or "—",
+                it.get("hsCode") or "—",
+                str(qty),
+                f"{unit_pgk:,.2f}",
+                f"{line_pgk:,.2f}",
+                it.get("countryOfOrigin") or sender.get("country") or "—",
+            ])
+    else:
+        # Fallback to shipment.package
+        qty = pieces
+        decl_usd = float(pkg.get("declaredValueUSD") or 0)
+        unit_pgk = decl_usd * _USD_TO_PGK
+        line_pgk = qty * unit_pgk
+        grand_total_pgk = line_pgk
+        rows.append([
+            pkg.get("description") or "Commercial Goods",
+            pkg.get("hsCode") or "—",
+            str(qty),
+            f"{unit_pgk:,.2f}",
+            f"{line_pgk:,.2f}",
+            sender.get("country") or "—",
+        ])
+
+    items_tbl = Table(
+        rows,
+        colWidths=[55 * mm, 22 * mm, 12 * mm, 30 * mm, 32 * mm, 21 * mm],
+        repeatRows=1,
+    )
+    items_tbl.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F3F4F6")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), DHL_INK),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("ALIGN", (2, 0), (-1, -1), "RIGHT"),
+        ("ALIGN", (-1, 0), (-1, -1), "LEFT"),
+        ("LINEBELOW", (0, 0), (-1, 0), 0.5, DHL_INK),
+        ("LINEBELOW", (0, 1), (-1, -1), 0.25, colors.HexColor("#E5E7EB")),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    story.append(items_tbl)
+
+    # ===== TOTAL DECLARED VALUE =====
+    total_tbl = Table(
+        [["TOTAL DECLARED VALUE", f"{grand_total_pgk:,.2f} PGK"]],
+        colWidths=[140 * mm, 32 * mm],
+    )
+    total_tbl.setStyle(TableStyle([
+        ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("ALIGN", (-1, 0), (-1, -1), "RIGHT"),
+        ("BACKGROUND", (0, 0), (-1, -1), DHL_YELLOW),
+        ("TEXTCOLOR", (0, 0), (-1, -1), DHL_INK),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("TOPPADDING", (0, 0), (-1, -1), 7),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+    ]))
     story.append(total_tbl)
     story.append(Spacer(1, 8 * mm))
 
-    story.append(Paragraph(
-        "<i>This Proforma Invoice is a non-binding pre-shipment estimate. "
-        "Final values and totals will be confirmed on the Commercial Invoice "
-        "issued at dispatch.</i>",
-        _S_DISCLAIMER,
-    ))
+    # ===== DECLARATION =====
+    origin_country = sender.get("country") or "the country of origin"
+    decl_para = Paragraph(
+        f"<i>I declare that the information mentioned above is true and "
+        f"correct to the best of my knowledge and that the goods are of "
+        f"{origin_country} origin.</i>",
+        _S_BODY,
+    )
+    decl_wrap = Table([[decl_para]], colWidths=[182 * mm])
+    decl_wrap.setStyle(TableStyle([
+        ("LINEABOVE", (0, 0), (-1, 0), 0.5, colors.HexColor("#9CA3AF")),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+    ]))
+    story.append(Paragraph("DECLARATION", _S_SECTION))
+    story.append(decl_wrap)
+    story.append(Spacer(1, 12 * mm))
+
+    # ===== Signature block =====
+    sig_left = Paragraph(
+        "<b>Authorized Signature:</b><br/><br/><br/>____________________________",
+        _S_BODY,
+    )
+    sig_right = Paragraph(
+        f"<b>Name:</b> ____________________<br/><br/>"
+        f"<b>Title:</b> ____________________<br/><br/>"
+        f"<b>Date:</b> {doc_date_str}",
+        _S_BODY,
+    )
+    sig_tbl = Table([[sig_left, sig_right]], colWidths=[91 * mm, 91 * mm])
+    sig_tbl.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.append(sig_tbl)
 
     doc.build(story)
     buf.seek(0)

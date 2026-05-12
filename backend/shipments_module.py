@@ -499,11 +499,18 @@ def build_router(db, get_current_user_dep):
         Render the Proforma Invoice PDF (pre-shipment estimated values).
 
         DHL Mapping: Internal — supports §6 Customs declaration workflow.
+        Layout mirrors the client's template (PROFORMA INVOICE PNG.docx):
+        Sender/Receiver side-by-side, Shipment Details KV, Line Items in
+        PGK with TOTAL DECLARED VALUE, Declaration, signature block.
         """
         shipment = await _load_shipment_for_user(awb, current_user["id"])
         user = await _load_user(current_user["id"])
+        customs_doc = await _latest_customs(awb, current_user["id"])
         from document_generator import generate_proforma_invoice
-        return _stream_pdf(generate_proforma_invoice(shipment, user), awb.upper(), "proforma")
+        return _stream_pdf(
+            generate_proforma_invoice(shipment, user, customs_doc),
+            awb.upper(), "proforma",
+        )
 
     @router.get("/shipments/{awb}/documents/commercial.pdf")
     async def doc_commercial(awb: str, current_user: dict = Depends(get_current_user_dep)):

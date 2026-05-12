@@ -47,6 +47,61 @@ def test_document_pdf_returns_valid_pdf(auth_token, slug):
     assert len(r.content) > 5000, f"{slug}: suspiciously small ({len(r.content)} bytes)"
 
 
+def test_proforma_pdf_contains_required_sections(auth_token, tmp_path):
+    """Proforma Invoice PDF must render all six sections from the client's
+    template + the shipment's AWB. Verifies no example-template data leaks."""
+    import re
+    from pdfminer.high_level import extract_text
+
+    r = requests.get(
+        f"{API}/shipments/{TEST_AWB}/documents/proforma.pdf",
+        headers={"Authorization": f"Bearer {auth_token}"},
+        timeout=15,
+    )
+    assert r.status_code == 200
+    p = tmp_path / "proforma.pdf"
+    p.write_bytes(r.content)
+
+    text = extract_text(str(p))
+
+    # AWB present
+    assert TEST_AWB in text, "AWB missing from proforma PDF"
+
+    # All required section headers (whitespace-tolerant — pdfminer may insert
+    # line breaks on visually wrapped paragraphs).
+    required_headers = [
+        r"PROFORMA\s+INVOICE",
+        r"SENDER\s+\(SHIPPER\)",
+        r"RECEIVER\s+\(CONSIGNEE\)",
+        r"SHIPMENT\s+DETAILS",
+        r"LINE\s+ITEM\s+DETAILS",
+        r"DECLARATION",
+    ]
+    for h in required_headers:
+        assert re.search(h, text), f"section header pattern '{h}' missing"
+
+    # Invoice number + Waybill number labels
+    assert re.search(r"INVOICE\s+NUMBER", text, re.IGNORECASE), "Invoice Number label missing"
+    assert re.search(r"WAYBILL\s+NUMBER", text, re.IGNORECASE), "Waybill Number label missing"
+    assert f"PRO-{TEST_AWB[-6:]}-" in text, "auto-generated invoice number missing"
+
+    # PGK currency surfaced + total
+    assert "PGK" in text
+    assert re.search(r"TOTAL\s+DECLARED\s+VALUE", text), "TOTAL DECLARED VALUE row missing"
+
+    # Must NOT leak any of the example template's hard-coded data
+    forbidden = [
+        "Hastings Deering",
+        "Komatsu Australia",
+        "Spring Garden Road",
+        "Wacol",
+        "500344556",
+        "63 053 514 739",
+    ]
+    for token in forbidden:
+        assert token not in text, f"example data leak: {token}"
+
+
 def test_documents_require_auth():
     """Unauthenticated requests get rejected."""
     r = requests.get(
