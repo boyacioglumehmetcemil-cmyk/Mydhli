@@ -490,8 +490,9 @@ def build_router(db, get_current_user_dep):
         """
         shipment = await _load_shipment_for_user(awb, current_user["id"])
         user = await _load_user(current_user["id"])
+        customs_doc = await _latest_customs(awb, current_user["id"])
         from document_generator import generate_air_waybill
-        return _stream_pdf(generate_air_waybill(shipment, user), awb.upper(), "airwaybill")
+        return _stream_pdf(generate_air_waybill(shipment, user, customs_doc), awb.upper(), "airwaybill")
 
     @router.get("/shipments/{awb}/documents/proforma.pdf")
     async def doc_proforma(awb: str, current_user: dict = Depends(get_current_user_dep)):
@@ -679,7 +680,6 @@ async def seed_shipments(db, demo_user_id: str):
     # Reserve guaranteed-demoable AWB for index 5 (first IN_TRANSIT after the 5 DELIVERED)
     # That maps to status_plan[5] = "IN_TRANSIT" ✓
     fixed_awbs = {5: "DHL1234567890"}
-
     now = datetime.now(timezone.utc)
     docs = []
 
@@ -801,3 +801,138 @@ async def seed_shipments(db, demo_user_id: str):
         logger.debug(f"Shipment index: {e}")
 
     logger.info(f"[SEED] Inserted 25 demo shipments for user {demo_user_id}. Guaranteed AWB: DHL1234567890")
+
+
+# ============ SECONDARY SEED — shipper@dhlpng.com (Daniel Kavu) ============
+SHIPPER_AWBS = [
+    "DHL5520010001", "DHL5520010002", "DHL5520010003",
+    "DHL5520010004", "DHL5520010005", "DHL5520010006",
+]
+
+
+async def seed_shipper_shipments(db, shipper_user_id: str):
+    """Seed 6 shipments for the shipper demo user (Daniel Kavu / Highlands
+    Mining Supplies (PNG) Ltd). All originate from Port Moresby and ship to
+    a varied mix of international destinations.
+
+    Status mix: 2 DELIVERED, 2 IN_TRANSIT, 1 PICKED_UP, 1 PENDING.
+    """
+    existing = await db.shipments.count_documents({"userId": shipper_user_id})
+    if existing >= 6:
+        logger.info(f"[SEED] Shipper shipments already seeded ({existing}). Skipping.")
+        return
+    if existing > 0:
+        await db.shipments.delete_many({"userId": shipper_user_id})
+
+    rng = random.Random(2026)
+
+    plan = [
+        # (status, dest_code, dest_city, dest_country, receiver_company, receiver_name, service)
+        ("DELIVERED",  "SYD", "Sydney",     "AU", "Pacific Heavy Equipment Pty Ltd", "Maya Pereira",  "EXPRESS_WORLDWIDE"),
+        ("DELIVERED",  "BNE", "Brisbane",   "AU", "Coral Sea Industrial Ltd",        "Felix Tan",     "EXPRESS_WORLDWIDE"),
+        ("IN_TRANSIT", "SIN", "Singapore",  "SG", "Anchor Trading Co",               "Hadi Rahman",   "EXPRESS_12_00"),
+        ("IN_TRANSIT", "AKL", "Auckland",   "NZ", "Southern Cross Procurement Ltd",  "Jordan Hale",   "EXPRESS_WORLDWIDE"),
+        ("PICKED_UP",  "NRT", "Tokyo",      "JP", "Hanazono Commerce KK",            "Riku Sasaki",   "ECONOMY_SELECT"),
+        ("PENDING",    "HKG", "Hong Kong",  "HK", "Victoria Harbour Imports Ltd",    "Ling Chow",     "EXPRESS_12_00"),
+    ]
+    origin = {"city": "Port Moresby", "country": "PG", "code": "POM"}
+    sender_company = "Highlands Mining Supplies (PNG) Ltd"
+    sender_name = "Daniel Kavu"
+
+    descriptions = [
+        "Hydraulic spare parts",
+        "Industrial conveyor belting",
+        "Sealed bearing assemblies",
+        "Diamond core drilling consumables",
+        "Replacement filters and hoses",
+        "Calibrated measuring instruments",
+    ]
+
+    now = datetime.now(timezone.utc)
+    docs = []
+
+    for i, (st, dcode, dcity, dctry, rcomp, rname, service) in enumerate(plan):
+        eta_min, eta_max = SERVICE_DAYS_ETA[service]
+
+        if st == "DELIVERED":
+            days_ago = rng.randint(15, 50)
+        elif st == "IN_TRANSIT":
+            days_ago = rng.randint(2, 6)
+        elif st == "PICKED_UP":
+            days_ago = rng.randint(0, 2)
+        else:  # PENDING
+            days_ago = 0
+
+        created_at = now - timedelta(days=days_ago, hours=rng.randint(0, 23), minutes=rng.randint(0, 59))
+        eta_days = rng.randint(eta_min, eta_max)
+        eta = created_at + timedelta(days=eta_days, hours=rng.randint(0, 12))
+        actual_delivery = eta + timedelta(hours=rng.randint(-12, 12)) if st == "DELIVERED" else None
+
+        dest = {"city": dcity, "country": dctry, "code": dcode}
+
+        sender_addr = {
+            "name": sender_name,
+            "company": sender_company,
+            "address": f"{rng.randint(11, 199)} Sir Hubert Murray Highway",
+            "city": origin["city"],
+            "country": origin["country"],
+            "phone": "+675 7345 1100",
+            "email": "daniel.kavu@highlandsmining.com.pg",
+            "postalCode": "121",
+        }
+        receiver_addr = {
+            "name": rname,
+            "company": rcomp,
+            "address": f"{rng.randint(20, 880)} {rng.choice(['Industrial', 'Wharf', 'Harbour', 'Trade', 'Market'])} Road",
+            "city": dest["city"],
+            "country": dest["country"],
+            "phone": f"+{rng.randint(60, 85)} {rng.randint(2000, 9999)} {rng.randint(1000, 9999)}",
+            "email": f"{rname.split()[0].lower()}@{rcomp.lower().replace(' ', '').replace(',', '').replace('.', '')[:14]}.com",
+            "postalCode": str(rng.randint(1000, 99999)),
+        }
+        pieces = rng.randint(1, 5)
+        weight_per_piece = round(rng.uniform(0.8, 9.5), 2)
+        total_weight = round(pieces * weight_per_piece, 2)
+
+        package = {
+            "pieces": pieces,
+            "weightKg": total_weight,
+            "dimensions": {
+                "l": round(rng.uniform(20, 70), 1),
+                "w": round(rng.uniform(15, 50), 1),
+                "h": round(rng.uniform(10, 40), 1),
+            },
+            "description": descriptions[i],
+            "declaredValueUSD": round(rng.uniform(80, 1900), 2),
+        }
+
+        base_cost = total_weight * (8 if service == "ECONOMY_SELECT" else 15 if service == "EXPRESS_WORLDWIDE" else 22)
+        dest_mult = {"SYD": 1.0, "BNE": 1.0, "AKL": 1.1, "SIN": 1.3, "HKG": 1.4, "NRT": 1.6}.get(dcode, 1.2)
+        cost_pgk = round(base_cost * dest_mult + rng.uniform(40, 150), 2)
+        cost_pgk = max(200.0, min(1800.0, cost_pgk))
+
+        events = _gen_events_for_status(st, origin, dest, created_at, eta, rname.split()[0][0])
+
+        docs.append({
+            "awb": SHIPPER_AWBS[i],
+            "userId": shipper_user_id,
+            "sender": sender_addr,
+            "receiver": receiver_addr,
+            "package": package,
+            "service": service,
+            "status": st,
+            "origin": origin,
+            "destination": dest,
+            "events": events,
+            "estimatedDelivery": eta.isoformat(),
+            "actualDelivery": actual_delivery.isoformat() if actual_delivery else None,
+            "costPGK": cost_pgk,
+            "createdAt": created_at.isoformat(),
+            "updatedAt": created_at.isoformat(),
+        })
+
+    await db.shipments.insert_many(docs)
+    logger.info(
+        f"[SEED] Inserted 6 shipper shipments for user {shipper_user_id}. "
+        f"AWBs {SHIPPER_AWBS[0]}..{SHIPPER_AWBS[-1]}"
+    )

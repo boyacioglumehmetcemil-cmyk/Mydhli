@@ -8,8 +8,10 @@ DHL Mapping (collectively): supports DHL XML Services Guide §5 Shipment
 Validation (Dutiable block) + §7 Label Image. Tax / Inbound / Proforma
 invoices are internal SaaS-billing layer additions not in the DHL spec.
 """
+import os
+import hashlib
 from io import BytesIO
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 from reportlab.lib.pagesizes import A4
@@ -30,6 +32,25 @@ from reportlab.platypus import (
 )
 
 from labels_module import _barcode_png, _qr_png, DHL_YELLOW, DHL_RED, DHL_INK
+
+
+# ============ LOGO ============
+# Client-uploaded DHL Express wordmark. Native size: 334 × 31 px.
+LOGO_PATH = "/app/frontend/public/images/logo-user.png"
+# Cached ImageReader (loaded once per process)
+_LOGO_READER: Optional[ImageReader] = None
+LOGO_RENDER_WIDTH_MM = 60       # rendered width on every page
+LOGO_RENDER_HEIGHT_MM = 5.6     # 60mm × (31/334) ≈ 5.57mm — preserves aspect
+LOGO_TOP_PAD_MM = 5             # distance from page top to top of logo
+
+def _logo() -> Optional[ImageReader]:
+    global _LOGO_READER
+    if _LOGO_READER is None and os.path.exists(LOGO_PATH):
+        try:
+            _LOGO_READER = ImageReader(LOGO_PATH)
+        except Exception:
+            _LOGO_READER = None
+    return _LOGO_READER
 
 
 # ============ STYLES ============
@@ -99,27 +120,23 @@ def _fmt_addr_block(addr: dict, role: str) -> Paragraph:
 
 
 def _header_band(doc_type: str, awb: str) -> Table:
-    """Yellow header band with brand + doc type title + AWB barcode."""
+    """Yellow header band with doc type title + AWB barcode.
+    Brand logo is drawn separately on every page via the canvas callback."""
     bc_buf = _barcode_png(awb)
     bc_img = PlatyImage(bc_buf, width=58 * mm, height=14 * mm)
-    left_html = (
-        "<font color='#1A1A1A'><b>DHL</b></font> "
-        "<font color='#D40511'><b>Express</b></font><br/>"
-        "<font size='7' color='#666'>Demo Document — for pitch & prototyping only</font>"
-    )
-    right_html = (
+    title_html = (
         f"<font size='15'><b>{doc_type}</b></font><br/>"
         f"<font size='9' color='#666'>AWB {awb}</font>"
     )
     tbl = Table(
-        [[Paragraph(left_html, _S_BRAND), Paragraph(right_html, _S_TITLE), bc_img]],
-        colWidths=[60 * mm, 50 * mm, 60 * mm],
+        [[Paragraph(title_html, _S_TITLE), bc_img]],
+        colWidths=[110 * mm, 60 * mm],
     )
     tbl.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (0, 0), DHL_YELLOW),
+        ("BACKGROUND", (0, 0), (-1, 0), DHL_YELLOW),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 8),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
         ("TOPPADDING", (0, 0), (-1, -1), 10),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
     ]))
@@ -198,10 +215,24 @@ def _line_items_table(rows: list, total_label: str, total_value: str) -> list:
 
 # ============ PAGE TEMPLATE ============
 def _build_doc(awb: str) -> tuple:
-    """Create a BaseDocTemplate that prints footer info on every page."""
+    """Create a BaseDocTemplate that prints the brand logo at the top and
+    the disclaimer footer at the bottom of every page."""
     buf = BytesIO()
 
-    def _draw_footer(canv, _doc):
+    def _draw_page_chrome(canv, _doc):
+        # ---- TOP: brand logo on every page (top-left) ----
+        logo = _logo()
+        if logo is not None:
+            canv.drawImage(
+                logo,
+                x=13 * mm,
+                y=A4[1] - (LOGO_TOP_PAD_MM + LOGO_RENDER_HEIGHT_MM) * mm,
+                width=LOGO_RENDER_WIDTH_MM * mm,
+                height=LOGO_RENDER_HEIGHT_MM * mm,
+                preserveAspectRatio=True,
+                mask="auto",
+            )
+        # ---- BOTTOM: hairline + generated/AWB/demo disclaimer + page number ----
         canv.saveState()
         canv.setStrokeColor(colors.HexColor("#E5E7EB"))
         canv.setLineWidth(0.5)
@@ -209,7 +240,8 @@ def _build_doc(awb: str) -> tuple:
         canv.setFont("Helvetica", 7)
         canv.setFillColor(colors.HexColor("#666"))
         gen_ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-        canv.drawString(13 * mm, 10 * mm, f"Generated {gen_ts}  ·  AWB {awb}  ·  DHL Express (Demo)")
+        canv.drawString(13 * mm, 10 * mm,
+                        f"Generated {gen_ts}  ·  AWB {awb}  ·  DHL Express (Demo)")
         canv.setFont("Helvetica-Oblique", 6.5)
         canv.setFillColor(colors.HexColor("#999"))
         canv.drawRightString(A4[0] - 13 * mm, 10 * mm,
@@ -219,15 +251,17 @@ def _build_doc(awb: str) -> tuple:
         canv.drawRightString(A4[0] - 13 * mm, 6 * mm, f"Page {canv.getPageNumber()}")
         canv.restoreState()
 
+    # topMargin = 18mm leaves clear room (5mm pad + ~5.6mm logo + 7mm gap)
+    # for the canvas-drawn logo above the frame content.
     doc = BaseDocTemplate(
         buf, pagesize=A4,
         leftMargin=13 * mm, rightMargin=13 * mm,
-        topMargin=13 * mm, bottomMargin=18 * mm,
+        topMargin=18 * mm, bottomMargin=18 * mm,
         title="DHL Express Shipment Document",
     )
     frame = Frame(doc.leftMargin, doc.bottomMargin,
                   doc.width, doc.height, id="content")
-    doc.addPageTemplates([PageTemplate(id="main", frames=[frame], onPage=_draw_footer)])
+    doc.addPageTemplates([PageTemplate(id="main", frames=[frame], onPage=_draw_page_chrome)])
     return doc, buf
 
 
@@ -268,44 +302,120 @@ def _common_shipment_kv(shipment: dict) -> list:
 
 
 # ============ DOCUMENT 1 — AIR WAYBILL ============
-def generate_air_waybill(shipment: dict, user: dict) -> bytes:
+# Friendly expansions for Type of Export
+EXPORT_TYPE_LABEL = {
+    "PERMANENT": "Permanent",
+    "TEMPORARY": "Temporary",
+    "REPAIR": "Repair / Return",
+    "RETURN": "Repair / Return",
+}
+
+
+def _shipper_reference(awb: str, shipment: dict) -> str:
+    """Reference shown on the AWB; ≤32 chars, first 12 visible on invoice."""
+    ref = shipment.get("reference") or shipment.get("shipperReference")
+    if ref:
+        return str(ref)[:32]
+    return f"REF-{awb[-12:]}"
+
+
+def generate_air_waybill(shipment: dict, user: dict,
+                        customs_doc: Optional[dict] = None) -> bytes:
     awb = shipment.get("awb", "—")
     doc, buf = _build_doc(awb)
+    pkg = shipment.get("package", {}) or {}
+    sender = shipment.get("sender", {}) or {}
+    receiver = shipment.get("receiver", {}) or {}
+
     story = [_header_band("AIR WAYBILL", awb), Spacer(1, 6 * mm)]
 
+    # ===== 1. Shipper & Consignee =====
     story.append(_section_title(1, "Shipper & Consignee"))
     story.append(_two_col_addr(
-        _fmt_addr_block(shipment.get("sender", {}), "SHIPPER"),
-        _fmt_addr_block(shipment.get("receiver", {}), "CONSIGNEE"),
+        _fmt_addr_block(sender, "SHIPPER"),
+        _fmt_addr_block(receiver, "CONSIGNEE"),
     ))
     story.append(Spacer(1, 5 * mm))
 
+    # ===== 2. Routing & Service =====
     story.append(_section_title(2, "Routing & Service"))
     story.append(_kv_grid(_common_shipment_kv(shipment)))
     story.append(Spacer(1, 5 * mm))
 
-    story.append(_section_title(3, "Charges"))
+    # ===== 3. Payment & Insurance =====
+    story.append(_section_title(3, "Payment & Insurance"))
+    insurance_value_usd = pkg.get("insuranceValueUSD") or 0
+    insurance_status = "Insured" if insurance_value_usd > 0 else "Not Insured"
+    payer_account = (
+        (user or {}).get("dhlAccountNo")
+        or (user or {}).get("accountNumber")
+        or "—"
+    )
+    optional_services = []
+    svc = shipment.get("service", "")
+    if svc == "EXPRESS_12_00":
+        optional_services.append("Express 12:00 Delivery")
+    if pkg.get("saturdayDelivery"):
+        optional_services.append("Saturday Delivery")
+    if pkg.get("deliveryNotification"):
+        optional_services.append("Delivery Notification")
+    opt_svc_str = ", ".join(optional_services) if optional_services else "Standard"
+
+    story.append(_kv_grid([
+        ("Charge To", "Shipper"),
+        ("Payer Account No.", payer_account),
+        ("Shipment Insurance", insurance_status),
+        ("Insured Value", f"USD {insurance_value_usd:,.2f}" if insurance_value_usd > 0 else "—"),
+        ("Shipper's Reference", _shipper_reference(awb, shipment)),
+        ("Optional Services", opt_svc_str),
+    ]))
+    story.append(Spacer(1, 5 * mm))
+
+    # ===== 4. Charges =====
+    story.append(_section_title(4, "Charges"))
     cost = shipment.get("costPGK") or 0
     story.append(_kv_grid([
         ("Freight Charge", _money(cost)),
-        ("Terms of Trade", "DAP (Delivered At Place)"),
+        ("Terms of Trade", _expand_incoterms(
+            (customs_doc or {}).get("termsOfTrade") or pkg.get("termsOfTrade")
+        )),
         ("Currency", "PGK"),
     ]))
     story.append(Spacer(1, 5 * mm))
 
-    # Tracking QR
+    # ===== 5. Customs (Non-Document Shipments) =====
+    story.append(_section_title(5, "Customs (Non-Document Shipments)"))
+    shipper_tax = (user or {}).get("companyTaxId") or "—"
+    importer = ((customs_doc or {}).get("importer") or {}) if customs_doc else {}
+    receiver_tax = importer.get("taxId") or importer.get("vatNumber") or "—"
+    type_of_export = EXPORT_TYPE_LABEL.get(
+        ((customs_doc or {}).get("exportType") or "").upper(), "Permanent"
+    )
+    duties_paid_by = (customs_doc or {}).get("dutiesPaidBy") or "Receiver"
+    story.append(_kv_grid([
+        ("Shipper's VAT/GST Number", shipper_tax),
+        ("Receiver's VAT/GST Number", receiver_tax),
+        ("Declared Value for Customs", f"USD {pkg.get('declaredValueUSD', 0):,.2f}"),
+        ("Harmonised Commodity Code", pkg.get("hsCode") or "—"),
+        ("Type of Export", type_of_export),
+        ("Destination Duties Paid By", duties_paid_by),
+    ]))
+    story.append(Spacer(1, 5 * mm))
+
+    # ===== 6. Signature & Tracking =====
     qr_buf = _qr_png(f"https://tracking.dhl-demo.local/{awb}")
     qr_img = PlatyImage(qr_buf, width=28 * mm, height=28 * mm)
     sign = Paragraph(
-        "<b>Shipper's Signature</b><br/><br/><br/>"
+        "<b>Shipper's Signature (required)</b><br/><br/><br/>"
         "_________________________<br/>"
         f"<font size='8' color='#666'>{user.get('firstName', '')} {user.get('lastName', '')}, "
-        f"{user.get('companyName', '')}</font>",
+        f"{user.get('companyName', '')}<br/>"
+        f"Date: {datetime.now(timezone.utc).strftime('%Y-%m-%d')}</font>",
         _S_BODY,
     )
     foot_tbl = Table([[sign, qr_img]], colWidths=[125 * mm, 32 * mm])
     foot_tbl.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP")]))
-    story.append(_section_title(4, "Signature & Tracking"))
+    story.append(_section_title(6, "Shipper's Agreement & Tracking"))
     story.append(foot_tbl)
 
     doc.build(story)
@@ -650,62 +760,124 @@ def generate_commercial_invoice(shipment: dict, user: dict, customs_doc: Optiona
 
     story = [_header_band("COMMERCIAL INVOICE", awb), Spacer(1, 6 * mm)]
 
-    story.append(_section_title(1, "Exporter & Importer"))
+    story.append(_section_title(1, "Exporter, Importer & Bill To"))
     if customs_doc:
         exp = customs_doc.get("exporter") or shipment.get("sender", {})
         imp = customs_doc.get("importer") or shipment.get("receiver", {})
     else:
         exp = shipment.get("sender", {})
         imp = shipment.get("receiver", {})
-    story.append(_two_col_addr(
-        _fmt_addr_block(exp, "EXPORTER"),
-        _fmt_addr_block(imp, "IMPORTER"),
-    ))
+    # BILL TO defaults to the account holder (the user) — that's who DHL bills.
+    bill_to_block = {
+        "name": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip() or "Account Holder",
+        "company": user.get("companyName") or "—",
+        "address": user.get("address") or "—",
+        "city": user.get("city") or "—",
+        "country": user.get("country") or "—",
+        "postalCode": user.get("postalCode") or "—",
+        "phone": user.get("phone") or "—",
+        "email": user.get("email") or "—",
+    }
+    parties_tbl = Table([
+        [_fmt_addr_block(exp, "EXPORTER"),
+         _fmt_addr_block(imp, "IMPORTER"),
+         _fmt_addr_block(bill_to_block, "BILL TO")],
+    ], colWidths=[60 * mm, 60 * mm, 60 * mm])
+    parties_tbl.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#E5E7EB")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#E5E7EB")),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.append(parties_tbl)
+    # IOSS / EORI / Other reference numbers per party (placeholder where unknown)
+    importer_eori = (customs_doc or {}).get("importer", {}).get("eori") or "—"
+    importer_ioss = (customs_doc or {}).get("importer", {}).get("ioss") or "—"
+    exporter_eori = (user or {}).get("eori") or "—"
+    refs_tbl = Table([
+        [Paragraph("<b>IOSS</b> —    <b>EORI</b> " + exporter_eori, _S_BODY),
+         Paragraph("<b>IOSS</b> " + importer_ioss + "    <b>EORI</b> " + importer_eori, _S_BODY),
+         Paragraph("<b>IOSS</b> —    <b>EORI</b> —", _S_BODY)],
+    ], colWidths=[60 * mm, 60 * mm, 60 * mm])
+    refs_tbl.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("LINEBELOW", (0, 0), (-1, -1), 0.25, colors.HexColor("#E5E7EB")),
+    ]))
+    story.append(refs_tbl)
     story.append(Spacer(1, 5 * mm))
 
     story.append(_section_title(2, "Shipment Reference"))
     currency = (customs_doc or {}).get("currency", "USD")
+    export_license = (customs_doc or {}).get("exportLicenseNo") or "—"
+    import_license = (customs_doc or {}).get("importLicenseNo") or "—"
+    reference = (customs_doc or {}).get("reference") or _shipper_reference(awb, shipment)
+    incoterms = _expand_incoterms(
+        (customs_doc or {}).get("termsOfTrade") or pkg.get("termsOfTrade")
+    )
+    reason = _expand_reason((customs_doc or {}).get("reasonForExport"))
     story.append(_kv_grid([
         ("Air Waybill No.", awb),
         ("Invoice Date", datetime.now(timezone.utc).strftime("%Y-%m-%d")),
         ("Country of Origin", shipment.get("origin", {}).get("country", "PG")),
         ("Currency", currency),
-        ("Terms of Trade", "DAP (Delivered At Place)"),
-        ("Reason for Export", "Commercial sale"),
+        ("Incoterm", incoterms),
+        ("Reason for Export", reason),
+        ("Carrier", "DHL"),
+        ("Export License No.", export_license),
+        ("Import License No.", import_license),
+        ("Reference", reference),
     ]))
     story.append(Spacer(1, 5 * mm))
 
     story.append(_section_title(3, "Goods Declaration"))
     items = (customs_doc or {}).get("items") or []
-    rows = [["#", "Description", "HS Code", "Qty", f"Unit Value ({currency})", "Origin", f"Total ({currency})"]]
+    rows = [["#", "Description", "HS Code", "Qty", "Unit Wt (kg)",
+             f"Unit Value ({currency})", "Origin", f"Total ({currency})"]]
     grand = 0.0
+    total_pkg_weight = float(pkg.get("weightKg") or 0)
     if items:
+        # Distribute the shipment's package weight evenly across line items
+        # when no per-item unitWeight is supplied (typical for our customs docs).
+        total_units = sum((it.get("quantity") or 1) for it in items) or 1
         for i, it in enumerate(items, 1):
             qty = it.get("quantity", 1)
             uv = it.get("unitValue", 0.0)
             line = qty * uv
             grand += line
+            unit_wt = it.get("unitWeightKg")
+            if unit_wt is None and total_pkg_weight:
+                unit_wt = round(total_pkg_weight / total_units, 3)
+            unit_wt_str = f"{unit_wt:,.3f}" if unit_wt else "—"
             rows.append([
                 str(i), it.get("description", "—"), it.get("hsCode", "—"),
-                str(qty), f"{uv:,.2f}", it.get("countryOfOrigin", "—"),
-                f"{line:,.2f}",
+                str(qty), unit_wt_str, f"{uv:,.2f}",
+                it.get("countryOfOrigin", "—"), f"{line:,.2f}",
             ])
     else:
         # Fallback to package data
         qty = pkg.get("pieces", 1)
         uv = pkg.get("declaredValueUSD", 0.0)
         grand = qty * uv
+        unit_wt = round(total_pkg_weight / max(qty, 1), 3) if total_pkg_weight else None
+        unit_wt_str = f"{unit_wt:,.3f}" if unit_wt else "—"
         rows.append([
             "1", pkg.get("description", "General merchandise"), pkg.get("hsCode", "9999.99"),
-            str(qty), f"{uv:,.2f}", shipment.get("origin", {}).get("country", "PG"),
-            f"{grand:,.2f}",
+            str(qty), unit_wt_str, f"{uv:,.2f}",
+            shipment.get("origin", {}).get("country", "PG"), f"{grand:,.2f}",
         ])
-    items_tbl = Table(rows, colWidths=[8 * mm, 56 * mm, 20 * mm, 12 * mm, 26 * mm, 18 * mm, 26 * mm])
+    items_tbl = Table(rows, colWidths=[7 * mm, 46 * mm, 18 * mm, 11 * mm, 18 * mm, 24 * mm, 16 * mm, 24 * mm])
     items_tbl.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), DHL_INK),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 7.5),
+        ("FONTSIZE", (0, 0), (-1, -1), 7),
         ("ALIGN", (3, 0), (-1, -1), "RIGHT"),
         ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#E5E7EB")),
         ("TOPPADDING", (0, 0), (-1, -1), 5),
@@ -761,42 +933,90 @@ def generate_commercial_invoice(shipment: dict, user: dict, customs_doc: Optiona
 
 
 # ============ DOCUMENT 4 — TAX INVOICE ============
+def _tax_invoice_number(awb: str) -> str:
+    return f"TAX-{awb[-6:]}-{datetime.now(timezone.utc).strftime('%y%m%d')}"
+
+
 def generate_tax_invoice(shipment: dict, user: dict) -> bytes:
     awb = shipment.get("awb", "—")
     doc, buf = _build_doc(awb)
     subtotal = float(shipment.get("costPGK") or 0)
-    gst = round(subtotal * 0.10, 2)
-    total = round(subtotal + gst, 2)
-
-    story = [_header_band("TAX INVOICE", awb), Spacer(1, 6 * mm)]
-
-    story.append(_section_title(1, "Bill To"))
-    bill_to = Paragraph(
-        f"<b>{user.get('companyName', 'Customer')}</b><br/>"
-        f"{user.get('firstName', '')} {user.get('lastName', '')}<br/>"
-        f"{user.get('email', '')}<br/>"
-        f"Tel: {user.get('phone', '')}",
-        _S_BODY,
+    # Sub-charges breakdown (notional split — total still = subtotal)
+    freight_iata = round(subtotal * 0.85, 2)
+    insurance = round(subtotal * 0.05, 2)
+    duty = 0.0
+    commercial_value_pgk = round(
+        float(shipment.get("package", {}).get("declaredValueUSD") or 0) * 3.7, 2
     )
-    story.append(bill_to)
-    story.append(Spacer(1, 5 * mm))
+    pre_tax = freight_iata + insurance + duty + (subtotal - freight_iata - insurance - duty)
+    gst = round(pre_tax * 0.10, 2)
+    total = round(pre_tax + gst, 2)
 
-    story.append(_section_title(2, "Invoice Details"))
+    today = datetime.now(timezone.utc)
+    due = (today + timedelta(days=14)).strftime("%Y-%m-%d")
+    pkg = shipment.get("package", {}) or {}
+    origin = shipment.get("origin", {}) or {}
+    destination = shipment.get("destination", {}) or {}
+
+    story = [_header_band("TAX INVOICE", awb), Spacer(1, 5 * mm)]
+
+    # ===== DHL legal entity header =====
+    story.append(Paragraph(
+        "<b>DHL Express (PNG) Ltd</b> · Reimburse To: DHL Express (PNG) Ltd, "
+        "Lvl 2, Defens Haus, Port Moresby, Papua New Guinea · "
+        "<b>GST Reg No.</b> 500000000",
+        _S_BODY,
+    ))
+    story.append(Spacer(1, 4 * mm))
+
+    # ===== Invoice metadata =====
+    story.append(Paragraph("INVOICE DETAILS", _S_SECTION))
     story.append(_kv_grid([
-        ("Invoice Date", datetime.now(timezone.utc).strftime("%Y-%m-%d")),
-        ("Air Waybill No.", awb),
+        ("Invoice Number", _tax_invoice_number(awb)),
+        ("HAWB Number", awb),
+        ("Account Number", (user or {}).get("accountNumber") or "—"),
+        ("Invoice Date", today.strftime("%Y-%m-%d")),
+        ("Payment Due Date", due),
         ("Service", _service_label(shipment.get("service", ""))),
-        ("Origin", f"{shipment.get('origin', {}).get('city', '')}, {shipment.get('origin', {}).get('country', '')}"),
-        ("Destination", f"{shipment.get('destination', {}).get('city', '')}, {shipment.get('destination', {}).get('country', '')}"),
-        ("Currency", "PGK"),
         ("GST Rate", "10%"),
+        ("Currency", "PGK"),
     ]))
     story.append(Spacer(1, 5 * mm))
 
-    story.append(_section_title(3, "Charges"))
+    # ===== Bill To =====
+    story.append(Paragraph("BILL TO", _S_SECTION))
+    story.append(Paragraph(
+        f"<b>{user.get('companyName', 'Customer')}</b><br/>"
+        f"Attn: {user.get('firstName', '')} {user.get('lastName', '')}<br/>"
+        f"Email: {user.get('email', '')}<br/>"
+        f"Phone: {user.get('phone', '')}",
+        _S_BODY,
+    ))
+    story.append(Spacer(1, 5 * mm))
+
+    # ===== Shipment Details mini-block =====
+    story.append(Paragraph("SHIPMENT DETAILS", _S_SECTION))
+    story.append(_kv_grid([
+        ("Origin", f"{origin.get('city', '')}, {origin.get('country', '')} ({origin.get('code', '')})"),
+        ("Destination", f"{destination.get('city', '')}, {destination.get('country', '')} ({destination.get('code', '')})"),
+        ("Pieces", str(pkg.get("pieces", "—"))),
+        ("Weight", f"{pkg.get('weightKg', '—')} kg"),
+        ("Contents", pkg.get("description", "—")),
+        ("Assessed Value", f"USD {pkg.get('declaredValueUSD', 0):,.2f}"),
+        ("Arrival Date", (shipment.get("actualDelivery") or shipment.get("estimatedDelivery") or "—")[:10]),
+    ]))
+    story.append(Spacer(1, 5 * mm))
+
+    # ===== Charges =====
+    story.append(Paragraph("BILLING DETAILS", _S_SECTION))
     rows = [
         ["Description", "Amount (PGK)"],
-        [f"International freight — {_service_label(shipment.get('service', ''))} ({awb})", f"{subtotal:,.2f}"],
+        ["Commercial Value", f"{commercial_value_pgk:,.2f}"],
+        ["Freight (IATA)", f"{freight_iata:,.2f}"],
+        ["Insurance", f"{insurance:,.2f}"],
+        ["Duty", f"{duty:,.2f}"],
+        [f"Other freight charges ({_service_label(shipment.get('service', ''))})",
+         f"{(subtotal - freight_iata - insurance):,.2f}"],
     ]
     tbl = Table(rows, colWidths=[121 * mm, 55 * mm])
     tbl.setStyle(TableStyle([
@@ -806,14 +1026,14 @@ def generate_tax_invoice(shipment: dict, user: dict) -> bytes:
         ("FONTSIZE", (0, 0), (-1, -1), 8),
         ("ALIGN", (-1, 0), (-1, -1), "RIGHT"),
         ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#E5E7EB")),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
     ]))
     story.append(tbl)
     story.append(Spacer(1, 3 * mm))
 
     totals = Table([
-        ["Subtotal", f"PGK {subtotal:,.2f}"],
+        ["Subtotal", f"PGK {pre_tax:,.2f}"],
         ["GST (10%)", f"PGK {gst:,.2f}"],
         ["Total Payable", f"PGK {total:,.2f}"],
     ], colWidths=[121 * mm, 55 * mm])
@@ -831,11 +1051,17 @@ def generate_tax_invoice(shipment: dict, user: dict) -> bytes:
         ("LINEABOVE", (0, 2), (-1, 2), 1, DHL_INK),
     ]))
     story.append(totals)
-    story.append(Spacer(1, 8 * mm))
+    story.append(Spacer(1, 6 * mm))
 
     story.append(Paragraph(
-        "<i>This Tax Invoice is issued for the freight services described "
-        "above. GST is charged at the prevailing rate of 10%.</i>",
+        "<b>Payment Terms:</b> Net 14 days from invoice date. "
+        "Late payments may attract interest at the prevailing rate.",
+        _S_BODY,
+    ))
+    story.append(Spacer(1, 4 * mm))
+    story.append(Paragraph(
+        "<i>This is a computer-generated invoice. No signature required. "
+        "GST is charged at the prevailing rate of 10%.</i>",
         _S_DISCLAIMER,
     ))
 
@@ -845,6 +1071,16 @@ def generate_tax_invoice(shipment: dict, user: dict) -> bytes:
 
 
 # ============ DOCUMENT 5 — INBOUND INVOICE ============
+def _inbound_invoice_number(awb: str) -> str:
+    return f"INB-{awb[-6:]}-{datetime.now(timezone.utc).strftime('%y%m%d')}"
+
+
+def _irn(awb: str) -> str:
+    """Mock 16-char Invoice Reference Number (deterministic per AWB+date)."""
+    seed = f"{awb}-{datetime.now(timezone.utc).strftime('%Y%m%d')}"
+    return hashlib.sha256(seed.encode()).hexdigest()[:16].upper()
+
+
 def generate_inbound_invoice(shipment: dict, user: dict) -> bytes:
     """Receiver-side invoice — for inbound (imported) shipments. Charges
     listed are import duties/clearance fees on a notional basis."""
@@ -853,30 +1089,64 @@ def generate_inbound_invoice(shipment: dict, user: dict) -> bytes:
     declared_usd = float(shipment.get("package", {}).get("declaredValueUSD") or 0)
     duty_pct = 0.05
     clearance_fee_pgk = 50.0
-    declared_pgk = declared_usd * 3.7  # rough USD→PGK
+    declared_pgk = declared_usd * 3.7
     duty_pgk = round(declared_pgk * duty_pct, 2)
-    gst_pgk = round((duty_pgk + clearance_fee_pgk) * 0.10, 2)
-    total_pgk = round(duty_pgk + clearance_fee_pgk + gst_pgk, 2)
+    advance_payment = 0.0
+    pre_tax = duty_pgk + clearance_fee_pgk
+    gst_pgk = round(pre_tax * 0.10, 2)
+    total_pgk = round(pre_tax + gst_pgk - advance_payment, 2)
 
-    story = [_header_band("INBOUND INVOICE", awb), Spacer(1, 6 * mm)]
+    today = datetime.now(timezone.utc)
+    due = (today + timedelta(days=14)).strftime("%Y-%m-%d")
+    pkg = shipment.get("package", {}) or {}
+    origin = shipment.get("origin", {}) or {}
+    destination = shipment.get("destination", {}) or {}
+    receiver = shipment.get("receiver", {}) or {}
 
-    story.append(_section_title(1, "Receiver (Importer of Record)"))
-    story.append(_fmt_addr_block(shipment.get("receiver", {}), "RECEIVER"))
-    story.append(Spacer(1, 5 * mm))
+    story = [_header_band("INBOUND INVOICE", awb), Spacer(1, 4 * mm)]
 
-    story.append(_section_title(2, "Inbound Shipment"))
+    # ORIGINAL FOR RECIPIENT marker (top-right of content)
+    story.append(Paragraph(
+        '<para alignment="right"><font color="#D40511" size="8"><b>'
+        'ORIGINAL FOR RECIPIENT</b></font></para>',
+        _S_BODY,
+    ))
+    story.append(Spacer(1, 4 * mm))
+
+    # ===== Invoice metadata =====
+    story.append(Paragraph("INVOICE DETAILS", _S_SECTION))
     story.append(_kv_grid([
-        ("Air Waybill No.", awb),
-        ("Arrival Date", datetime.now(timezone.utc).strftime("%Y-%m-%d")),
-        ("Origin", f"{shipment.get('origin', {}).get('city', '')}, {shipment.get('origin', {}).get('country', '')}"),
-        ("Destination", f"{shipment.get('destination', {}).get('city', '')}, {shipment.get('destination', {}).get('country', '')}"),
-        ("Service", _service_label(shipment.get("service", ""))),
-        ("Declared Value", f"USD {declared_usd:,.2f}"),
+        ("Invoice Number", _inbound_invoice_number(awb)),
+        ("HAWB Number", awb),
+        ("Account Number", (user or {}).get("accountNumber") or "—"),
+        ("Invoice Date", today.strftime("%Y-%m-%d")),
+        ("Payment Due Date", due),
         ("Currency", "PGK"),
+        ("Place of Supply", destination.get("country") or "—"),
     ]))
     story.append(Spacer(1, 5 * mm))
 
-    story.append(_section_title(3, "Duties & Charges"))
+    # ===== Receiver / Importer of Record =====
+    story.append(Paragraph("RECEIVER (IMPORTER OF RECORD)", _S_SECTION))
+    story.append(_fmt_addr_block(receiver, "RECEIVER"))
+    story.append(Spacer(1, 5 * mm))
+
+    # ===== Shipment Details =====
+    story.append(Paragraph("SHIPMENT DETAILS", _S_SECTION))
+    story.append(_kv_grid([
+        ("Contents", pkg.get("description") or "—"),
+        ("Assessed Value", f"USD {declared_usd:,.2f}"),
+        ("Origin", f"{origin.get('city', '')}, {origin.get('country', '')} ({origin.get('code', '')})"),
+        ("Destination", f"{destination.get('city', '')}, {destination.get('country', '')} ({destination.get('code', '')})"),
+        ("Pieces", str(pkg.get("pieces", "—"))),
+        ("Weight", f"{pkg.get('weightKg', '—')} kg"),
+        ("Arrival Date", (shipment.get("actualDelivery") or shipment.get("estimatedDelivery") or "—")[:10]),
+        ("Service", _service_label(shipment.get("service", ""))),
+    ]))
+    story.append(Spacer(1, 5 * mm))
+
+    # ===== Billing Details =====
+    story.append(Paragraph("BILLING DETAILS", _S_SECTION))
     rows = [
         ["Description", "Amount (PGK)"],
         [f"Import duty ({int(duty_pct * 100)}% × declared value)", f"{duty_pgk:,.2f}"],
@@ -897,26 +1167,38 @@ def generate_inbound_invoice(shipment: dict, user: dict) -> bytes:
     story.append(Spacer(1, 3 * mm))
 
     totals = Table([
-        ["Subtotal", f"PGK {(duty_pgk + clearance_fee_pgk):,.2f}"],
+        ["Subtotal", f"PGK {pre_tax:,.2f}"],
         ["GST (10%)", f"PGK {gst_pgk:,.2f}"],
-        ["Total Payable on Arrival", f"PGK {total_pgk:,.2f}"],
+        ["Advance Payment", f"PGK -{advance_payment:,.2f}"],
+        ["Total Amount Payable on Arrival", f"PGK {total_pgk:,.2f}"],
     ], colWidths=[121 * mm, 55 * mm])
     totals.setStyle(TableStyle([
         ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
         ("FONTSIZE", (0, 0), (-1, -1), 9),
         ("ALIGN", (-1, 0), (-1, -1), "RIGHT"),
-        ("FONTNAME", (0, 2), (-1, 2), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 2), (-1, 2), 11),
-        ("BACKGROUND", (0, 2), (-1, 2), DHL_YELLOW),
+        ("FONTNAME", (0, 3), (-1, 3), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 3), (-1, 3), 11),
+        ("BACKGROUND", (0, 3), (-1, 3), DHL_YELLOW),
         ("TOPPADDING", (0, 0), (-1, -1), 6),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ("LEFTPADDING", (0, 0), (-1, -1), 8),
         ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-        ("LINEABOVE", (0, 2), (-1, 2), 1, DHL_INK),
+        ("LINEABOVE", (0, 3), (-1, 3), 1, DHL_INK),
     ]))
     story.append(totals)
-    story.append(Spacer(1, 8 * mm))
+    story.append(Spacer(1, 6 * mm))
 
+    story.append(Paragraph(
+        "<b>Payment Terms:</b> Cash on delivery unless otherwise agreed. "
+        "Total due on arrival of the consignment in the destination country.",
+        _S_BODY,
+    ))
+    story.append(Spacer(1, 3 * mm))
+    story.append(Paragraph(
+        f"<b>IRN (Invoice Reference Number):</b> {_irn(awb)}",
+        _S_BODY,
+    ))
+    story.append(Spacer(1, 4 * mm))
     story.append(Paragraph(
         "<i>This Inbound Invoice covers import-side duties and clearance "
         "charges payable to deliver the shipment to the consignee. "
@@ -987,9 +1269,16 @@ def generate_shipment_declaration(shipment: dict, user: dict, customs_doc: Optio
     story.append(Spacer(1, 8 * mm))
 
     story.append(_section_title(5, "Reason for Export & Terms"))
+    type_of_export = EXPORT_TYPE_LABEL.get(
+        ((customs_doc or {}).get("exportType") or "").upper(), "Permanent"
+    )
     story.append(_kv_grid([
-        ("Reason for Export", "Commercial sale"),
-        ("Terms of Trade", "DAP (Delivered At Place)"),
+        ("Reason for Export", _expand_reason((customs_doc or {}).get("reasonForExport"))),
+        ("Type of Export", type_of_export),
+        ("Terms of Trade", _expand_incoterms(
+            (customs_doc or {}).get("termsOfTrade")
+            or shipment.get("package", {}).get("termsOfTrade")
+        )),
         ("Country of Origin", shipment.get("origin", {}).get("country", "PG")),
     ]))
     story.append(Spacer(1, 10 * mm))

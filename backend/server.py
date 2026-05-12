@@ -445,6 +445,36 @@ async def startup_seed():
         except Exception as e:
             logger.error(f"[SEED] Shipment seeding failed: {e}")
 
+    # ===== Seed secondary "shipper" user (Daniel Kavu) =====
+    shipper_email = "shipper@dhlpng.com"
+    shipper_pwd = "Shipper@2026"
+    existing_shipper = await db.users.find_one({"email": shipper_email})
+    if not existing_shipper:
+        now = datetime.now(timezone.utc)
+        await db.users.insert_one({
+            "id": str(uuid.uuid4()),
+            "email": shipper_email,
+            "password": hash_password(shipper_pwd),
+            "firstName": "Daniel",
+            "lastName": "Kavu",
+            "companyName": "Highlands Mining Supplies (PNG) Ltd",
+            "country": "PG",
+            "phone": "+675 7345 1100",
+            "createdAt": now.isoformat(),
+            "updatedAt": now.isoformat(),
+        })
+        logger.info(f"[SEED] Shipper user created: {shipper_email} / {shipper_pwd}")
+    else:
+        logger.info(f"[SEED] Shipper user already exists: {shipper_email}")
+
+    shipper_user = await db.users.find_one({"email": shipper_email})
+    if shipper_user:
+        try:
+            from shipments_module import seed_shipper_shipments
+            await seed_shipper_shipments(db, shipper_user["id"])
+        except Exception as e:
+            logger.error(f"[SEED] Shipper shipment seeding failed: {e}")
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

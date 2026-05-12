@@ -47,6 +47,75 @@ def test_document_pdf_returns_valid_pdf(auth_token, slug):
     assert len(r.content) > 5000, f"{slug}: suspiciously small ({len(r.content)} bytes)"
 
 
+@pytest.mark.parametrize("slug", DOC_SLUGS)
+def test_document_pdf_embeds_logo_on_every_page(auth_token, slug, tmp_path):
+    """Every page of every document must embed at least one image (the brand
+    logo is drawn on every page via the canvas callback)."""
+    import pdfplumber
+
+    r = requests.get(
+        f"{API}/shipments/{TEST_AWB}/documents/{slug}.pdf",
+        headers={"Authorization": f"Bearer {auth_token}"},
+        timeout=15,
+    )
+    assert r.status_code == 200
+    pdf_path = tmp_path / f"{slug}.pdf"
+    pdf_path.write_bytes(r.content)
+
+    with pdfplumber.open(str(pdf_path)) as pdf:
+        for i, page in enumerate(pdf.pages):
+            assert len(page.images) >= 1, (
+                f"{slug} page {i + 1}: no image found (expected logo)"
+            )
+
+
+def test_shipper_user_can_login_and_owns_six_shipments():
+    """Secondary seeded shipper user (Daniel Kavu) can log in and owns
+    the 6 seeded shipments DHL5520010001..DHL5520010006."""
+    r = requests.post(
+        f"{API}/auth/login",
+        json={"email": "shipper@dhlpng.com", "password": "Shipper@2026"},
+        timeout=10,
+    )
+    assert r.status_code == 200, f"shipper login failed: {r.text}"
+    body = r.json()
+    token = body["access_token"]
+    assert body["user"]["email"] == "shipper@dhlpng.com"
+    assert body["user"]["companyName"] == "Highlands Mining Supplies (PNG) Ltd"
+    assert body["user"]["firstName"] == "Daniel"
+    assert body["user"]["lastName"] == "Kavu"
+
+    r2 = requests.get(
+        f"{API}/shipments?pageSize=10",
+        headers={"Authorization": f"Bearer {token}"},
+        timeout=10,
+    )
+    assert r2.status_code == 200
+    data = r2.json()
+    assert data["total"] == 6, f"expected 6, got {data['total']}"
+    awbs = sorted(item["awb"] for item in data["items"])
+    expected = [f"DHL552001000{i}" for i in range(1, 7)]
+    assert awbs == expected, f"AWB mismatch: {awbs}"
+
+
+def test_demo_user_shipments_intact():
+    """Regression: demo user's shipment count not broken by the shipper seed."""
+    r = requests.post(
+        f"{API}/auth/login",
+        json={"email": "demo@dhlpng.com", "password": "Demo@2026"},
+        timeout=10,
+    )
+    token = r.json()["access_token"]
+    r2 = requests.get(
+        f"{API}/shipments?pageSize=1",
+        headers={"Authorization": f"Bearer {token}"},
+        timeout=10,
+    )
+    assert r2.status_code == 200
+    # Demo user has 25 originally seeded + extras created during dev (≥25)
+    assert r2.json()["total"] >= 25
+
+
 def test_proforma_pdf_contains_required_sections(auth_token, tmp_path):
     """Proforma Invoice PDF must render all six sections from the client's
     template + the shipment's AWB. Verifies no example-template data leaks."""
