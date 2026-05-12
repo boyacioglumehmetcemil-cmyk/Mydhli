@@ -228,6 +228,13 @@ async def create_status_check(input: StatusCheckCreate):
 
 @api_router.post("/auth/register", response_model=TokenResponse, status_code=201)
 async def register(payload: UserRegister):
+    """
+    Create a new account and return a JWT.
+
+    DHL Mapping: Identity layer — Internal. DHL XML Services uses
+    SiteID/Password (per-request credentials, no user concept); modern DHL
+    REST APIs use OAuth 2.0. We use JWT + bcrypt for the demo's user model.
+    """
     # Normalize email
     email = payload.email.lower()
 
@@ -265,6 +272,11 @@ async def register(payload: UserRegister):
 
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(payload: UserLogin):
+    """
+    Verify credentials and issue a JWT.
+
+    DHL Mapping: Identity layer — Internal. See `/auth/register`.
+    """
     email = payload.email.lower()
     user = await db.users.find_one({"email": email})
     if not user or not verify_password(payload.password, user["password"]):

@@ -89,6 +89,12 @@ def build_router(db, get_current_user_dep):
         page: int = Query(1, ge=1),
         pageSize: int = Query(20, ge=1, le=100),
     ):
+        """
+        Paginated, auth-scoped invoice list.
+
+        DHL Mapping: Invoicing — Internal (DHL XML Services does not cover
+        billing). This is the SaaS layer on top of DHL operations.
+        """
         q = {"userId": user["id"]}
         if status:
             q["status"] = status.upper()
@@ -148,6 +154,12 @@ def build_router(db, get_current_user_dep):
     # ---- REPORTS ----
     @router.get("/reports/overview")
     async def reports_overview(user: dict = Depends(get_current_user_dep)):
+        """
+        Aggregated analytics for the customer dashboard.
+
+        DHL Mapping: Internal — aggregations over `shipments` + `invoices`
+        collections (DHL XML Services has no analytics surface).
+        """
         user_id = user["id"]
         # Pull all shipments (capped 500 for safety)
         shipments = await db.shipments.find(
@@ -237,11 +249,26 @@ def build_router(db, get_current_user_dep):
     # ---- CUSTOMS ----
     @router.get("/customs", response_model=List[CustomsDocOut])
     async def list_customs(user: dict = Depends(get_current_user_dep)):
+        """
+        List user's customs documents.
+
+        DHL Mapping: Customs documentation (related to Shipment Validation
+        `Dutiable` block, DHL XML Services Guide §5). The list endpoint
+        itself is our internal storage convenience.
+        """
         cursor = db.customs_documents.find({"userId": user["id"]}, {"_id": 0}).sort("createdAt", -1)
         return await cursor.to_list(length=200)
 
     @router.post("/customs", response_model=CustomsDocOut, status_code=201)
     async def create_customs(payload: CustomsDocIn, user: dict = Depends(get_current_user_dep)):
+        """
+        Generate a customs document (commercial invoice / packing list / export decl).
+
+        DHL Mapping: Customs documentation (related to Shipment Validation
+        `Dutiable` block, DHL XML Services Guide §5). DHL's XML accepts these
+        as a Dutiable sub-document on the shipment; we model them as a
+        standalone object for the UI workflow.
+        """
         if payload.docType not in ("COMMERCIAL_INVOICE", "PACKING_LIST", "EXPORT_DECLARATION"):
             raise HTTPException(status_code=400, detail="Invalid docType")
         total = sum(it.quantity * it.unitValue for it in payload.items)

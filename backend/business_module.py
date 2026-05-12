@@ -267,16 +267,35 @@ def build_router(db, get_current_user_dep):
     # ---- quotes (auth) ----
     @router.post("/quotes", response_model=QuoteResponse)
     async def create_quote(payload: QuoteRequest, _user: dict = Depends(get_current_user_dep)):
+        """
+        Return 3 service-tier prices and transit days for a prospective shipment.
+
+        DHL Mapping: Capability & Quote Service (DHL XML Services Guide §4).
+        Returns EXPRESS_12_00 / EXPRESS_WORLDWIDE / ECONOMY_SELECT tiers with
+        PGK pricing and ETA. On production switch this adapter calls the live
+        Capability & Quote endpoint and remaps the response to the same shape.
+        """
         return _calc_quote(payload)
 
     # ---- addresses (auth) ----
     @router.get("/addresses", response_model=List[AddressOut])
     async def list_addresses(user: dict = Depends(get_current_user_dep)):
+        """
+        Address book — convenience layer for sender/receiver presets.
+
+        DHL Mapping: Internal (not part of DHL XML Services).
+        DHL ShipmentValidation accepts an inline `Shipper`/`Consignee` block;
+        this collection is our SaaS-side persistence so users don't retype.
+        """
         cursor = db.addresses.find({"userId": user["id"]}, {"_id": 0}).sort("createdAt", -1)
         return await cursor.to_list(length=200)
 
     @router.post("/addresses", response_model=AddressOut, status_code=201)
     async def create_address(payload: AddressIn, user: dict = Depends(get_current_user_dep)):
+        """
+        Create an address entry. DHL Mapping: Internal address-book layer
+        (not part of DHL XML Services).
+        """
         # If marking default, unset others
         if payload.isDefaultSender:
             await db.addresses.update_many(
@@ -337,11 +356,22 @@ def build_router(db, get_current_user_dep):
     # ---- pickups (auth) ----
     @router.get("/pickups", response_model=List[PickupOut])
     async def list_pickups(user: dict = Depends(get_current_user_dep)):
+        """
+        Auth-scoped pickup list. DHL Mapping: Internal (lists DHL Pickup
+        Request bookings we've persisted; not a DHL XML operation itself).
+        """
         cursor = db.pickups.find({"userId": user["id"]}, {"_id": 0}).sort("createdAt", -1)
         return await cursor.to_list(length=200)
 
     @router.post("/pickups", response_model=PickupOut, status_code=201)
     async def create_pickup(payload: PickupIn, user: dict = Depends(get_current_user_dep)):
+        """
+        Book a courier pickup. Returns confirmationNumber `PU########`.
+
+        DHL Mapping: Pickup Request Service (DHL XML Services Guide §6).
+        On production switch, this handler becomes the adapter that posts
+        the equivalent BookPickupRequest to DHL and stores the response.
+        """
         conf = "PU" + "".join(str(random.randint(0, 9)) for _ in range(8))
         doc = payload.model_dump()
         doc.update({
@@ -356,6 +386,13 @@ def build_router(db, get_current_user_dep):
 
     @router.delete("/pickups/{pickup_id}")
     async def cancel_pickup(pickup_id: str, user: dict = Depends(get_current_user_dep)):
+        """
+        Cancel a scheduled pickup. Sets status=CANCELLED.
+
+        DHL Mapping: Pickup Cancellation Service (DHL XML Services Guide §6).
+        On production switch, this handler posts CancelPickupRequest to DHL
+        and reconciles the local status from the response.
+        """
         res = await db.pickups.update_one(
             {"id": pickup_id, "userId": user["id"]}, {"$set": {"status": "CANCELLED"}}
         )
@@ -366,6 +403,13 @@ def build_router(db, get_current_user_dep):
     # ---- payments (auth) ----
     @router.post("/payments/charge", response_model=PaymentOut)
     async def charge(payload: PaymentIn, user: dict = Depends(get_current_user_dep)):
+        """
+        Demo card charge — Luhn-validated mock with predictable test cards.
+
+        DHL Mapping: Out of scope for DHL XML Services (which only covers
+        AWB lifecycle, not payments). Replace this with the real PSP adapter
+        (Stripe/Adyen/etc.) on production switch.
+        """
         clean = "".join(c for c in payload.cardNumber if c.isdigit())
         # Validation
         now = datetime.now(timezone.utc)

@@ -277,6 +277,13 @@ def build_router(db, get_current_user_dep):
 
     @router.get("/track/{awb}", response_model=ShipmentPublic)
     async def public_track(awb: str):
+        """
+        Public, PII-scrubbed tracking view by Air Waybill number.
+
+        DHL Mapping: Tracking Service (DHL XML Services Guide §3 introduction
+        + §1 service list). On production switch, this adapter calls the live
+        Tracking endpoint and returns the same scrubbed shape to the UI.
+        """
         doc = await db.shipments.find_one({"awb": awb.upper()})
         if not doc:
             raise HTTPException(status_code=404, detail="No shipment found for this AWB")
@@ -294,6 +301,13 @@ def build_router(db, get_current_user_dep):
         page: int = Query(1, ge=1),
         pageSize: int = Query(20, ge=1, le=100),
     ):
+        """
+        Auth-scoped shipment list with pagination/filters.
+
+        DHL Mapping: Internal (not part of the DHL XML Services Guide).
+        Backed by Mongo `shipments` collection. The DHL Tracking Service
+        operates per-AWB; this list view is our SaaS-side dashboard layer.
+        """
         query: dict = {"userId": current_user["id"]}
         if status:
             query["status"] = status.upper()
@@ -324,6 +338,13 @@ def build_router(db, get_current_user_dep):
         awb: str,
         current_user: dict = Depends(get_current_user_dep),
     ):
+        """
+        Auth-scoped, PII-complete shipment detail for the owner.
+
+        DHL Mapping: Internal owner view. The DHL XML Tracking response only
+        carries the public (scrubbed) shape; this endpoint exposes the full
+        sender/receiver/package fields stored alongside it in our DB.
+        """
         doc = await db.shipments.find_one(
             {"awb": awb.upper(), "userId": current_user["id"]},
             {"_id": 0},
@@ -338,6 +359,15 @@ def build_router(db, get_current_user_dep):
         payload: ShipmentCreate,
         current_user: dict = Depends(get_current_user_dep),
     ):
+        """
+        Validate a new shipment and persist it with a generated AWB.
+
+        DHL Mapping: Shipment Validation Service (DHL XML Services Guide §5).
+        Generates AWB + initial `OC` ("Shipment information received") event.
+        On production switch, this handler becomes the adapter that posts
+        the equivalent ShipmentValidation request to DHL and stores the
+        returned AWB / events in our DB.
+        """
         # Validate service
         if payload.service not in ("EXPRESS_WORLDWIDE", "EXPRESS_12_00", "ECONOMY_SELECT"):
             raise HTTPException(status_code=400, detail="Invalid service code")
@@ -399,6 +429,13 @@ def build_router(db, get_current_user_dep):
         request: Request,
         current_user: dict = Depends(get_current_user_dep),
     ):
+        """
+        Render the shipping label PDF (with AWB barcode + tracking QR).
+
+        DHL Mapping: Shipment Validation Service — Label Image (DHL XML
+        Services Guide §7). DHL returns the label as a base64 image; we
+        render it server-side via ReportLab for the demo.
+        """
         doc = await db.shipments.find_one(
             {"awb": awb.upper(), "userId": current_user["id"]},
             {"_id": 0},
