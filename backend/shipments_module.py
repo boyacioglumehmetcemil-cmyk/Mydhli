@@ -451,6 +451,120 @@ def build_router(db, get_current_user_dep):
             headers={"Content-Disposition": f'inline; filename="label-{awb.upper()}.pdf"'},
         )
 
+    # ============ SHIPMENT DOCUMENTS (additive) ============
+    async def _load_shipment_for_user(awb: str, user_id: str) -> dict:
+        doc = await db.shipments.find_one(
+            {"awb": awb.upper(), "userId": user_id},
+            {"_id": 0},
+        )
+        if not doc:
+            raise HTTPException(status_code=404, detail="Shipment not found")
+        return doc
+
+    async def _load_user(user_id: str) -> dict:
+        u = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
+        return u or {}
+
+    async def _latest_customs(awb: str, user_id: str) -> Optional[dict]:
+        return await db.customs_documents.find_one(
+            {"shipmentAwb": awb.upper(), "userId": user_id},
+            {"_id": 0},
+            sort=[("createdAt", -1)],
+        )
+
+    def _stream_pdf(pdf_bytes: bytes, awb: str, slug: str) -> StreamingResponse:
+        return StreamingResponse(
+            BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{awb}_{slug}.pdf"'},
+        )
+
+    @router.get("/shipments/{awb}/documents/airwaybill.pdf")
+    async def doc_airwaybill(awb: str, current_user: dict = Depends(get_current_user_dep)):
+        """
+        Render the Air Waybill PDF for a shipment.
+
+        DHL Mapping: Shipment Validation Service — Label Image (§7) — Air
+        Waybill format. Our own A4 layout — not a pixel-replica of any
+        carrier's printed AWB form.
+        """
+        shipment = await _load_shipment_for_user(awb, current_user["id"])
+        user = await _load_user(current_user["id"])
+        from document_generator import generate_air_waybill
+        return _stream_pdf(generate_air_waybill(shipment, user), awb.upper(), "airwaybill")
+
+    @router.get("/shipments/{awb}/documents/proforma.pdf")
+    async def doc_proforma(awb: str, current_user: dict = Depends(get_current_user_dep)):
+        """
+        Render the Proforma Invoice PDF (pre-shipment estimated values).
+
+        DHL Mapping: Internal — supports §6 Customs declaration workflow.
+        """
+        shipment = await _load_shipment_for_user(awb, current_user["id"])
+        user = await _load_user(current_user["id"])
+        from document_generator import generate_proforma_invoice
+        return _stream_pdf(generate_proforma_invoice(shipment, user), awb.upper(), "proforma")
+
+    @router.get("/shipments/{awb}/documents/commercial.pdf")
+    async def doc_commercial(awb: str, current_user: dict = Depends(get_current_user_dep)):
+        """
+        Render the Commercial Invoice PDF (customs declaration invoice).
+
+        DHL Mapping: §6 Non-Document Customs Requirement supporting paperwork.
+        Pulls the latest matching customs declaration if one exists; falls
+        back to the shipment's package data otherwise.
+        """
+        shipment = await _load_shipment_for_user(awb, current_user["id"])
+        user = await _load_user(current_user["id"])
+        customs_doc = await _latest_customs(awb, current_user["id"])
+        from document_generator import generate_commercial_invoice
+        return _stream_pdf(
+            generate_commercial_invoice(shipment, user, customs_doc),
+            awb.upper(), "commercial",
+        )
+
+    @router.get("/shipments/{awb}/documents/tax.pdf")
+    async def doc_tax(awb: str, current_user: dict = Depends(get_current_user_dep)):
+        """
+        Render the Tax Invoice PDF (freight + 10% GST).
+
+        DHL Mapping: Internal billing layer (not part of DHL XML).
+        """
+        shipment = await _load_shipment_for_user(awb, current_user["id"])
+        user = await _load_user(current_user["id"])
+        from document_generator import generate_tax_invoice
+        return _stream_pdf(generate_tax_invoice(shipment, user), awb.upper(), "tax")
+
+    @router.get("/shipments/{awb}/documents/inbound.pdf")
+    async def doc_inbound(awb: str, current_user: dict = Depends(get_current_user_dep)):
+        """
+        Render the Inbound Invoice PDF (receiver-side duties + clearance).
+
+        DHL Mapping: Internal billing layer (not part of DHL XML).
+        """
+        shipment = await _load_shipment_for_user(awb, current_user["id"])
+        user = await _load_user(current_user["id"])
+        from document_generator import generate_inbound_invoice
+        return _stream_pdf(generate_inbound_invoice(shipment, user), awb.upper(), "inbound")
+
+    @router.get("/shipments/{awb}/documents/declaration.pdf")
+    async def doc_declaration(awb: str, current_user: dict = Depends(get_current_user_dep)):
+        """
+        Render the Shipment Declaration PDF (shipper's export declaration).
+
+        DHL Mapping: §5 Shipment Validation `Dutiable` block — Shipper's
+        export declaration. Uses the latest customs declaration on file
+        if present.
+        """
+        shipment = await _load_shipment_for_user(awb, current_user["id"])
+        user = await _load_user(current_user["id"])
+        customs_doc = await _latest_customs(awb, current_user["id"])
+        from document_generator import generate_shipment_declaration
+        return _stream_pdf(
+            generate_shipment_declaration(shipment, user, customs_doc),
+            awb.upper(), "declaration",
+        )
+
     return router
 
 

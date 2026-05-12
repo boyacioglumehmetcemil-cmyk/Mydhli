@@ -2,6 +2,7 @@ import { Package, Truck, FileText, Calendar, User, Building2, MapPin, Phone, Mai
 import StatusBadge from "@/components/StatusBadge";
 import RouteVisual from "@/components/RouteVisual";
 import MilestoneTimeline from "@/components/MilestoneTimeline";
+import ShipmentDocuments from "@/components/ShipmentDocuments";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -285,6 +286,9 @@ const TrackingDetail = ({ shipment, mode = "public" }) => {
           </TooltipProvider>
         </div>
       )}
+
+      {/* Shipment Documents (auth only) — 6 auto-populated PDFs */}
+      {isAuth && <ShipmentDocuments awb={shipment.awb} />}
     </div>
   );
 };
