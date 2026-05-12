@@ -251,14 +251,35 @@ const TrackingDetail = ({ shipment, mode = "public" }) => {
               <TooltipTrigger asChild>
                 <Button
                   data-testid="action-download-label"
-                  onClick={() => comingSoon("Download Label")}
+                  onClick={async () => {
+                    try {
+                      const token = localStorage.getItem("dhl_auth_token");
+                      const url = `${process.env.REACT_APP_BACKEND_URL}/api/shipments/${shipment.awb}/label.pdf`;
+                      const res = await fetch(url, {
+                        headers: token ? { Authorization: `Bearer ${token}` } : {},
+                      });
+                      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                      const blob = await res.blob();
+                      const obj = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = obj;
+                      a.download = `${shipment.awb}_label.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      setTimeout(() => URL.revokeObjectURL(obj), 1000);
+                      toast.success("Label downloaded");
+                    } catch (e) {
+                      toast.error("Could not download label", { description: String(e?.message || e) });
+                    }
+                  }}
                   className="h-10 bg-dhl-ink text-white hover:bg-dhl-red rounded-none uppercase tracking-wider text-xs font-bold px-5"
                 >
                   <FileText className="w-4 h-4 mr-2" />
                   Download Label (PDF)
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Available in Phase 3</TooltipContent>
+              <TooltipContent>A6 shipping label with AWB barcode + tracking QR</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>

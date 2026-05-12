@@ -56,17 +56,17 @@ def render_shipping_label(shipment: dict, track_url: str) -> bytes:
     W, H = A6  # 105 x 148 mm
     c = canvas.Canvas(buf, pagesize=A6)
 
-    # Yellow header bar
+    # Yellow header bar — taller (24mm, +33%) for a more prominent brand band
     c.setFillColor(DHL_YELLOW)
-    c.rect(0, H - 18 * mm, W, 18 * mm, fill=1, stroke=0)
+    c.rect(0, H - 24 * mm, W, 24 * mm, fill=1, stroke=0)
     c.setFillColor(DHL_INK)
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(6 * mm, H - 11 * mm, "DHL")
+    c.setFont("Helvetica-Bold", 18)
+    c.drawString(6 * mm, H - 13 * mm, "DHL")
     c.setFillColor(DHL_RED)
-    c.drawString(20 * mm, H - 11 * mm, "Express")
+    c.drawString(22 * mm, H - 13 * mm, "Express")
     c.setFillColor(DHL_INK)
     c.setFont("Helvetica", 7)
-    c.drawString(6 * mm, H - 15 * mm, "Demo Shipping Label · Not for actual carrier use")
+    c.drawString(6 * mm, H - 20 * mm, "Demo Shipping Label · Not for actual carrier use")
 
     awb = str(_safe(shipment, "awb", "—"))
     service = str(_safe(shipment, "service", "")).replace("_", " ") or "—"
@@ -75,8 +75,8 @@ def render_shipping_label(shipment: dict, track_url: str) -> bytes:
     o_code = _safe(origin, "code", "—")
     d_code = _safe(dest, "code", "—")
 
-    # Service + origin/dest
-    y = H - 24 * mm
+    # Service + origin/dest (just below the taller yellow band)
+    y = H - 30 * mm
     c.setFont("Helvetica-Bold", 9)
     c.drawString(6 * mm, y, f"Service: {service}")
     c.drawRightString(W - 6 * mm, y, f"{o_code} → {d_code}")
@@ -145,24 +145,25 @@ def render_shipping_label(shipment: dict, track_url: str) -> bytes:
     declared = _safe(pkg, "declaredValueUSD", 0)
     c.drawString(50 * mm, y, f"USD {float(declared):.0f}")
 
-    # Barcode (skip cleanly if AWB invalid)
+    # Barcode (skip cleanly if AWB invalid). Lifted to y=18mm so there's
+    # ~7mm clearance between the barcode bottom and the AWB text below it.
     try:
         bc_buf = _barcode_png(awb)
         c.drawImage(ImageReader(bc_buf),
-                    6 * mm, 10 * mm, width=70 * mm, height=18 * mm,
+                    6 * mm, 18 * mm, width=70 * mm, height=18 * mm,
                     preserveAspectRatio=True, mask='auto')
     except Exception:
         pass
 
-    # AWB number text
+    # AWB number text (baseline at y=7mm; sits clearly below the barcode)
     c.setFont("Helvetica-Bold", 11)
     c.drawString(6 * mm, 7 * mm, f"AWB {awb}")
 
-    # QR code (links to public track page) — skip cleanly if URL invalid
+    # QR code (links to public track page) — aligned with barcode top edge
     try:
         qr_buf = _qr_png(track_url)
         c.drawImage(ImageReader(qr_buf),
-                    W - 30 * mm, 8 * mm, width=24 * mm, height=24 * mm,
+                    W - 30 * mm, 12 * mm, width=24 * mm, height=24 * mm,
                     preserveAspectRatio=True, mask='auto')
     except Exception:
         pass

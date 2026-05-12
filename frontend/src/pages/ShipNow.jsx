@@ -197,16 +197,36 @@ const ShipNow = () => {
             >
               View Shipment <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
-            <a
-              href={`${BACKEND}/api/shipments/${success.awb}/label.pdf`}
-              target="_blank"
-              rel="noreferrer"
+            <Button
               data-testid="success-print-label"
-              className="inline-flex items-center justify-center h-12 border-2 border-dhl-ink text-dhl-ink hover:bg-dhl-ink hover:text-white font-bold uppercase tracking-wider text-sm px-6"
+              onClick={async () => {
+                try {
+                  const token = localStorage.getItem("dhl_auth_token");
+                  const url = `${BACKEND}/api/shipments/${success.awb}/label.pdf`;
+                  const res = await fetch(url, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                  });
+                  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                  const blob = await res.blob();
+                  const obj = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = obj;
+                  a.download = `${success.awb}_label.pdf`;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  setTimeout(() => URL.revokeObjectURL(obj), 1000);
+                  toast.success("Label downloaded");
+                } catch (e) {
+                  toast.error("Could not download label", { description: String(e?.message || e) });
+                }
+              }}
+              variant="outline"
+              className="h-12 border-2 border-dhl-ink text-dhl-ink hover:bg-dhl-ink hover:text-white font-bold uppercase tracking-wider text-sm px-6 rounded-none"
             >
               <FileText className="mr-2 w-4 h-4" />
               Print Label (PDF)
-            </a>
+            </Button>
             <Button
               variant="ghost"
               onClick={() => {

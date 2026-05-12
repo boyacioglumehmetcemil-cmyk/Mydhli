@@ -14,7 +14,12 @@ import jwt
 from passlib.context import CryptContext
 from shipments_module import build_router as build_shipments_router, seed_shipments
 from business_module import build_router as build_business_router, seed_addresses_and_pickups
-from invoices_module import build_router as build_invoices_router, seed_invoices
+from invoices_module import (
+    build_router as build_invoices_router,
+    seed_invoices,
+    seed_shipper_invoices,
+    seed_shipper_customs,
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -498,6 +503,15 @@ async def startup_seed():
                 await seed_address_book(db, u["id"], u_email)
     except Exception as e:
         logger.error(f"[SEED] Address book seeding failed: {e}")
+
+    # ===== Seed shipper-specific invoices + customs =====
+    try:
+        sh = await db.users.find_one({"email": shipper_email})
+        if sh:
+            await seed_shipper_invoices(db, sh)
+            await seed_shipper_customs(db, sh)
+    except Exception as e:
+        logger.error(f"[SEED] Shipper invoices/customs seeding failed: {e}")
 
 
 @app.on_event("shutdown")

@@ -364,3 +364,177 @@ async def seed_invoices(db, user: dict):
 
     await db.invoices.insert_many(invoices)
     logger.info(f"[SEED] Inserted {len(invoices)} invoices for {user['email']}")
+
+
+
+# ============ SECONDARY SEEDS (shipper@dhlpng.com — Daniel Kavu) ============
+async def seed_shipper_invoices(db, user: dict):
+    """Seed 5 invoices for the shipper demo user (3 PAID, 1 UNPAID, 1 OVERDUE).
+
+    Each invoice references 1-2 of the shipper's seeded shipments
+    (DHL5520010001..06). Idempotent.
+    """
+    user_id = user["id"]
+    existing = await db.invoices.count_documents({"userId": user_id})
+    if existing > 0:
+        logger.info(f"[SEED] Shipper invoices already seeded "
+                    f"({existing}). Skipping.")
+        return
+
+    shipper_awbs = [f"DHL552001000{i}" for i in range(1, 7)]
+    shipments = await db.shipments.find(
+        {"userId": user_id, "awb": {"$in": shipper_awbs}}, {"_id": 0}
+    ).to_list(length=10)
+    if not shipments:
+        return
+
+    rng = random.Random(909)
+    now = datetime.now(timezone.utc)
+    statuses = ["PAID", "PAID", "PAID", "UNPAID", "OVERDUE"]
+    invoices = []
+    used_awbs = set()
+
+    for i, st in enumerate(statuses):
+        available = [s for s in shipments if s["awb"] not in used_awbs] or shipments
+        sample = rng.sample(available, k=min(len(available), rng.randint(1, 2)))
+        for s in sample:
+            used_awbs.add(s["awb"])
+        line_items = [
+            {"shipmentAwb": s["awb"],
+             "description": f"{s['service'].replace('_', ' ')} \u00b7 "
+                            f"{s['origin']['code']}\u2192{s['destination']['code']}",
+             "costPGK": s["costPGK"]}
+            for s in sample
+        ]
+        subtotal = round(sum(li["costPGK"] for li in line_items), 2)
+        tax = round(subtotal * 0.10, 2)
+        total = round(subtotal + tax, 2)
+
+        if st == "OVERDUE":
+            issue = now - timedelta(days=42)
+            due = now - timedelta(days=12)
+        elif st == "UNPAID":
+            issue = now - timedelta(days=rng.randint(4, 18))
+            due = issue + timedelta(days=30)
+        else:
+            issue = now - timedelta(days=rng.randint(20, 90))
+            due = issue + timedelta(days=30)
+
+        invoices.append({
+            "id": str(uuid.uuid4()),
+            "userId": user_id,
+            "invoiceNumber": f"INV-HMS-{issue.strftime('%y%m%d')}-{i + 1:03d}",
+            "issueDate": issue.isoformat(),
+            "dueDate": due.isoformat(),
+            "status": st,
+            "subtotalPGK": subtotal,
+            "taxPGK": tax,
+            "totalPGK": total,
+            "lineItems": line_items,
+            "paidDate": (issue + timedelta(days=rng.randint(3, 22))).isoformat() if st == "PAID" else None,
+            "paymentReference": ("PAY-" + "".join(str(rng.randint(0, 9)) for _ in range(10))) if st == "PAID" else None,
+        })
+
+    await db.invoices.insert_many(invoices)
+    logger.info(f"[SEED] Inserted {len(invoices)} shipper invoices "
+                f"for {user['email']} (statuses: {statuses})")
+
+
+MINING_HS_CATALOG = [
+    {"hsCode": "8413.91", "description": "Hydraulic pump spare parts", "unitValueUSD": 285.00},
+    {"hsCode": "8484.10", "description": "Gasket / seal kit (multi-stage)", "unitValueUSD": 95.50},
+    {"hsCode": "8474.20", "description": "Crusher liner segments", "unitValueUSD": 540.00},
+    {"hsCode": "8429.51", "description": "Front-end loader bucket teeth (set)", "unitValueUSD": 320.00},
+    {"hsCode": "8474.10", "description": "Vibrating sorting screen panels", "unitValueUSD": 410.00},
+    {"hsCode": "4010.39", "description": "Industrial conveyor belt section", "unitValueUSD": 175.00},
+    {"hsCode": "8482.10", "description": "Sealed-bearing assemblies (qty box)", "unitValueUSD": 140.00},
+    {"hsCode": "9026.10", "description": "Flow / pressure measuring instruments", "unitValueUSD": 230.00},
+]
+
+
+async def seed_shipper_customs(db, user: dict):
+    """Seed 4 customs documents for the shipper demo user, tied to the
+    international destinations. Idempotent."""
+    user_id = user["id"]
+    existing = await db.customs_documents.count_documents({"userId": user_id})
+    if existing > 0:
+        logger.info(f"[SEED] Shipper customs already seeded "
+                    f"({existing}). Skipping.")
+        return
+
+    targets = ["DHL5520010003", "DHL5520010004", "DHL5520010005", "DHL5520010006"]
+    shipments = await db.shipments.find(
+        {"userId": user_id, "awb": {"$in": targets}}, {"_id": 0}
+    ).to_list(length=10)
+    by_awb = {s["awb"]: s for s in shipments}
+
+    rng = random.Random(404)
+    now = datetime.now(timezone.utc)
+    docs = []
+    plan = [
+        ("DHL5520010003", "COMMERCIAL_INVOICE", 3),
+        ("DHL5520010004", "COMMERCIAL_INVOICE", 2),
+        ("DHL5520010005", "PACKING_LIST", 4),
+        ("DHL5520010006", "EXPORT_DECLARATION", 2),
+    ]
+    for awb, doc_type, item_n in plan:
+        s = by_awb.get(awb)
+        if not s:
+            continue
+        sender = s.get("sender", {}) or {}
+        receiver = s.get("receiver", {}) or {}
+        items = rng.sample(MINING_HS_CATALOG, k=item_n)
+        items_out = [
+            {
+                "description": it["description"],
+                "hsCode": it["hsCode"],
+                "quantity": rng.randint(2, 12),
+                "unitValue": it["unitValueUSD"],
+                "weightKg": round(rng.uniform(0.5, 3.5), 2),
+                "countryOfOrigin": sender.get("country", "PG"),
+            }
+            for it in items
+        ]
+        total = round(sum(i["quantity"] * i["unitValue"] for i in items_out), 2)
+        docs.append({
+            "id": str(uuid.uuid4()),
+            "userId": user_id,
+            "shipmentAwb": awb,
+            "docType": doc_type,
+            "exporter": {
+                "name": sender.get("name"),
+                "company": sender.get("company"),
+                "address": sender.get("address"),
+                "city": sender.get("city"),
+                "country": sender.get("country"),
+                "postalCode": sender.get("postalCode"),
+                "phone": sender.get("phone"),
+                "taxId": "PNG-TAX-500344000",
+            },
+            "importer": {
+                "name": receiver.get("name"),
+                "company": receiver.get("company"),
+                "address": receiver.get("address"),
+                "city": receiver.get("city"),
+                "country": receiver.get("country"),
+                "postalCode": receiver.get("postalCode"),
+                "phone": receiver.get("phone"),
+                "taxId": "{}-IMP-{}".format(
+                    receiver.get("country") or "\u2014",
+                    rng.randint(100000, 999999),
+                ),
+            },
+            "items": items_out,
+            "currency": "USD",
+            "totalValueUSD": total,
+            "termsOfTrade": rng.choice(["DAP", "DDP", "FOB"]),
+            "reasonForExport": rng.choice(["SALE", "REPAIR", "SAMPLE"]),
+            "signedBy": "Daniel Kavu",
+            "signatureDate": (now - timedelta(days=rng.randint(1, 30))).isoformat(),
+            "createdAt": (now - timedelta(days=rng.randint(1, 30))).isoformat(),
+        })
+
+    if docs:
+        await db.customs_documents.insert_many(docs)
+        logger.info(f"[SEED] Inserted {len(docs)} shipper customs documents "
+                    f"for {user['email']}")

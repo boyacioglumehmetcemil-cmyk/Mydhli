@@ -144,8 +144,11 @@ def _header_band(doc_type: str, awb: str) -> Table:
 
 
 def _section_title(num: int, title: str) -> Paragraph:
+    """Render a section heading. The `num` argument is retained for API
+    compatibility but is no longer rendered — the client wants section titles
+    without numeric prefixes."""
     return Paragraph(
-        f"<font color='#D40511'>{num}.</font> <font color='#1A1A1A'>{title}</font>",
+        f"<font color='#1A1A1A'>{title}</font>",
         _S_SECTION,
     )
 
