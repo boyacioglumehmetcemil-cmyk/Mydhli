@@ -573,6 +573,99 @@ def build_router(db, get_current_user_dep):
             awb.upper(), "declaration",
         )
 
+    # ---- Documents 7-12 (additive) ----
+    @router.get("/shipments/{awb}/documents/pod.pdf")
+    async def doc_pod(awb: str, current_user: dict = Depends(get_current_user_dep)):
+        """
+        Render the Proof of Delivery PDF.
+
+        DHL Mapping: Tracking Service (§3) — post-delivery confirmation form.
+        """
+        shipment = await _load_shipment_for_user(awb, current_user["id"])
+        user = await _load_user(current_user["id"])
+        from document_generator import generate_pod
+        return _stream_pdf(generate_pod(shipment, user), awb.upper(), "pod")
+
+    @router.get("/shipments/{awb}/documents/certificate-of-origin.pdf")
+    async def doc_cof(awb: str, current_user: dict = Depends(get_current_user_dep)):
+        """
+        Render the Certificate of Origin PDF.
+
+        DHL Mapping: §6 Customs supporting paperwork — Certificate of Origin.
+        Exporter declares the goods are products of a stated country.
+        """
+        shipment = await _load_shipment_for_user(awb, current_user["id"])
+        user = await _load_user(current_user["id"])
+        customs_doc = await _latest_customs(awb, current_user["id"])
+        from document_generator import generate_certificate_of_origin
+        return _stream_pdf(
+            generate_certificate_of_origin(shipment, user, customs_doc),
+            awb.upper(), "certificate-of-origin",
+        )
+
+    @router.get("/shipments/{awb}/documents/loa.pdf")
+    async def doc_loa(awb: str, current_user: dict = Depends(get_current_user_dep)):
+        """
+        Render the Letter of Authorization PDF.
+
+        DHL Mapping: §6 Customs supporting paperwork — broker authorization.
+        Customer authorizes DHL to act on customs declarations.
+        """
+        shipment = await _load_shipment_for_user(awb, current_user["id"])
+        user = await _load_user(current_user["id"])
+        from document_generator import generate_letter_of_authorization
+        return _stream_pdf(generate_letter_of_authorization(shipment, user), awb.upper(), "loa")
+
+    @router.get("/shipments/{awb}/documents/packing-list.pdf")
+    async def doc_packing_list(awb: str, current_user: dict = Depends(get_current_user_dep)):
+        """
+        Render the Packing List PDF (itemized with weights and dimensions).
+
+        DHL Mapping: §6 Customs supporting paperwork — Packing List.
+        """
+        shipment = await _load_shipment_for_user(awb, current_user["id"])
+        user = await _load_user(current_user["id"])
+        customs_doc = await _latest_customs(awb, current_user["id"])
+        from document_generator import generate_packing_list
+        return _stream_pdf(
+            generate_packing_list(shipment, user, customs_doc),
+            awb.upper(), "packing-list",
+        )
+
+    @router.get("/shipments/{awb}/documents/receipt.pdf")
+    async def doc_receipt(awb: str, current_user: dict = Depends(get_current_user_dep)):
+        """
+        Render the Shipment Receipt PDF (booking receipt slip).
+
+        DHL Mapping: Internal — receipt issued at booking. Not a DHL XML
+        operation, but a customer-facing artifact.
+        """
+        shipment = await _load_shipment_for_user(awb, current_user["id"])
+        user = await _load_user(current_user["id"])
+        from document_generator import generate_shipment_receipt
+        return _stream_pdf(generate_shipment_receipt(shipment, user), awb.upper(), "receipt")
+
+    @router.get("/shipments/{awb}/documents/payment-confirmation.pdf")
+    async def doc_payment_confirmation(awb: str, current_user: dict = Depends(get_current_user_dep)):
+        """
+        Render the Payment Confirmation PDF (proof of payment).
+
+        DHL Mapping: Internal billing — receipt for a payment processed via
+        the /api/payments/charge endpoint or recorded by the back-office.
+        """
+        shipment = await _load_shipment_for_user(awb, current_user["id"])
+        user = await _load_user(current_user["id"])
+        payment = await db.payments.find_one(
+            {"awb": awb.upper(), "userId": current_user["id"]},
+            {"_id": 0},
+            sort=[("paidAt", -1)],
+        )
+        from document_generator import generate_payment_confirmation
+        return _stream_pdf(
+            generate_payment_confirmation(shipment, user, payment),
+            awb.upper(), "payment-confirmation",
+        )
+
     return router
 
 

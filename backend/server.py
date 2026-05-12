@@ -379,6 +379,11 @@ app.include_router(business_router)
 invoices_router = build_invoices_router(db, get_current_user)
 app.include_router(invoices_router)
 
+# Mount in-app notifications router
+from notifications_module import build_notifications_router, seed_notifications_for_user
+notifications_router = build_notifications_router(db, get_current_user)
+app.include_router(notifications_router)
+
 # CORS
 app.add_middleware(
     CORSMiddleware,
@@ -474,6 +479,25 @@ async def startup_seed():
             await seed_shipper_shipments(db, shipper_user["id"])
         except Exception as e:
             logger.error(f"[SEED] Shipper shipment seeding failed: {e}")
+
+    # ===== Seed notifications for both users =====
+    for u_email in (demo_email, shipper_email):
+        u = await db.users.find_one({"email": u_email})
+        if u:
+            try:
+                await seed_notifications_for_user(db, u["id"], u_email)
+            except Exception as e:
+                logger.error(f"[SEED] Notification seeding failed for {u_email}: {e}")
+
+    # ===== Seed address book for both users =====
+    try:
+        from address_seed import seed_address_book
+        for u_email in (demo_email, shipper_email):
+            u = await db.users.find_one({"email": u_email})
+            if u:
+                await seed_address_book(db, u["id"], u_email)
+    except Exception as e:
+        logger.error(f"[SEED] Address book seeding failed: {e}")
 
 
 @app.on_event("shutdown")

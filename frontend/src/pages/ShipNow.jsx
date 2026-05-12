@@ -219,6 +219,62 @@ const ShipNow = () => {
               Ship Another
             </Button>
           </div>
+
+          {/* More documents — compact 4-tile row */}
+          <div className="mt-8 border-t border-dhl-border pt-6 text-left">
+            <div className="flex items-baseline justify-between mb-3">
+              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-dhl-muted">
+                More documents
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate(`/dashboard/shipments/${success.awb}`)}
+                data-testid="success-all-docs-link"
+                className="text-[11px] font-semibold text-[#0EA5B7] hover:text-[#0B8C9C] transition-colors"
+              >
+                All 12 documents available in Shipment Details →
+              </button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {[
+                { slug: "airwaybill", label: "Air Waybill", Icon: FileText },
+                { slug: "proforma", label: "Proforma", Icon: FileText },
+                { slug: "commercial", label: "Commercial", Icon: FileText },
+                { slug: "receipt", label: "Receipt", Icon: FileText },
+              ].map((d) => (
+                <button
+                  type="button"
+                  key={d.slug}
+                  data-testid={`success-doc-${d.slug}`}
+                  onClick={async () => {
+                    try {
+                      const token = localStorage.getItem("dhl_auth_token");
+                      const url = `${BACKEND}/api/shipments/${success.awb}/documents/${d.slug}.pdf`;
+                      const res = await fetch(url, {
+                        headers: token ? { Authorization: `Bearer ${token}` } : {},
+                      });
+                      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                      const blob = await res.blob();
+                      const obj = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = obj;
+                      a.download = `${success.awb}_${d.slug}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      setTimeout(() => URL.revokeObjectURL(obj), 1000);
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 border border-dhl-border bg-white hover:bg-dhl-yellow/10 hover:border-dhl-ink transition-colors text-left"
+                >
+                  <d.Icon className="w-3.5 h-3.5 text-dhl-text shrink-0" />
+                  <span className="text-[12px] font-semibold text-dhl-text">{d.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );

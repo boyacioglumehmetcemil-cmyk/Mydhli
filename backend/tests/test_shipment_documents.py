@@ -18,7 +18,11 @@ BACKEND_URL = os.environ.get(
 )
 API = f"{BACKEND_URL}/api"
 TEST_AWB = "DHL1234567890"
-DOC_SLUGS = ["airwaybill", "proforma", "commercial", "tax", "inbound", "declaration"]
+DOC_SLUGS = [
+    "airwaybill", "proforma", "commercial", "tax", "inbound", "declaration",
+    "pod", "certificate-of-origin", "loa", "packing-list", "receipt",
+    "payment-confirmation",
+]
 
 
 @pytest.fixture(scope="session")
@@ -117,6 +121,86 @@ def test_demo_user_shipments_intact():
     assert r2.status_code == 200
     # Demo user has 25 originally seeded + extras created during dev (≥25)
     assert r2.json()["total"] >= 25
+
+
+# ===== Notifications tests =====
+def _login(email, pwd):
+    r = requests.post(f"{API}/auth/login",
+                      json={"email": email, "password": pwd}, timeout=10)
+    assert r.status_code == 200
+    return r.json()["access_token"]
+
+
+def test_notifications_seeded_for_demo_user():
+    """Demo user has at least 6 notifications, with unread > 0."""
+    tok = _login("demo@dhlpng.com", "Demo@2026")
+    r = requests.get(f"{API}/notifications?pageSize=20",
+                     headers={"Authorization": f"Bearer {tok}"}, timeout=10)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["total"] >= 6
+    assert body["unread"] >= 1
+    assert len(body["items"]) >= 6
+    # Most-recent first ordering
+    times = [it["createdAt"] for it in body["items"]]
+    assert times == sorted(times, reverse=True)
+
+
+def test_notifications_seeded_for_shipper_user():
+    """Shipper user has at least 6 notifications, with unread > 0."""
+    tok = _login("shipper@dhlpng.com", "Shipper@2026")
+    r = requests.get(f"{API}/notifications?pageSize=20",
+                     headers={"Authorization": f"Bearer {tok}"}, timeout=10)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["total"] >= 6
+    assert body["unread"] >= 1
+
+
+def test_notifications_unread_count_endpoint():
+    """unread-count endpoint returns the same number shown in /notifications."""
+    tok = _login("demo@dhlpng.com", "Demo@2026")
+    r1 = requests.get(f"{API}/notifications/unread-count",
+                      headers={"Authorization": f"Bearer {tok}"}, timeout=10)
+    r2 = requests.get(f"{API}/notifications?pageSize=20",
+                      headers={"Authorization": f"Bearer {tok}"}, timeout=10)
+    assert r1.status_code == 200 and r2.status_code == 200
+    assert r1.json()["unread"] == r2.json()["unread"]
+
+
+def test_notifications_require_auth():
+    """Unauthenticated requests are rejected."""
+    r = requests.get(f"{API}/notifications", timeout=10)
+    assert r.status_code in (401, 403)
+
+
+# ===== Address book tests =====
+def test_address_book_seeded_for_demo_user():
+    """Demo user has at least 4 seeded addresses."""
+    tok = _login("demo@dhlpng.com", "Demo@2026")
+    r = requests.get(f"{API}/addresses",
+                     headers={"Authorization": f"Bearer {tok}"}, timeout=10)
+    assert r.status_code == 200
+    addrs = r.json()
+    assert len(addrs) >= 4
+    # Each address must have the required boolean default fields.
+    for a in addrs:
+        assert "isDefaultSender" in a and "isDefaultReceiver" in a
+        assert isinstance(a["isDefaultSender"], bool)
+        assert isinstance(a["isDefaultReceiver"], bool)
+
+
+def test_address_book_seeded_for_shipper_user():
+    """Shipper user has 6 seeded addresses with Daniel Kavu / Highlands persona."""
+    tok = _login("shipper@dhlpng.com", "Shipper@2026")
+    r = requests.get(f"{API}/addresses",
+                     headers={"Authorization": f"Bearer {tok}"}, timeout=10)
+    assert r.status_code == 200
+    addrs = r.json()
+    assert len(addrs) >= 6
+    companies = {a.get("company", "") for a in addrs}
+    assert any("Highlands Mining Supplies" in c for c in companies), \
+        f"Expected sender companies tied to Daniel Kavu in {companies}"
 
 
 def test_proforma_pdf_contains_required_sections(auth_token, tmp_path):

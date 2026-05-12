@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import Logo from "@/components/Logo";
+import NotificationBell from "@/components/NotificationBell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -147,17 +148,7 @@ const DashboardLayout = () => {
         </div>
 
         <div className="flex items-center gap-2 lg:gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            data-testid="notification-bell"
-            className="relative h-10 w-10 hover:bg-dhl-panel"
-            onClick={() => toast.info("No new notifications", { description: "You're all caught up." })}
-            aria-label="Notifications"
-          >
-            <Bell className="w-5 h-5 text-dhl-text" />
-            <span className="absolute top-2 right-2.5 w-2 h-2 bg-dhl-red rounded-full" />
-          </Button>
+          <NotificationBell />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

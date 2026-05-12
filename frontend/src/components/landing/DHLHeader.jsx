@@ -4,6 +4,9 @@ import { Search, MapPin, ChevronDown, X, Menu, LifeBuoy } from "lucide-react";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 import PngFlagSvg from "./PngFlagSvg";
+import HelpSupportModal from "./HelpSupportModal";
+import FindLocationModal from "./FindLocationModal";
+import { toast } from "sonner";
 
 const NAV = [
   { label: "Home", href: "/", kind: "route" },
@@ -26,6 +29,9 @@ const DHLHeader = () => {
   const { isAuthenticated } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [lang, setLang] = useState(() => localStorage.getItem(LS_LANG_KEY) || LANGS[0]);
@@ -79,21 +85,23 @@ const DHLHeader = () => {
           <Logo variant="icon-only" theme="light" />
 
           <div className="flex items-center">
-          <a
-            href="#contact"
+          <button
+            type="button"
             data-testid="util-help"
+            onClick={() => setHelpOpen(true)}
             className="hidden md:inline-flex items-center gap-1.5 hover:underline underline-offset-4 decoration-2 transition-all"
           >
             <LifeBuoy className="w-3.5 h-3.5" /> Help and Support
-          </a>
+          </button>
           <span className="hidden md:inline-block w-1" />
-          <a
-            href="#info-cards"
+          <button
+            type="button"
             data-testid="util-location"
+            onClick={() => setLocationOpen(true)}
             className="hidden md:inline-flex items-center gap-1.5 ml-4 hover:underline underline-offset-4 decoration-2 transition-all"
           >
             <MapPin className="w-3.5 h-3.5" /> Find a Location
-          </a>
+          </button>
           <span className="hidden md:inline"><Divider /></span>
           <div ref={searchRef} className="relative">
             <button
@@ -106,14 +114,34 @@ const DHLHeader = () => {
               <Search className="w-4 h-4" />
             </button>
             {searchOpen && (
-              <div className="absolute right-0 top-9 w-72 bg-white border border-dhl-border shadow-lg p-2 z-50">
-                <input
-                  autoFocus
-                  type="text"
-                  data-testid="util-search-input"
-                  placeholder="Search dhl.com — try 'rates' or 'customs'"
-                  className="w-full px-3 py-2 text-sm border border-dhl-border focus:outline-none focus:border-dhl-yellow focus:ring-1 focus:ring-dhl-yellow rounded-sm"
-                />
+              <div className="absolute right-0 top-9 w-80 bg-white border border-dhl-border shadow-lg p-2 z-50">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const q = searchQuery.trim().toUpperCase();
+                    if (/^DHL\d{10}$/.test(q)) {
+                      setSearchOpen(false);
+                      setSearchQuery("");
+                      navigate(`/track/${q}`);
+                    } else if (q.length === 0) {
+                      // ignore empty submit
+                    } else {
+                      toast.info("No matches found", {
+                        description: "Tip: enter an AWB like DHL1234567890 to track it.",
+                      });
+                    }
+                  }}
+                >
+                  <input
+                    autoFocus
+                    type="text"
+                    data-testid="util-search-input"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Track an AWB or find a service…"
+                    className="w-full px-3 py-2 text-sm border border-dhl-border focus:outline-none focus:border-dhl-yellow focus:ring-1 focus:ring-dhl-yellow rounded-sm"
+                  />
+                </form>
               </div>
             )}
           </div>
@@ -327,6 +355,10 @@ const DHLHeader = () => {
           </div>
         </div>
       )}
+
+      {/* Modals */}
+      <HelpSupportModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <FindLocationModal open={locationOpen} onClose={() => setLocationOpen(false)} />
     </header>
   );
 };
