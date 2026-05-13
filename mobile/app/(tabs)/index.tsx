@@ -65,7 +65,7 @@ export default function Dashboard() {
       <View style={styles.header}>
         <View style={styles.logoPill}>
           <Text style={styles.logoText}>DHL</Text>
-          <Text style={styles.logoAccent}> Express</Text>
+          <Text style={styles.logoAccent}> Forwarding</Text>
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity testID="dashboard-settings-btn" onPress={() => router.push('/settings')} style={styles.headerIcon}>
@@ -84,7 +84,7 @@ export default function Dashboard() {
       >
         {/* Welcome */}
         <View testID="dashboard-page" style={styles.welcome}>
-          <Text style={styles.welcomeLabel}>MYDHL EXPRESS · DASHBOARD</Text>
+          <Text style={styles.welcomeLabel}>myDHLi · DASHBOARD</Text>
           <Text style={styles.welcomeTitle}>Welcome back, {user?.firstName || 'there'}.</Text>
           <Text style={styles.welcomeSub}>Here's a snapshot of your account.</Text>
         </View>

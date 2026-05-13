@@ -57,7 +57,7 @@ const ForgotPassword = () => {
               </h1>
               <p className="text-sm text-dhl-muted mb-8">
                 Drop the email you registered with and we'll send you instructions to reset your
-                MyDHL Express password.
+                MyDHL Global Forwarding password.
               </p>
 
               <form onSubmit={handleSubmit} data-testid="forgot-form" className="space-y-5">

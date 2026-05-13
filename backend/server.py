@@ -39,7 +39,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # FastAPI app — openapi at /api/openapi.json per requirements
 app = FastAPI(
-    title="DHL Express PNG — Demo API",
+    title="DHL Global Forwarding PNG — Demo API",
     description="Mock API for DHL Papua New Guinea pitch demo. NOT affiliated with DHL.",
     version="0.1.0",
     openapi_url="/api/openapi.json",
@@ -219,7 +219,7 @@ def serialize_user(user_doc: dict) -> UserPublic:
 # ============ ROUTES ============
 @api_router.get("/")
 async def root():
-    return {"message": "DHL Express PNG Demo API", "status": "ok"}
+    return {"message": "DHL Global Forwarding PNG Demo API", "status": "ok"}
 
 
 @api_router.post("/status", response_model=StatusCheck)

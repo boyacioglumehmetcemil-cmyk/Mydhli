@@ -215,7 +215,7 @@ export default function Settings() {
                   <View style={styles.apiBadge}><Text style={styles.apiBadgeText}>COMING Q2 2026</Text></View>
                   <Text style={styles.apiTitle}>Programmatic Access</Text>
                   <Text style={styles.apiDesc}>
-                    Generate API keys to integrate DHL Express into your back-office. REST + Webhooks. SDKs for Python, Node and PHP.
+                    Generate API keys to integrate DHL Global Forwarding into your back-office. REST + Webhooks. SDKs for Python, Node and PHP.
                   </Text>
                   <View style={styles.apiCodeBlock}>
                     <Text style={styles.apiCode}>

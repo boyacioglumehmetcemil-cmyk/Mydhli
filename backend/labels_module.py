@@ -63,7 +63,7 @@ def render_shipping_label(shipment: dict, track_url: str) -> bytes:
     c.setFont("Helvetica-Bold", 18)
     c.drawString(6 * mm, H - 13 * mm, "DHL")
     c.setFillColor(DHL_RED)
-    c.drawString(22 * mm, H - 13 * mm, "Express")
+    c.drawString(22 * mm, H - 13 * mm, "Global Forwarding")
     c.setFillColor(DHL_INK)
     c.setFont("Helvetica", 7)
     c.drawString(6 * mm, H - 20 * mm, "Demo Shipping Label · Not for actual carrier use")
@@ -189,7 +189,7 @@ def render_invoice(invoice: dict, user: dict) -> bytes:
 
     # Header band
     hdr = Table([
-        [Paragraph("<font color='#1A1A1A'><b>DHL</b></font> <font color='#D40511'><b>Express</b></font>", h1),
+        [Paragraph("<font color='#1A1A1A'><b>DHL</b></font> <font color='#666666'><b>Global Forwarding</b></font>", h1),
          Paragraph(f"<b>INVOICE</b><br/><font color='#666' size='9'>{invoice['invoiceNumber']}</font>", h1)]
     ], colWidths=[100 * mm, 70 * mm])
     hdr.setStyle(TableStyle([
@@ -263,7 +263,7 @@ def render_invoice(invoice: dict, user: dict) -> bytes:
 
     story.append(Spacer(1, 14 * mm))
     story.append(Paragraph(
-        "Pay this invoice through your MyDHL Express account, or scan the QR below to pay online.<br/>"
+        "Pay this invoice through your MyDHL Global Forwarding account, or scan the QR below to pay online.<br/>"
         "Demo build — payment, GST, and reference numbers are simulated.",
         small,
     ))
@@ -295,7 +295,7 @@ def render_customs_doc(doc_record: dict) -> bytes:
 
     story = []
     hdr = Table([
-        [Paragraph("<font color='#1A1A1A'><b>DHL</b></font> <font color='#D40511'><b>Express</b></font>", h1),
+        [Paragraph("<font color='#1A1A1A'><b>DHL</b></font> <font color='#666666'><b>Global Forwarding</b></font>", h1),
          Paragraph(f"<b>{title}</b><br/><font size='9' color='#666'>Customs Documentation · Demo</font>", h1)]
     ], colWidths=[80 * mm, 90 * mm])
     hdr.setStyle(TableStyle([("BACKGROUND", (0, 0), (0, 0), DHL_YELLOW), ("LEFTPADDING", (0, 0), (-1, -1), 10),
@@ -359,7 +359,7 @@ def render_report(overview: dict, user: dict) -> bytes:
     label = ParagraphStyle("lb", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=8, textColor=colors.HexColor("#666"))
 
     story = [
-        Paragraph(f"<font color='#1A1A1A'><b>DHL</b></font> <font color='#D40511'><b>Express</b></font> · Account Report", h1),
+        Paragraph(f"<font color='#1A1A1A'><b>DHL</b></font> <font color='#666666'><b>Global Forwarding</b></font> · Account Report", h1),
         Paragraph(f"Generated for: <b>{user.get('companyName', 'Customer')}</b> · {datetime.utcnow().strftime('%d %b %Y')}", styles["Normal"]),
         Spacer(1, 10 * mm),
 

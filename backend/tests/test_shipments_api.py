@@ -1,4 +1,4 @@
-"""Phase 2 — Shipments API tests for DHL Express PNG demo.
+"""Phase 2 — Shipments API tests for DHL Global Forwarding PNG demo.
 Covers: public /api/track/{awb}, auth-only /api/shipments list, detail, filters, pagination.
 """
 import os

@@ -35,7 +35,7 @@ export default function ForgotPassword() {
         <View style={styles.header}>
           <View style={styles.logoPill}>
             <Text style={styles.logoText}>DHL</Text>
-            <Text style={styles.logoAccent}> Express</Text>
+            <Text style={styles.logoAccent}> Forwarding</Text>
           </View>
           <TouchableOpacity testID="forgot-back-to-login" onPress={() => router.push('/login')} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={16} color={Colors.dhlText} />

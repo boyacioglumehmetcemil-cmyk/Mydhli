@@ -3,7 +3,7 @@ import { useReveal } from "@/hooks/useReveal";
 
 const items = [
   {
-    quote: "Our trade across Oceania doubled after switching to DHL Express. The visibility alone is worth it.",
+    quote: "Our trade across Oceania doubled after switching to DHL Global Forwarding. The visibility alone is worth it.",
     name: "Aaron Levi",
     role: "Operations Director",
     industry: "Mining Sector",

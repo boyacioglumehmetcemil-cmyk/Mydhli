@@ -58,7 +58,7 @@ const HeroSection = () => {
           >
             <span className="w-2 h-2 bg-dhl-yellow rounded-full animate-pulse" />
             <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white">
-              Global Express Logistics
+              Global Freight Forwarding
             </span>
           </div>
 
@@ -77,7 +77,7 @@ const HeroSection = () => {
             className="text-base sm:text-lg lg:text-xl text-white/85 max-w-2xl leading-relaxed mb-9 animate-fade-up"
             style={{ animationDelay: "200ms" }}
           >
-            Express shipping to 220+ countries and territories. Real-time tracking, dedicated
+            Freight forwarding to 220+ countries and territories. Real-time tracking, dedicated
             couriers, and dependable next-day delivery options.
           </p>
 

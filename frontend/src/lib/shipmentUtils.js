@@ -69,9 +69,30 @@ export const STATUS_TONES = {
 };
 
 export const SERVICE_LABELS = {
-  EXPRESS_WORLDWIDE: "Express Worldwide",
-  EXPRESS_12_00: "Express 12:00",
-  ECONOMY_SELECT: "Economy Select",
+  // Legacy keys kept for backwards-compat with existing seeded shipments. The
+  // pitch is now DHL Global Forwarding — freight, not parcel — so the visible
+  // label is the freight service name. The underlying enum / seed isn't
+  // changed in Phase 8.1 (label-only sweep).
+  EXPRESS_WORLDWIDE: "Air Priority",
+  EXPRESS_12_00: "Air Economy",
+  ECONOMY_SELECT: "Ocean FCL",
+};
+
+// Rotated mock freight services used in dashboard recent-shipments preview and
+// other "Service" columns. Index by AWB hash for stable per-row labels.
+export const FREIGHT_SERVICE_ROTATION = [
+  "OCEAN FCL",
+  "AIR PRIORITY",
+  "AIR ECONOMY",
+  "OCEAN LCL",
+  "ROAD DIRECT",
+];
+
+export const freightServiceFor = (awb) => {
+  const key = String(awb || "");
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  return FREIGHT_SERVICE_ROTATION[h % FREIGHT_SERVICE_ROTATION.length];
 };
 
 // Approximate progress percentage by status (for the route bar)

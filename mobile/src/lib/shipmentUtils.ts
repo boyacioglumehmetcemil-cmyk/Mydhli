@@ -21,9 +21,9 @@ export const STATUS_COLORS: Record<string, { bg: string; text: string; dot: stri
 };
 
 export const SERVICE_LABELS: Record<string, string> = {
-  EXPRESS_WORLDWIDE: 'Express Worldwide',
-  EXPRESS_12_00: 'Express 12:00',
-  ECONOMY_SELECT: 'Economy Select',
+  EXPRESS_WORLDWIDE: 'Air Priority',
+  EXPRESS_12_00: 'Air Economy',
+  ECONOMY_SELECT: 'Ocean FCL',
 };
 
 export const STATUS_PROGRESS: Record<string, number> = {

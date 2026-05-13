@@ -4,7 +4,7 @@ import { useReveal } from "@/hooks/useReveal";
 const services = [
   {
     icon: Plane,
-    title: "Express International",
+    title: "International Freight",
     image: "/images/hero-cargo-plane.jpg",
     bullets: ["Next-day to major hubs", "Time-definite delivery", "Customs cleared"],
   },

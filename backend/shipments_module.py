@@ -1,4 +1,4 @@
-"""Shipments module for DHL Express PNG Demo.
+"""Shipments module for DHL Global Forwarding PNG Demo.
 - Pydantic models for shipments, addresses, events, packages
 - Public tracking endpoint (privacy-scrubbed)
 - Auth-required list/detail endpoints (full PII)

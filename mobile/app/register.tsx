@@ -76,7 +76,7 @@ export default function Register() {
             <TouchableOpacity onPress={() => router.back()}>
               <View style={styles.logoPill}>
                 <Text style={styles.logoText}>DHL</Text>
-                <Text style={styles.logoAccent}> Express</Text>
+                <Text style={styles.logoAccent}> Forwarding</Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity testID="register-signin-link" onPress={() => router.push('/login')}>
@@ -87,7 +87,7 @@ export default function Register() {
           <View style={styles.form}>
             <Text style={styles.label}>OPEN ACCOUNT</Text>
             <Text style={styles.title}>Start shipping in{'\n'}two minutes.</Text>
-            <Text style={styles.subtitle}>Create your MyDHL Express account for Papua New Guinea.</Text>
+            <Text style={styles.subtitle}>Create your MyDHL Global Forwarding account for Papua New Guinea.</Text>
 
             <View style={styles.row}>
               <View style={styles.halfField}>

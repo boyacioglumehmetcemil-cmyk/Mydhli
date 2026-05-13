@@ -1,6 +1,6 @@
-# DHL Express PNG — Demo Backend
+# DHL Global Forwarding PNG — Demo Backend
 
-FastAPI + MongoDB. Demo backend that powers the MyDHL+ pitch app. All data
+FastAPI + MongoDB. Demo backend that powers the myDHLi pitch app. All data
 in this build is mock — there are no live calls to DHL services.
 
 ## DHL XML Services Mapping

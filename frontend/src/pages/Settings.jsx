@@ -172,7 +172,7 @@ const Settings = () => {
               <div className="bg-dhl-panel border border-dhl-border p-5">
                 <div className="inline-block bg-dhl-yellow text-dhl-ink text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 mb-3">Coming Q2 2026</div>
                 <h3 className="font-display text-lg font-bold text-dhl-text">Programmatic Access</h3>
-                <p className="text-sm text-dhl-muted mb-4">Generate API keys to integrate DHL Express into your back-office. REST + Webhooks. SDKs for Python, Node and PHP.</p>
+                <p className="text-sm text-dhl-muted mb-4">Generate API keys to integrate DHL Global Forwarding into your back-office. REST + Webhooks. SDKs for Python, Node and PHP.</p>
                 <div className="bg-white border border-dhl-border p-3 font-mono text-xs text-dhl-muted">
                   $ curl -H "Authorization: Bearer dhl_xxxxxxxxxxxx" \<br />
                   &nbsp;&nbsp;&nbsp;&nbsp;https://api.dhlpng.com/v1/shipments

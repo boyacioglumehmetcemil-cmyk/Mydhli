@@ -3,7 +3,7 @@ import Logo from "@/components/Logo";
 const Footer = () => {
   const columns = [
     {
-      title: "Express Services",
+      title: "Freight Services",
       links: ["Track Shipment", "Ship Now", "Get a Quote", "Schedule Pickup"],
     },
     {

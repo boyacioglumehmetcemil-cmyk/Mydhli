@@ -125,7 +125,7 @@ const Register = () => {
             Start shipping in two minutes.
           </h1>
           <p className="text-base text-dhl-muted max-w-2xl">
-            Create your MyDHL Express account for Papua New Guinea. Free, no card needed — see
+            Create your MyDHL Global Forwarding account for Papua New Guinea. Free, no card needed — see
             contract rates, schedule pickups and track everything in one place.
           </p>
         </div>

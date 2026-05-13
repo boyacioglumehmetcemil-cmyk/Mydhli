@@ -163,7 +163,7 @@ const RichFooter = () => {
           </button>
 
           <div className="text-xs text-[#666] text-center md:text-right">
-            © 2026 DHL Express (Demo) — All rights reserved.
+            © 2026 DHL Global Forwarding (Demo) — All rights reserved.
           </div>
         </div>
       </div>

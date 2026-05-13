@@ -20,6 +20,7 @@ import Invoices from "@/pages/Invoices";
 import Reports from "@/pages/Reports";
 import Customs from "@/pages/Customs";
 import Settings from "@/pages/Settings";
+import DashboardComingSoon from "@/pages/DashboardComingSoon";
 import DashboardLayout from "@/components/DashboardLayout";
 import Dashboard from "@/pages/Dashboard";
 import NotFound from "@/pages/NotFound";
@@ -56,6 +57,8 @@ function App() {
             <Route path="invoices" element={<Invoices />} />
             <Route path="reports" element={<Reports />} />
             <Route path="customs" element={<Customs />} />
+            <Route path="orders" element={<DashboardComingSoon />} />
+            <Route path="collaboration" element={<DashboardComingSoon />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 

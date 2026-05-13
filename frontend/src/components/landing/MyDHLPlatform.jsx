@@ -29,14 +29,14 @@ const MyDHLPlatform = () => {
     },
     {
       icon: Info,
-      label: "About MyDHL+",
-      onClick: () => setModal({ title: "About MyDHL+" }),
+      label: "About myDHLi",
+      onClick: () => setModal({ title: "About myDHLi" }),
       testId: "mydhl-cell-about",
     },
     {
       icon: Sparkles,
       label: "What's New",
-      onClick: () => setModal({ title: "What's New in MyDHL+" }),
+      onClick: () => setModal({ title: "What's New in myDHLi" }),
       testId: "mydhl-cell-whatsnew",
     },
   ];
@@ -58,7 +58,7 @@ const MyDHLPlatform = () => {
           >
             <img
               src="/images/mydhl-devices.jpg"
-              alt="MyDHL+ workspace shown on desktop, tablet, and mobile devices"
+              alt="myDHLi workspace shown on desktop, tablet, and mobile devices"
               loading="lazy"
               className="w-full h-auto max-h-[480px] object-cover object-center"
             />
@@ -82,7 +82,7 @@ const MyDHLPlatform = () => {
                   className="text-[12px] font-bold uppercase text-dhl-ink"
                   style={{ letterSpacing: "0.18em" }}
                 >
-                  MyDHL Platform
+                  myDHLi Platform
                 </span>
               </div>
               <h2 className="font-display text-3xl sm:text-4xl lg:text-[2.25rem] font-black text-dhl-ink leading-[1.1] tracking-tighter mb-5">
@@ -149,7 +149,7 @@ const MyDHLPlatform = () => {
         open={!!modal}
         onClose={() => setModal(null)}
         title={modal?.title || ""}
-        body="The MyDHL+ feature you're looking at is part of the live platform. Sign in or open an account to access it."
+        body="The myDHLi feature you're looking at is part of the live platform. Sign in or open an account to access it."
       />
     </section>
   );

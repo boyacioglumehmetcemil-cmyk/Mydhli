@@ -10,6 +10,10 @@ import {
   Calculator,
   CalendarClock,
   PackageOpen,
+  Container,
+  Plane,
+  Timer,
+  ShieldAlert,
   ArrowRight,
   Loader2,
 } from "lucide-react";
@@ -19,7 +23,7 @@ import StatusBadge from "@/components/StatusBadge";
 import MiniSparkline from "@/components/MiniSparkline";
 import useTitle from "@/hooks/useTitle";
 import api from "@/lib/api";
-import { formatDate, formatPGK, SERVICE_LABELS } from "@/lib/shipmentUtils";
+import { formatDate, formatPGK, freightServiceFor } from "@/lib/shipmentUtils";
 
 const ACTIVE_STATUSES = ["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY"];
 
@@ -29,6 +33,10 @@ const sparkData = {
   pickups: [0, 1, 0, 2, 1, 0, 0],
   spend: [0, 0, 0, 1200, 880, 3400, 9100],
   balance: [4200, 3800, 3500, 2900, 2100, 1500, 0],
+  teu: [4, 5, 6, 6, 7, 9, 12],
+  air: [120, 180, 240, 220, 310, 380, 420],
+  transit: [5.2, 5.1, 4.9, 4.8, 4.6, 4.5, 4.4],
+  holds: [0, 1, 1, 2, 1, 1, 0],
 };
 
 const KpiCard = ({ icon: Icon, label, value, suffix, accent, sub, loading, testId, spark, sparkColor }) => (
@@ -144,35 +152,35 @@ const Dashboard = () => {
       {/* Welcome */}
       <div className="mb-8">
         <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-dhl-red mb-2">
-          MyDHL Express · Dashboard
+          myDHLi · Freight Forwarding
         </div>
         <h1 className="font-display text-3xl lg:text-4xl font-black text-dhl-text leading-tight tracking-tighter">
           Welcome back, {user?.firstName || "there"}.
         </h1>
         <p className="text-sm text-dhl-muted mt-2">
-          Here's a snapshot of your account. Tracking and shipping are live — open a shipment to
-          see the full timeline.
+          Air, ocean and road freight at a glance. Open a booking to see milestones,
+          documents and the full chain of custody.
         </p>
       </div>
 
-      {/* KPI cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+      {/* KPI cards — operational */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
         <KpiCard
           icon={Package}
-          label="Active Shipments"
+          label="Active Bookings"
           value={stats.active}
           accent="bg-dhl-yellow text-dhl-ink"
           loading={stats.loading}
-          sub={stats.active > 0 ? "In motion right now" : "No active shipments"}
+          sub={stats.active > 0 ? "Moving right now" : "No active bookings"}
           spark={sparkData.active}
           sparkColor="#FFCC00"
         />
         <KpiCard
           icon={Truck}
-          label="Pending Pickups"
+          label="Awaiting Pickup"
           value="0"
           accent="bg-dhl-ink text-dhl-yellow"
-          sub="No pickups scheduled"
+          sub="No collections scheduled"
           spark={sparkData.pickups}
           sparkColor="#1A1A1A"
         />
@@ -188,13 +196,58 @@ const Dashboard = () => {
         />
         <KpiCard
           icon={Wallet}
-          label="Account Balance"
+          label="Outstanding Balance"
           value="0"
           suffix="PGK"
           accent="bg-dhl-panel text-dhl-text border border-dhl-border"
-          sub="Prepaid balance"
+          sub="Open invoices"
           spark={sparkData.balance}
           sparkColor="#666666"
+        />
+      </div>
+
+      {/* KPI cards — freight forwarding (mock data; Phase 8.2 wires live values) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+        <KpiCard
+          icon={Container}
+          label="TEU in Transit"
+          value="12"
+          accent="bg-dhl-yellow text-dhl-ink"
+          sub="Ocean FCL · 20'/40'/HC mix"
+          spark={sparkData.teu}
+          sparkColor="#FFCC00"
+          testId="kpi-teu-in-transit"
+        />
+        <KpiCard
+          icon={Plane}
+          label="Air Tonnage MTD"
+          value="420"
+          suffix="kg"
+          accent="bg-dhl-ink text-dhl-yellow"
+          sub="Air priority + economy"
+          spark={sparkData.air}
+          sparkColor="#1A1A1A"
+          testId="kpi-air-tonnage-mtd"
+        />
+        <KpiCard
+          icon={Timer}
+          label="Avg Transit Days"
+          value="4.4"
+          accent="bg-dhl-red text-white"
+          sub="Across all modes · 30-day"
+          spark={sparkData.transit}
+          sparkColor="#D40511"
+          testId="kpi-avg-transit-days"
+        />
+        <KpiCard
+          icon={ShieldAlert}
+          label="Customs Holds"
+          value="0"
+          accent="bg-dhl-panel text-dhl-text border border-dhl-border"
+          sub="Awaiting broker action"
+          spark={sparkData.holds}
+          sparkColor="#666666"
+          testId="kpi-customs-holds"
         />
       </div>
 
@@ -211,22 +264,22 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <QuickAction
             icon={Send}
-            label="Ship Now"
-            sub="Create a new shipment"
+            label="Book Shipment"
+            sub="Air · Ocean · Road freight"
             onClick={quickShip}
             testId="quick-ship-now"
           />
           <QuickAction
             icon={Search}
             label="Track"
-            sub="Look up any AWB"
+            sub="HAWB · BL · Container No."
             onClick={() => navigate("/track")}
             testId="quick-track"
           />
           <QuickAction
             icon={Calculator}
-            label="Get Quote"
-            sub="Estimate rates instantly"
+            label="Quote & Compare"
+            sub="Rate freight in seconds"
             onClick={quickQuote}
             testId="quick-quote"
           />
@@ -290,6 +343,9 @@ const Dashboard = () => {
                       AWB
                     </th>
                     <th className="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-dhl-muted">
+                      Service
+                    </th>
+                    <th className="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-dhl-muted">
                       Receiver
                     </th>
                     <th className="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-dhl-muted">
@@ -316,6 +372,11 @@ const Dashboard = () => {
                     >
                       <td className="px-5 py-3 font-mono font-bold text-dhl-text">
                         {s.awb}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className="inline-block px-2 py-0.5 text-[10px] font-bold tracking-wider bg-dhl-ink text-dhl-yellow font-mono">
+                          {freightServiceFor(s.awb)}
+                        </span>
                       </td>
                       <td className="px-5 py-3">
                         <div className="font-medium text-dhl-text">{s.receiverName}</div>

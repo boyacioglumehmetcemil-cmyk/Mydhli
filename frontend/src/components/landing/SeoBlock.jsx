@@ -13,7 +13,7 @@ const SeoBlock = () => (
       >
         <SectionEyebrow className="mb-3">Worldwide Logistics</SectionEyebrow>
         <h2 className="font-display text-2xl lg:text-[1.75rem] font-medium text-[#333] tracking-tight leading-[1.2] mb-2 max-w-[720px]">
-          Express Delivery & Worldwide Shipping
+          Global Freight Forwarding
         </h2>
         <p className="italic text-[#666] mb-5 text-[15px]">
           Fast. Door-to-door. Backed by a global network.

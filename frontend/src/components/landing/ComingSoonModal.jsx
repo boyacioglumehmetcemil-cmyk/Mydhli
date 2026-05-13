@@ -39,7 +39,7 @@ const ComingSoonModal = ({ open, onClose, title, body }) => {
         </div>
         <p className="text-sm text-dhl-text leading-[1.65]">
           {body ||
-            "This section is part of the live MyDHL+ platform. Sign in or open an account to access the full feature."}
+            "This section is part of the live myDHLi platform. Sign in or open an account to access the full feature."}
         </p>
         <div className="text-[10px] text-dhl-muted italic mt-4">Demo build placeholder.</div>
       </div>

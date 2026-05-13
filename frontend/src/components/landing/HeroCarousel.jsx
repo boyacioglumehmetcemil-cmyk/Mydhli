@@ -18,7 +18,7 @@ const SLIDES = [
     image: "/images/hero-cargo-plane.jpg",
     headline: "Faster Than You Think",
     sub: "Time-definite express delivery to every corner of the globe — backed by our own air network.",
-    cta: "See Express Services",
+    cta: "See Freight Services",
     action: "auth-route",
     target: "/dashboard/quote",
   },
@@ -112,7 +112,7 @@ const HeroCarousel = () => {
                   i === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
                 }`}
               >
-                DHL Express · Worldwide
+                DHL Global Forwarding · Worldwide
               </div>
               <h1
                 className={`font-display text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black text-white leading-[0.92] tracking-tighter mb-6 transition-all duration-700 delay-100 ${

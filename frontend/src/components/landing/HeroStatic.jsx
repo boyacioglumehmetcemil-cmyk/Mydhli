@@ -85,7 +85,7 @@ const HeroStatic = () => {
                 marginBottom: "24px",
               }}
             >
-              Your Express Logistics Partner
+              Your Freight Forwarding Partner
             </h1>
 
             {/* Sub */}

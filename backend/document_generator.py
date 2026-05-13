@@ -35,7 +35,7 @@ from labels_module import _barcode_png, _qr_png, DHL_YELLOW, DHL_RED, DHL_INK
 
 
 # ============ LOGO ============
-# Client-uploaded DHL Express wordmark. Native size: 334 × 31 px.
+# Client-uploaded DHL Global Forwarding wordmark. Native size: 334 × 31 px.
 LOGO_PATH = "/app/frontend/public/images/logo-user.png"
 # Cached ImageReader (loaded once per process)
 _LOGO_READER: Optional[ImageReader] = None
@@ -89,7 +89,7 @@ _S_DISCLAIMER = ParagraphStyle(
 # ============ SERVICE LABELS ============
 SERVICE_LABEL = {
     "EXPRESS_WORLDWIDE": "Express Worldwide",
-    "EXPRESS_12_00": "Express 12:00",
+    "EXPRESS_12_00": "Air Priority",
     "ECONOMY_SELECT": "Economy Select",
 }
 
@@ -244,7 +244,7 @@ def _build_doc(awb: str) -> tuple:
         canv.setFillColor(colors.HexColor("#666"))
         gen_ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
         canv.drawString(13 * mm, 10 * mm,
-                        f"Generated {gen_ts}  ·  AWB {awb}  ·  DHL Express (Demo)")
+                        f"Generated {gen_ts}  ·  AWB {awb}  ·  DHL Global Forwarding (Demo)")
         canv.setFont("Helvetica-Oblique", 6.5)
         canv.setFillColor(colors.HexColor("#999"))
         canv.drawRightString(A4[0] - 13 * mm, 10 * mm,
@@ -260,7 +260,7 @@ def _build_doc(awb: str) -> tuple:
         buf, pagesize=A4,
         leftMargin=13 * mm, rightMargin=13 * mm,
         topMargin=18 * mm, bottomMargin=18 * mm,
-        title="DHL Express Shipment Document",
+        title="DHL Global Forwarding Shipment Document",
     )
     frame = Frame(doc.leftMargin, doc.bottomMargin,
                   doc.width, doc.height, id="content")
@@ -357,7 +357,7 @@ def generate_air_waybill(shipment: dict, user: dict,
     optional_services = []
     svc = shipment.get("service", "")
     if svc == "EXPRESS_12_00":
-        optional_services.append("Express 12:00 Delivery")
+        optional_services.append("Air Priority Delivery")
     if pkg.get("saturdayDelivery"):
         optional_services.append("Saturday Delivery")
     if pkg.get("deliveryNotification"):
@@ -965,7 +965,7 @@ def generate_tax_invoice(shipment: dict, user: dict) -> bytes:
 
     # ===== DHL legal entity header =====
     story.append(Paragraph(
-        "<b>DHL Express (PNG) Ltd</b> · Reimburse To: DHL Express (PNG) Ltd, "
+        "<b>DHL Global Forwarding (PNG) Ltd</b> · Reimburse To: DHL Global Forwarding (PNG) Ltd, "
         "Lvl 2, Defens Haus, Port Moresby, Papua New Guinea · "
         "<b>GST Reg No.</b> 500000000",
         _S_BODY,
@@ -1350,7 +1350,7 @@ def generate_pod(shipment: dict, user: dict) -> bytes:
         f"This is a proof of delivery / statement of final status for the "
         f"shipment with waybill number <b>{awb}</b>. "
         f"Your shipment was <b>{status.lower()}</b> on <b>{delivered_str}</b>. "
-        f"Thank you for choosing DHL Express.",
+        f"Thank you for choosing DHL Global Forwarding.",
         _S_BODY,
     ))
     story.append(Spacer(1, 8 * mm))
@@ -1440,7 +1440,7 @@ def generate_certificate_of_origin(shipment: dict, user: dict,
     story.append(Paragraph("TRANSPORTATION & ROUTING", _S_SECTION))
     story.append(_kv_grid([
         ("Country of Origin", origin_country),
-        ("Exporting Carrier", "DHL Express"),
+        ("Exporting Carrier", "DHL Global Forwarding"),
         ("Transportation Method", "Air"),
         ("Port of Loading / Export", shipment.get("origin", {}).get("city", "—")),
         ("Place of Receipt", shipment.get("origin", {}).get("city", "—")),
@@ -1600,7 +1600,7 @@ def generate_letter_of_authorization(shipment: dict, user: dict) -> bytes:
     story.append(Paragraph("PAYMENT / CONTACT INFORMATION", _S_SECTION))
     story.append(Paragraph(
         "Please bill these charges to our local or international DHL "
-        "Express account number:",
+        "Forwarding account number:",
         _S_BODY,
     ))
     story.append(Spacer(1, 3 * mm))

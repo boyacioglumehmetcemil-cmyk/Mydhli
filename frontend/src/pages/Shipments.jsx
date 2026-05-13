@@ -103,7 +103,7 @@ const Shipments = () => {
     <div className="max-w-7xl mx-auto" data-testid="shipments-page">
       <div className="mb-6">
         <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-dhl-red mb-2">
-          MyDHL Express
+          MyDHL Global Forwarding
         </div>
         <h1 className="font-display text-3xl lg:text-4xl font-black text-dhl-text leading-tight tracking-tighter">
           My Shipments

@@ -47,13 +47,13 @@ export default function Login() {
             <TouchableOpacity testID="login-back-home" onPress={() => router.back()}>
               <View style={styles.logoPill}>
                 <Text style={styles.logoText}>DHL</Text>
-                <Text style={styles.logoAccent}> Express</Text>
+                <Text style={styles.logoAccent}> Forwarding</Text>
               </View>
             </TouchableOpacity>
           </View>
 
           <View style={styles.formContainer}>
-            <Text style={styles.label}>MYDHL EXPRESS</Text>
+            <Text style={styles.label}>myDHLi</Text>
             <Text style={styles.title}>Welcome back.</Text>
             <Text style={styles.subtitle}>Sign in to ship, track and manage your PNG account.</Text>
 

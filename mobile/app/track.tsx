@@ -59,7 +59,7 @@ export default function Track() {
             </TouchableOpacity>
             <View style={styles.logoPill}>
               <Text style={styles.logoText}>DHL</Text>
-              <Text style={styles.logoAccent}> Express</Text>
+              <Text style={styles.logoAccent}> Forwarding</Text>
             </View>
             <View style={{ width: 20 }} />
           </View>

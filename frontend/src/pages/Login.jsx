@@ -54,7 +54,7 @@ const Login = () => {
         <div className="flex-1 flex items-center justify-center">
           <div className="w-full max-w-md">
             <div className="text-xs font-bold uppercase tracking-[0.2em] text-dhl-red mb-3">
-              MyDHL Express
+              MyDHL Global Forwarding
             </div>
             <h1 className="font-display text-4xl font-black text-dhl-text leading-tight mb-2">
               Welcome back.
@@ -189,7 +189,7 @@ const Login = () => {
               <span className="text-dhl-yellow">Deliver.</span>
             </div>
             <div className="mt-8 max-w-sm text-sm text-white/75 leading-relaxed">
-              Express logistics across 220+ countries. Real-time tracking, dedicated couriers,
+              Freight forwarding across the Pacific. Real-time visibility, customs-cleared shipments,
               and dependable next-day delivery options.
             </div>
           </div>

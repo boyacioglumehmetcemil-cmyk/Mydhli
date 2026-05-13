@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
 import { useAuth } from '../src/contexts/AuthContext';
+import BrandWordmark from '../src/components/BrandWordmark';
 
 export default function Landing() {
   const router = useRouter();
@@ -25,10 +26,7 @@ export default function Landing() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.logoPill}>
-            <Text style={styles.logoText}>DHL</Text>
-            <Text style={styles.logoAccent}> Express</Text>
-          </View>
+          <BrandWordmark size="md" />
           {isAuthenticated ? (
             <TouchableOpacity
               testID="landing-dashboard-btn"
@@ -50,11 +48,11 @@ export default function Landing() {
 
         {/* Hero */}
         <View style={styles.hero} testID="landing-hero">
-          <Text style={styles.heroLabel}>MYDHL EXPRESS · PAPUA NEW GUINEA</Text>
-          <Text style={styles.heroTitle}>Ship faster.{'\n'}Track smarter.</Text>
+          <Text style={styles.heroLabel}>myDHLi · PAPUA NEW GUINEA</Text>
+          <Text style={styles.heroTitle}>Move freight{'\n'}across the Pacific.</Text>
           <Text style={styles.heroSub}>
-            Express logistics across 220+ countries. Real-time tracking, dedicated couriers,
-            and next-day delivery options.
+            Air, ocean and road freight forwarding tailored for PNG businesses.
+            Book, track and pay from one portal.
           </Text>
           <View style={styles.heroBtns}>
             {isAuthenticated ? (
@@ -63,7 +61,7 @@ export default function Landing() {
                 style={styles.primaryBtn}
                 onPress={() => router.push('/(tabs)/ship')}
               >
-                <Text style={styles.primaryBtnText}>SHIP NOW</Text>
+                <Text style={styles.primaryBtnText}>BOOK FREIGHT</Text>
                 <Ionicons name="arrow-forward" size={16} color={Colors.dhlInk} />
               </TouchableOpacity>
             ) : (
@@ -72,7 +70,7 @@ export default function Landing() {
                 style={styles.primaryBtn}
                 onPress={() => router.push('/register')}
               >
-                <Text style={styles.primaryBtnText}>GET STARTED</Text>
+                <Text style={styles.primaryBtnText}>OPEN ACCOUNT</Text>
                 <Ionicons name="arrow-forward" size={16} color={Colors.dhlInk} />
               </TouchableOpacity>
             )}
@@ -86,13 +84,13 @@ export default function Landing() {
           </View>
         </View>
 
-        {/* Stats Strip */}
+        {/* Stats Strip — freight forwarding KPIs */}
         <View style={styles.statsStrip}>
           {[
-            { val: '220+', label: 'Countries' },
-            { val: '100K+', label: 'Packages Daily' },
-            { val: '99.7%', label: 'On-Time Rate' },
-            { val: '24/7', label: 'Live Support' },
+            { val: '3', label: 'Freight Modes' },
+            { val: '180+', label: 'Containers MTD' },
+            { val: '4.4d', label: 'Avg Transit' },
+            { val: '24/7', label: 'Ops Support' },
           ].map((s, i) => (
             <View key={i} style={styles.statItem}>
               <Text style={styles.statVal}>{s.val}</Text>
@@ -104,12 +102,12 @@ export default function Landing() {
         {/* Quick Actions */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>WHAT WE DO</Text>
-          <Text style={styles.sectionTitle}>Express services</Text>
+          <Text style={styles.sectionTitle}>Freight forwarding · PNG</Text>
           {[
-            { icon: 'send' as const, title: 'Ship Now', desc: 'Create shipments in minutes with live rates', route: isAuthenticated ? '/(tabs)/ship' : '/login' },
-            { icon: 'search' as const, title: 'Track Shipment', desc: 'Real-time tracking with no account needed', route: '/track' },
-            { icon: 'calculator' as const, title: 'Get a Quote', desc: 'Instant rate estimates for 220+ countries', route: isAuthenticated ? '/quote' : '/login' },
-            { icon: 'calendar' as const, title: 'Schedule Pickup', desc: 'Book a courier to collect your packages', route: isAuthenticated ? '/schedule-pickup' : '/login' },
+            { icon: 'airplane' as const, title: 'Air Freight', desc: 'Priority + economy, HAWB-tracked', route: isAuthenticated ? '/(tabs)/ship' : '/login' },
+            { icon: 'boat' as const, title: 'Ocean Freight', desc: 'FCL & LCL with weekly sailings', route: isAuthenticated ? '/(tabs)/ship' : '/login' },
+            { icon: 'car-sport' as const, title: 'Road Freight', desc: 'Domestic milk-runs + project cargo', route: isAuthenticated ? '/(tabs)/ship' : '/login' },
+            { icon: 'search' as const, title: 'Track Shipment', desc: 'Look up any HAWB, BL or container', route: '/track' },
           ].map((item, i) => (
             <TouchableOpacity
               key={i}
@@ -138,7 +136,7 @@ export default function Landing() {
         {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            © 2026 DHL Express PNG · Demo Build
+            © 2026 DHL Global Forwarding PNG · Demo Build
           </Text>
         </View>
       </ScrollView>

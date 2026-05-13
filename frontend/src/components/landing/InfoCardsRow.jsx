@@ -26,7 +26,7 @@ const CARDS = [
       content: [
         "Lithium batteries, perfumes, aerosols, and certain chemicals are classified as Dangerous Goods (DG) under IATA regulations.",
         "Before shipping, declare DG items and use approved packaging with required hazard labels. Incorrect declaration can result in fines, refused shipments, and safety risks.",
-        "DHL Express offers DG-trained specialists and approved packaging kits. Contact your local team for a compliance review before your first DG shipment.",
+        "DHL Global Forwarding offers DG-trained specialists and approved packaging kits. Contact your local team for a compliance review before your first DG shipment.",
       ],
     },
     testId: "info-card-batteries",

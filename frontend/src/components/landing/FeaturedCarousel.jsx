@@ -11,7 +11,7 @@ const SLIDES = [
     eyebrow: "Speed",
     headline: "Faster Than You Think",
     sub: "Time-definite express delivery to every corner of the globe — backed by our own air network.",
-    cta: "See Express Services",
+    cta: "See Freight Services",
     action: "auth-route",
     target: "/dashboard/quote",
   },
