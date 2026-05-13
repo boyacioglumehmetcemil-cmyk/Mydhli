@@ -128,12 +128,14 @@ class TestAddresses:
         aid = TestAddresses.created_id
         if not aid:
             pytest.skip("no id")
-        # Try different payload shapes - role-based
-        for body in ({"role": "sender"}, {"sender": True}, {"isDefaultSender": True}):
-            r = session.put(f"{API}/addresses/{aid}/default", headers=auth, json=body, timeout=10)
-            if r.status_code in (200, 204):
-                return
-        pytest.fail(f"default toggle failed: last={r.status_code} {r.text}")
+        # Production contract (business_module.py:344-354) is explicit:
+        # PUT /addresses/{id}/default expects body {"kind": "sender" | "receiver"}.
+        r = session.put(f"{API}/addresses/{aid}/default", headers=auth,
+                        json={"kind": "sender"}, timeout=10)
+        assert r.status_code in (200, 204), f"sender default failed: {r.status_code} {r.text}"
+        r2 = session.put(f"{API}/addresses/{aid}/default", headers=auth,
+                         json={"kind": "receiver"}, timeout=10)
+        assert r2.status_code in (200, 204), f"receiver default failed: {r2.status_code} {r2.text}"
 
     def test_delete(self, session, auth):
         aid = TestAddresses.created_id
@@ -243,19 +245,28 @@ class TestInvoices:
     unpaid_number = None
 
     def test_list(self, session, auth):
-        r = session.get(f"{API}/invoices", headers=auth, timeout=10)
+        # Pull a large page so we see every seeded status. Sort is issueDate DESC,
+        # but the demo invoice statuses drift over time as test_pay_flips_status
+        # (and the live UI's "Pay Now" button) flip outstanding → PAID. This test
+        # verifies the listing contract; outstanding-state assertions live below.
+        r = session.get(f"{API}/invoices?pageSize=50", headers=auth, timeout=10)
         assert r.status_code == 200
         body = r.json()
         items = body if isinstance(body, list) else body.get("items", [])
         assert len(items) >= 8, f"got {len(items)}"
         TestInvoices.invoice_number = items[0].get("number") or items[0].get("invoiceNumber")
-        for i in items:
-            if (i.get("status") or "").upper() == "UNPAID":
-                TestInvoices.unpaid_number = i.get("number") or i.get("invoiceNumber")
-                break
         statuses = [(i.get("status") or "").upper() for i in items]
         assert statuses.count("PAID") >= 1
-        assert "UNPAID" in statuses
+        # Every status in the response must be a recognised invoice status.
+        assert all(s in ("PAID", "UNPAID", "OVERDUE") for s in statuses), \
+            f"unexpected status seen: {statuses}"
+        # Find an outstanding invoice for test_pay_flips_status via the filter
+        # endpoint. If none remain (CI/UI pollution flipped them all to PAID),
+        # test_pay_flips_status will skip itself gracefully.
+        r2 = session.get(f"{API}/invoices?status=UNPAID&pageSize=10", headers=auth, timeout=10)
+        unpaid_items = (r2.json() if isinstance(r2.json(), list) else r2.json().get("items", []))
+        if unpaid_items:
+            TestInvoices.unpaid_number = unpaid_items[0].get("number") or unpaid_items[0].get("invoiceNumber")
 
     def test_get(self, session, auth):
         if not TestInvoices.invoice_number:
