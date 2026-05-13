@@ -32,8 +32,8 @@ export default function Track() {
       if (err?.response?.status === 404) {
         setError({ kind: 'notfound', awb: awb.trim().toUpperCase() });
       } else {
+        // Network / 5xx → inline banner below shows retry; no native alert needed.
         setError({ kind: 'network' });
-        Alert.alert('Error', 'Unable to fetch tracking');
       }
     } finally {
       setLoading(false);
@@ -145,23 +145,63 @@ export default function Track() {
                 </View>
 
                 {/* Timeline */}
-                {shipment.timeline?.length > 0 && (
-                  <View style={styles.timeline}>
-                    <Text style={styles.timelineTitle}>SHIPMENT TIMELINE</Text>
-                    {shipment.timeline.map((ev: any, i: number) => (
-                      <View key={i} style={styles.timelineItem}>
-                        <View style={styles.timelineDotCol}>
-                          <View style={[styles.timelineDot, i === 0 && styles.timelineDotActive]} />
-                          {i < shipment.timeline.length - 1 && <View style={styles.timelineLine} />}
+                <View style={styles.timeline}>
+                  <Text style={styles.timelineTitle}>SHIPMENT TIMELINE</Text>
+                  {(() => {
+                    const events: any[] = Array.isArray(shipment.events) ? shipment.events : [];
+                    if (events.length === 0) {
+                      return (
+                        <View testID="timeline-empty" style={styles.timelineEmpty}>
+                          <Ionicons name="time-outline" size={28} color={Colors.dhlMuted} />
+                          <Text style={styles.timelineEmptyText}>No tracking events yet</Text>
                         </View>
-                        <View style={styles.timelineContent}>
-                          <Text style={[styles.timelineEvent, i === 0 && { color: Colors.dhlText, fontWeight: '700' }]}>{ev.description}</Text>
-                          <Text style={styles.timelineDate}>{formatDateTime(ev.timestamp)} · {ev.location}</Text>
+                      );
+                    }
+                    // Sort DESC by timestamp → most recent at top (web parity).
+                    const sorted = [...events].sort(
+                      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+                    );
+                    return sorted.map((ev: any, i: number) => {
+                      const isLatest = i === 0;
+                      return (
+                        <View testID={`timeline-event-${i}`} key={`${ev.timestamp}-${i}`} style={styles.timelineItem}>
+                          <View style={styles.timelineDotCol}>
+                            <View style={[styles.timelineDot, isLatest && styles.timelineDotActive]} />
+                            {i < sorted.length - 1 && <View style={styles.timelineLine} />}
+                          </View>
+                          <View style={styles.timelineContent}>
+                            <View style={styles.timelineHeadRow}>
+                              <Text style={[styles.timelineEvent, isLatest && styles.timelineEventLatest]} numberOfLines={2}>
+                                {ev.description}
+                              </Text>
+                              {ev.code ? <Text style={styles.timelineCode}>{ev.code}</Text> : null}
+                              {isLatest && <Text style={styles.timelineLatestTag}>LATEST</Text>}
+                            </View>
+                            <View style={styles.timelineMetaRow}>
+                              <Ionicons name="time-outline" size={11} color={Colors.dhlMuted} />
+                              <Text style={styles.timelineDate}>{formatDateTime(ev.timestamp)}</Text>
+                              <Ionicons name="location-outline" size={11} color={Colors.dhlMuted} style={{ marginLeft: 6 }} />
+                              <Text style={styles.timelineDate}>{ev.location}</Text>
+                            </View>
+                          </View>
                         </View>
-                      </View>
-                    ))}
-                  </View>
-                )}
+                      );
+                    });
+                  })()}
+                </View>
+              </View>
+            )}
+
+            {!loading && error?.kind === 'network' && (
+              <View testID="track-network-error" style={styles.errorBanner}>
+                <Ionicons name="cloud-offline-outline" size={20} color={Colors.dhlRed} />
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={styles.errorBannerTitle}>Could not reach the tracking service</Text>
+                  <Text style={styles.errorBannerText}>Check your connection and try again.</Text>
+                </View>
+                <TouchableOpacity testID="track-network-retry" onPress={() => input.trim() && fetchShipment(input.trim().toUpperCase())}>
+                  <Text style={styles.errorBannerRetry}>RETRY</Text>
+                </TouchableOpacity>
               </View>
             )}
 
@@ -247,9 +287,28 @@ const styles = StyleSheet.create({
   timelineItem: { flexDirection: 'row', minHeight: 48 },
   timelineDotCol: { alignItems: 'center', width: 20, marginRight: 12 },
   timelineDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.dhlBorder, marginTop: 4 },
-  timelineDotActive: { backgroundColor: Colors.dhlYellow, borderWidth: 2, borderColor: Colors.dhlInk },
+  timelineDotActive: { width: 14, height: 14, borderRadius: 7, backgroundColor: Colors.dhlYellow, borderWidth: 2, borderColor: Colors.dhlInk, marginTop: 2 },
   timelineLine: { width: 2, flex: 1, backgroundColor: Colors.dhlBorder, marginTop: 4 },
   timelineContent: { flex: 1, paddingBottom: 16 },
-  timelineEvent: { fontSize: 13, color: Colors.dhlMuted },
-  timelineDate: { fontSize: 11, color: Colors.dhlMuted, marginTop: 2 },
+  timelineHeadRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginBottom: 4 },
+  timelineEvent: { flexShrink: 1, fontSize: 13, color: Colors.dhlMuted },
+  timelineEventLatest: { color: Colors.dhlText, fontWeight: '700' },
+  timelineCode: {
+    fontSize: 9, fontFamily: 'monospace', fontWeight: '700', letterSpacing: 1,
+    color: Colors.dhlMuted, backgroundColor: Colors.dhlPanel,
+    borderWidth: 1, borderColor: Colors.dhlBorder,
+    paddingHorizontal: 5, paddingVertical: 1,
+  },
+  timelineLatestTag: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: Colors.dhlRed },
+  timelineMetaRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 3 },
+  timelineDate: { fontSize: 11, color: Colors.dhlMuted, marginLeft: 2 },
+  timelineEmpty: { alignItems: 'center', paddingVertical: 24 },
+  timelineEmptyText: { fontSize: 13, color: Colors.dhlMuted, marginTop: 8 },
+  errorBanner: {
+    flexDirection: 'row', alignItems: 'center', padding: 14, marginTop: 16,
+    backgroundColor: Colors.red100, borderLeftWidth: 4, borderLeftColor: Colors.dhlRed,
+  },
+  errorBannerTitle: { fontSize: 13, fontWeight: '700', color: Colors.dhlText },
+  errorBannerText: { fontSize: 11, color: Colors.dhlMuted, marginTop: 2 },
+  errorBannerRetry: { fontSize: 11, fontWeight: '800', letterSpacing: 1.2, color: Colors.dhlRed, paddingHorizontal: 8 },
 });
