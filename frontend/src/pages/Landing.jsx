@@ -433,6 +433,83 @@ const AirFreightOverlappingSection = () => {
 };
 
 /* -------------------------------------------------------------------------- */
+/* OceanFreightOverlappingSection — mirror of the AIR layout: PHOTO LEFT,      */
+/* white content card RIGHT. Photo bleeds rightward into the card and         */
+/* vertically above/below on lg+; mobile collapses to content-first stack.    */
+/* -------------------------------------------------------------------------- */
+const OceanFreightOverlappingSection = () => {
+  const subCards = [
+    { icon: Container, title: "FCL — Full container load",      body: "Dedicated container capacity with sailing schedules and HBL/MBL handling." },
+    { icon: Boxes,     title: "LCL — Less than container load", body: "Consolidate smaller volumes with predictable transit and shared costs."   },
+  ];
+  return (
+    <section data-testid="freight-mode-ocean" className="bg-dhl-panel/40 py-16 lg:py-24">
+      <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
+        <div className="grid lg:grid-cols-[5fr_6fr] gap-8 lg:gap-0 items-center relative">
+          {/* PHOTO — order-2 on mobile (below content), order-1 on lg (left side) */}
+          <div
+            data-testid="ocean-freight-photo"
+            className="order-2 lg:order-1 relative z-0 lg:-mr-16 lg:-my-16 rounded-xl lg:rounded-2xl overflow-hidden shadow-xl"
+          >
+            <img
+              src="/assets/dhl/ocean-freight-photo.png"
+              alt="DHL Global Forwarding staff at a container port"
+              className="w-full h-[280px] sm:h-[360px] lg:h-[640px] object-cover"
+              loading="lazy"
+            />
+          </div>
+
+          {/* CONTENT CARD — order-1 on mobile (above), order-2 on lg (right side) */}
+          <div className="order-1 lg:order-2 relative z-10 bg-white rounded-xl shadow-xl border border-black/5 p-6 sm:p-8 lg:p-10 lg:max-w-[640px] lg:ml-auto">
+            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-3">
+              Ocean freight
+            </div>
+            <h2 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-3 text-[26px] lg:text-[36px]">
+              FCL, LCL and project cargo on every major lane.
+            </h2>
+            <p className="text-dhl-ink/70 text-[15px] lg:text-base mb-4">
+              Business shippers, end to end.
+            </p>
+            <p className="text-dhl-ink/85 text-[14px] lg:text-[15px] leading-relaxed mb-6 max-w-prose">
+              From a single pallet on an LCL consolidation to full-container chartering and oversized project cargo, our ocean teams plan, document and dispatch across global trade lanes.
+            </p>
+
+            {/* Sub-cards — FCL + LCL */}
+            <div className="space-y-3 mb-6" data-testid="ocean-subcards">
+              {subCards.map((c, i) => (
+                <Link
+                  key={i}
+                  to="/dashboard/quote?mode=OCEAN"
+                  data-testid={`ocean-subcard-${i}`}
+                  className="flex items-start gap-3 p-3 rounded-lg bg-dhl-panel/60 hover:bg-dhl-panel transition-colors group"
+                >
+                  <div className="w-9 h-9 rounded-md bg-dhl-yellow/30 flex items-center justify-center flex-shrink-0">
+                    <c.icon className="w-5 h-5 text-dhl-ink" strokeWidth={2} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13px] lg:text-sm font-bold text-dhl-ink leading-tight mb-0.5">{c.title}</div>
+                    <div className="text-[12px] lg:text-[13px] text-dhl-ink/70 leading-snug">{c.body}</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-dhl-red flex-shrink-0 mt-2 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              ))}
+            </div>
+
+            <Link
+              to="/dashboard/quote?mode=OCEAN"
+              data-testid="mode-cta-ocean"
+              className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
+            >
+              Explore ocean freight <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
 /* Hero                                                                        */
 /* -------------------------------------------------------------------------- */
 const HeroFreightSilhouette = () => (
@@ -755,23 +832,7 @@ const Landing = () => {
         <FloatingCards />
         <InfoBand />
         <AirFreightOverlappingSection />
-        <FreightModeSection
-          mode="OCEAN"
-          align="image-left"
-          bg="gray-50"
-          eyebrow="Ocean freight"
-          headline="FCL, LCL and project cargo on every major lane."
-          subhead="Business shippers, end to end."
-          body="From a single pallet on an LCL consolidation to full-container chartering and oversized project cargo, our ocean teams plan, document and dispatch across global trade lanes."
-          subCards={[
-            { icon: Container, title: "FCL — Full container load", body: "Dedicated container capacity with sailing schedules and HBL/MBL handling.", href: "/dashboard/quote?mode=OCEAN" },
-            { icon: Boxes,     title: "LCL — Less than container load", body: "Consolidate smaller volumes with predictable transit and shared costs.", href: "/dashboard/quote?mode=OCEAN" },
-          ]}
-          cta={{ label: "Explore ocean freight", href: "/dashboard/quote?mode=OCEAN" }}
-          imageVariant="red"
-          imageIcon={ContainerShipSilhouette}
-          swapTarget="ocean-freight-hero"
-        />
+        <OceanFreightOverlappingSection />
         <FreightModeSection
           mode="ROAD"
           align="image-right"
