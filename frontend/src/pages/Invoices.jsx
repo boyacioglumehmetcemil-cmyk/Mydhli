@@ -7,8 +7,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import api from "@/lib/api";
-import { formatDate, formatPGK } from "@/lib/shipmentUtils";
+import { formatDate } from "@/lib/shipmentUtils";
 import { downloadAuthedPdf } from "@/lib/downloadPdf";
+import { useCountry } from "@/contexts/CountryContext";
 
 const statusTone = {
   PAID: "bg-green-100 text-green-900 border-green-600",
@@ -19,6 +20,7 @@ const statusTone = {
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
 
 const PayModal = ({ invoice, onClose, onPaid }) => {
+  const { formatCurrency } = useCountry();
   const [cardNumber, setCardNumber] = useState("4111 1111 1111 1111");
   const [expMonth, setExpMonth] = useState("12");
   const [expYear, setExpYear] = useState("2027");
@@ -57,7 +59,7 @@ const PayModal = ({ invoice, onClose, onPaid }) => {
         <div className="space-y-4">
           <div className="bg-dhl-ink text-white p-4">
             <div className="text-[10px] uppercase tracking-wider text-dhl-yellow font-bold">Amount Due</div>
-            <div className="font-display text-3xl font-black">{formatPGK(invoice.totalPGK)}</div>
+            <div className="font-display text-3xl font-black">{formatCurrency(invoice.totalPGK)}</div>
           </div>
           <div className="text-xs text-dhl-muted bg-dhl-panel p-3">
             Demo cards: <b className="font-mono">4111 1111 1111 1111</b> = success · <b className="font-mono text-dhl-red">4000 0000 0000 0002</b> = decline
@@ -76,7 +78,7 @@ const PayModal = ({ invoice, onClose, onPaid }) => {
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button onClick={pay} disabled={paying} data-testid="pay-submit" className="bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark rounded-none font-bold uppercase tracking-wider text-xs border-2 border-dhl-ink px-5">
-            {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Pay {formatPGK(invoice.totalPGK)}</>}
+            {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Pay {formatCurrency(invoice.totalPGK)}</>}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -86,6 +88,7 @@ const PayModal = ({ invoice, onClose, onPaid }) => {
 
 const Invoices = () => {
   const navigate = useNavigate();
+  const { formatCurrency } = useCountry();
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -116,10 +119,10 @@ const Invoices = () => {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <Kpi label="Total Outstanding" value={formatPGK(totalOutstanding)} accent="bg-dhl-yellow" />
-        <Kpi label="Overdue" value={formatPGK(overdueTotal)} accent="bg-dhl-red text-white" />
+        <Kpi label="Total Outstanding" value={formatCurrency(totalOutstanding)} accent="bg-dhl-yellow" />
+        <Kpi label="Overdue" value={formatCurrency(overdueTotal)} accent="bg-dhl-red text-white" />
         <Kpi label="Paid Invoices" value={paidCount} accent="bg-dhl-ink text-white" />
-        <Kpi label="Average Invoice" value={formatPGK(avgAmt)} accent="bg-dhl-panel" />
+        <Kpi label="Average Invoice" value={formatCurrency(avgAmt)} accent="bg-dhl-panel" />
       </div>
 
       {/* Filter */}
@@ -156,7 +159,7 @@ const Invoices = () => {
                     <td className="px-5 py-3 font-mono font-bold">{inv.invoiceNumber}</td>
                     <td className="px-5 py-3 text-dhl-muted">{formatDate(inv.issueDate)}</td>
                     <td className="px-5 py-3 text-dhl-muted">{formatDate(inv.dueDate)}</td>
-                    <td className="px-5 py-3 text-right font-mono font-bold">{formatPGK(inv.totalPGK)}</td>
+                    <td className="px-5 py-3 text-right font-mono font-bold">{formatCurrency(inv.totalPGK)}</td>
                     <td className="px-5 py-3">
                       <span className={`inline-block px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border ${statusTone[inv.status]}`}>{inv.status}</span>
                     </td>

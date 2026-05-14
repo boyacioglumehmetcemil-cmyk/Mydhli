@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { STATUS_LABELS, formatDate, formatPGK } from "@/lib/shipmentUtils";
+import { STATUS_LABELS, formatDate } from "@/lib/shipmentUtils";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import { useCountry } from "@/contexts/CountryContext";
 
 const PAGE_SIZE = 20;
 
@@ -44,6 +45,7 @@ const Shipments = () => {
   const [modeFilter, setModeFilter] = useState(params.get("mode") || "ALL");
   const [dateFrom, setDateFrom] = useState(params.get("from") || "");
   const [dateTo, setDateTo] = useState(params.get("to") || "");
+  const { formatCurrency } = useCountry();
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -251,7 +253,7 @@ const Shipments = () => {
                         <td className="px-5 py-4"><StatusBadge status={s.status} size="sm" /></td>
                         <td className="px-5 py-4 text-dhl-muted text-xs">{s.etd ? formatDate(s.etd) : "—"}</td>
                         <td className="px-5 py-4 text-dhl-muted text-xs">{s.eta ? formatDate(s.eta) : "—"}</td>
-                        <td className="px-5 py-4 text-right font-mono font-bold text-dhl-text">{formatPGK(s.costPGK)}</td>
+                        <td className="px-5 py-4 text-right font-mono font-bold text-dhl-text">{formatCurrency(s.costPGK)}</td>
                         <td className="px-5 py-4 text-right">
                           <span className="text-xs font-bold uppercase tracking-wider text-dhl-red">View →</span>
                         </td>
@@ -289,7 +291,7 @@ const Shipments = () => {
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-dhl-muted">ETA {s.eta ? formatDate(s.eta) : "—"}</span>
-                      <span className="font-mono font-bold text-dhl-text">{formatPGK(s.costPGK)}</span>
+                      <span className="font-mono font-bold text-dhl-text">{formatCurrency(s.costPGK)}</span>
                     </div>
                   </button>
                 );

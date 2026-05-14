@@ -2,6 +2,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CountryProvider } from "@/contexts/CountryContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DemoBadge from "@/components/DemoBadge";
 import Landing from "@/pages/Landing";
@@ -30,7 +31,8 @@ import NotFound from "@/pages/NotFound";
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <CountryProvider>
+        <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/solutions" element={<Solutions />} />
@@ -71,6 +73,7 @@ function App() {
         <DemoBadge />
         <Toaster position="top-right" richColors closeButton />
       </BrowserRouter>
+      </CountryProvider>
     </AuthProvider>
   );
 }

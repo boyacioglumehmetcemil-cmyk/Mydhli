@@ -136,11 +136,3 @@ export const formatDateTime = (iso) => {
     return iso;
   }
 };
-
-export const formatPGK = (n) =>
-  new Intl.NumberFormat("en-PG", {
-    style: "currency",
-    currency: "PGK",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number(n || 0));

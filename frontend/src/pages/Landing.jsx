@@ -1,38 +1,20 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Search, ExternalLink, Globe, ChevronDown, ChevronRight, Menu, X, Check,
+  Search, ExternalLink, ChevronDown, ChevronRight, Menu, X,
   Plane, Ship, Truck, Calendar, Calculator, Building2, ArrowRight,
   Linkedin, Youtube, Twitter, Container, Boxes, Facebook, Instagram,
 } from "lucide-react";
 import { toast } from "sonner";
 import BrandWordmark from "@/components/BrandWordmark";
 import BrandImagePlaceholder from "@/components/BrandImagePlaceholder";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import CountryPicker from "@/components/CountryPicker";
 import useTitle from "@/hooks/useTitle";
 
 /* -------------------------------------------------------------------------- */
 /* Header — utility bar + nav bar (2 rows, sticky)                             */
 /* -------------------------------------------------------------------------- */
-// Demo language picker — selecting an item only flips the displayed code; no
-// real i18n routing is wired up (out of scope for the pitch build).
-const LANGUAGES = [
-  { code: "EN", label: "English" },
-  { code: "ES", label: "Español" },
-  { code: "FR", label: "Français" },
-  { code: "DE", label: "Deutsch" },
-  { code: "ZH", label: "中文" },
-  { code: "JA", label: "日本語" },
-  { code: "PT", label: "Português" },
-  { code: "ID", label: "Bahasa Indonesia" },
-];
-
-const UtilityBar = ({ onSearch, language, setLanguage }) => {
+const UtilityBar = ({ onSearch }) => {
   return (
     <div className="bg-dhl-yellow border-b border-dhl-yellow-dark" data-testid="utility-bar">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between gap-4">
@@ -44,40 +26,8 @@ const UtilityBar = ({ onSearch, language, setLanguage }) => {
           <button type="button" onClick={onSearch} className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-search">
             <Search className="w-3.5 h-3.5" /> Search
           </button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                data-testid="utility-language"
-                className="text-sm font-medium h-8 px-3 inline-flex items-center gap-1.5 rounded-sm hover:bg-black/5 outline-none focus-visible:ring-2 focus-visible:ring-dhl-red/40"
-              >
-                <Globe className="w-4 h-4" />
-                {language}
-                <ChevronDown className="w-[14px] h-[14px]" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              sideOffset={6}
-              data-testid="language-dropdown"
-              className="w-[220px] bg-white shadow-lg rounded-md border border-stone-200 p-1"
-            >
-              {LANGUAGES.map((l) => (
-                <DropdownMenuItem
-                  key={l.code}
-                  data-testid={`language-option-${l.code}`}
-                  onSelect={() => setLanguage(l.code)}
-                  className="text-sm h-9 px-3 cursor-pointer focus:bg-stone-100 hover:bg-stone-100 flex items-center justify-between rounded-sm"
-                >
-                  <span className="flex items-baseline gap-2">
-                    <span className="text-dhl-text">{l.label}</span>
-                    <span className="text-stone-400 text-xs">({l.code})</span>
-                  </span>
-                  {language === l.code && <Check className="w-4 h-4 text-dhl-red" />}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Country & currency picker — drives global formatCurrency() via CountryContext. */}
+          <CountryPicker />
         </nav>
       </div>
     </div>
@@ -219,6 +169,12 @@ const MobileDrawer = ({ open, onClose }) => (
               )}
             </div>
           ))}
+          {/* Country & currency picker — exposed in the drawer so mobile
+              users can pivot pricing just like desktop. Uses the same
+              <CountryPicker /> component in row-trigger mode. */}
+          <div className="border-t border-dhl-border mt-2 pt-2" data-testid="mobile-drawer-country-row">
+            <CountryPicker variant="row" />
+          </div>
         </nav>
         <div className="p-4 border-t border-dhl-border">
           <Link to="/login" onClick={onClose} className="block w-full h-11 inline-flex items-center justify-center bg-dhl-red text-white font-bold rounded-md text-sm" data-testid="mobile-drawer-login">
@@ -1130,13 +1086,12 @@ const SearchModal = ({ open, onClose }) =>
 /* -------------------------------------------------------------------------- */
 const Landing = () => {
   useTitle("Freight forwarding");
-  const [language, setLanguage] = useState("EN");
   const [searchOpen, setSearchOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   return (
     <div className="min-h-screen bg-white" data-testid="landing-page">
       <header data-testid="landing-header">
-        <UtilityBar onSearch={() => setSearchOpen(true)} language={language} setLanguage={setLanguage} />
+        <UtilityBar onSearch={() => setSearchOpen(true)} />
         <NavBar onMobileMenu={() => setDrawerOpen(true)} />
         <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       </header>

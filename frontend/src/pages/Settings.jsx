@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCountry } from "@/contexts/CountryContext";
 import api from "@/lib/api";
 
 const tabs = [
@@ -18,6 +19,7 @@ const tabs = [
 
 const Settings = () => {
   const { user, login } = useAuth();
+  const { country } = useCountry();
   const [tab, setTab] = useState("profile");
 
   // Profile
@@ -103,7 +105,7 @@ const Settings = () => {
             <div className="max-w-xl space-y-4">
               <h2 className="font-display text-xl font-bold text-dhl-text mb-2">Business</h2>
               <Field label="Company Name"><Input value={profile.companyName} onChange={e => setProfile({ ...profile, companyName: e.target.value })} /></Field>
-              <Field label="Default Currency"><Input value="PGK (Locked)" disabled className="bg-dhl-panel" /></Field>
+              <Field label="Display Currency"><Input value={`${country.currency} — ${country.name}`} disabled className="bg-dhl-panel" /></Field>
               <Field label="Tax / VAT ID"><Input placeholder="—" disabled className="bg-dhl-panel" /></Field>
               <Button onClick={saveProfile} className="bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark rounded-none font-bold uppercase tracking-wider text-xs border-2 border-dhl-ink px-5 h-11">Save</Button>
             </div>

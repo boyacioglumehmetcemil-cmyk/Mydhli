@@ -19,11 +19,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCountry } from "@/contexts/CountryContext";
 import StatusBadge from "@/components/StatusBadge";
 import MiniSparkline from "@/components/MiniSparkline";
 import useTitle from "@/hooks/useTitle";
 import api from "@/lib/api";
-import { formatDate, formatPGK, freightServiceFor } from "@/lib/shipmentUtils";
+import { formatDate, freightServiceFor } from "@/lib/shipmentUtils";
 
 const ACTIVE_STATUSES = ["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY"];
 
@@ -88,6 +89,7 @@ const QuickAction = ({ icon: Icon, label, sub, onClick, testId }) => (
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { formatCurrency } = useCountry();
   const navigate = useNavigate();
   useTitle("Dashboard");
 
@@ -187,8 +189,7 @@ const Dashboard = () => {
         <KpiCard
           icon={CircleDollarSign}
           label="This Month Spend"
-          value={Number(stats.monthSpend || 0).toFixed(0)}
-          suffix="PGK"
+          value={formatCurrency(stats.monthSpend || 0)}
           accent="bg-dhl-red text-white"
           sub={stats.monthSpend > 0 ? "Current billing period" : "No charges yet"}
           spark={sparkData.spend}
@@ -197,8 +198,7 @@ const Dashboard = () => {
         <KpiCard
           icon={Wallet}
           label="Outstanding Balance"
-          value="0"
-          suffix="PGK"
+          value={formatCurrency(0)}
           accent="bg-dhl-panel text-dhl-text border border-dhl-border"
           sub="Open invoices"
           spark={sparkData.balance}
@@ -394,7 +394,7 @@ const Dashboard = () => {
                       </td>
                       <td className="px-5 py-3 text-dhl-muted">{formatDate(s.createdAt)}</td>
                       <td className="px-5 py-3 text-right font-mono font-bold text-dhl-text">
-                        {formatPGK(s.costPGK)}
+                        {formatCurrency(s.costPGK)}
                       </td>
                     </tr>
                   ))}
@@ -420,7 +420,7 @@ const Dashboard = () => {
                     <span className="font-bold text-dhl-text">{s.origin.code}</span>
                     <ArrowRight className="w-3 h-3 text-dhl-red" />
                     <span className="font-bold text-dhl-text">{s.destination.code}</span>
-                    <span className="ml-auto font-mono font-bold text-dhl-text">{formatPGK(s.costPGK)}</span>
+                    <span className="ml-auto font-mono font-bold text-dhl-text">{formatCurrency(s.costPGK)}</span>
                   </div>
                 </button>
               ))}

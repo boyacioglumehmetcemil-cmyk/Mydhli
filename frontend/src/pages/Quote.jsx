@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from "@/lib/api";
-import { formatPGK, SERVICE_LABELS } from "@/lib/shipmentUtils";
+import { SERVICE_LABELS } from "@/lib/shipmentUtils";
+import { useCountry } from "@/contexts/CountryContext";
 
 const MODE_META = {
   AIR:   { icon: Plane, label: "Air freight",   accent: "bg-dhl-yellow text-dhl-ink",  desc: "Time-critical · HAWB tracked" },
@@ -19,6 +20,8 @@ const CURRENCIES = ["USD", "EUR", "GBP", "CHF", "SGD", "AUD", "JPY", "CNY", "PGK
 const Quote = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  // Demo: amounts re-labelled in selected country's currency without FX conversion.
+  const { formatCurrency } = useCountry();
   // Phase 8.2.2 — landing's mode CTAs route here with ?mode=AIR|OCEAN|ROAD.
   // We surface it as an eyebrow + tag on the result card; the multi-mode
   // comparison still renders all three modes side by side.
@@ -207,7 +210,7 @@ const Quote = () => {
                       <div className="font-display font-bold text-dhl-text text-base mb-0.5">{meta.label}</div>
                       <div className="text-[11px] text-dhl-muted mb-3">{meta.desc}</div>
                       <div className="font-display text-2xl font-bold text-dhl-text leading-none">
-                        {formatPGK(q.pricePGK)}
+                        {formatCurrency(q.pricePGK)}
                       </div>
                       <div className="flex items-center gap-3 mt-3 text-[11px] text-dhl-muted">
                         <span className="inline-flex items-center gap-1">
@@ -248,7 +251,7 @@ const Quote = () => {
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="font-display text-xl font-bold text-dhl-text">{formatPGK(opt.pricePGK)}</div>
+                      <div className="font-display text-xl font-bold text-dhl-text">{formatCurrency(opt.pricePGK)}</div>
                     </div>
                   </div>
                 </div>

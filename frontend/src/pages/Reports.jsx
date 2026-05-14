@@ -6,13 +6,15 @@ import {
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
-import { formatPGK, SERVICE_LABELS } from "@/lib/shipmentUtils";
+import { SERVICE_LABELS } from "@/lib/shipmentUtils";
 import { downloadAuthedPdf } from "@/lib/downloadPdf";
+import { useCountry } from "@/contexts/CountryContext";
 
 const COLORS = ["#FFCC00", "#D40511", "#1A1A1A", "#666666", "#FFE066"];
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
 
 const Reports = () => {
+  const { formatCurrency, currency } = useCountry();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -48,13 +50,13 @@ const Reports = () => {
 
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Monthly Spend */}
-        <ChartCard title="Monthly Spend" subtitle="Last 6 months · PGK">
+        <ChartCard title="Monthly Spend" subtitle={`Last 6 months · ${currency}`}>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={data.monthlySpend}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip formatter={v => formatPGK(v)} />
+              <Tooltip formatter={v => formatCurrency(v)} />
               <Bar dataKey="totalPGK" fill="#FFCC00" />
             </BarChart>
           </ResponsiveContainer>
@@ -121,7 +123,7 @@ const Reports = () => {
                 <td className="px-5 py-3 font-bold">{d.city}</td>
                 <td className="px-5 py-3 text-dhl-muted">{d.country}</td>
                 <td className="px-5 py-3 text-right font-mono">{d.count}</td>
-                <td className="px-5 py-3 text-right font-mono font-bold">{formatPGK(d.totalPGK)}</td>
+                <td className="px-5 py-3 text-right font-mono font-bold">{formatCurrency(d.totalPGK)}</td>
               </tr>
             ))}
           </tbody>

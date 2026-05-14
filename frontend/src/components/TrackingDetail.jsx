@@ -10,9 +10,9 @@ import {
   STATUS_TONES,
   SERVICE_LABELS,
   formatDate,
-  formatPGK,
   formatDateTime,
 } from "@/lib/shipmentUtils";
+import { useCountry } from "@/contexts/CountryContext";
 import { toast } from "sonner";
 
 const InfoRow = ({ icon: Icon, label, value }) => (
@@ -35,6 +35,7 @@ const InfoRow = ({ icon: Icon, label, value }) => (
  * - mode: "public" | "auth"
  */
 const TrackingDetail = ({ shipment, mode = "public" }) => {
+  const { formatCurrency } = useCountry();
   if (!shipment) return null;
 
   const tone = STATUS_TONES[shipment.status] || STATUS_TONES.PENDING;
@@ -172,7 +173,7 @@ const TrackingDetail = ({ shipment, mode = "public" }) => {
                 Cost
               </div>
               <div className="font-display text-3xl font-black">
-                {formatPGK(shipment.costPGK)}
+                {formatCurrency(shipment.costPGK)}
               </div>
               <div className="text-xs text-white/60 mt-1">Including customs & fuel</div>
             </div>
