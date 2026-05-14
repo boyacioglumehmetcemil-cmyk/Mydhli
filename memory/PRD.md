@@ -109,3 +109,39 @@ A pitch demo for DHL Papua New Guinea that mirrors MyDHL Express functionality. 
 - P2: Swap typographic logo for official DHL asset when user provides it
 - P2: Email/SMS notifications hooked to actual provider (currently preference toggles only)
 
+
+---
+
+## Phase 8.2.2 — Freight mode content sections on Landing — 2026-05-14
+- **Goal:** Inject three large content sections (Air, Ocean, Road) into the public Landing page to mirror DHL master-site architecture, with original copy and brand-strict styling.
+- **Files changed:**
+  - `/app/frontend/src/pages/Landing.jsx`
+    - Added `<FreightModeSection>` DRY component (image-left/right layout, eyebrow, headline, subhead, body, bullets, sub-cards, CTA).
+    - Added 3 SVG silhouettes: `PlaneSilhouette`, `ContainerShipSilhouette`, `TruckSilhouette` (low-opacity outlines, no copyrighted assets).
+    - Added 3 `<FreightModeSection>` instances under `<InfoBand>` and above `<Sustainability>`:
+       1. AIR — yellow variant, plane silhouette, bullets, CTA → `/dashboard/quote?mode=AIR`.
+       2. OCEAN — red variant, ship silhouette, FCL/LCL sub-cards.
+       3. ROAD — navy variant, truck silhouette, bullets, CTA → `/dashboard/quote?mode=ROAD`.
+    - Added `Container` and `Boxes` lucide-react imports for FCL/LCL sub-cards.
+  - `/app/frontend/src/pages/Quote.jsx`
+    - Reads `?mode=AIR|OCEAN|ROAD` from URL via `useSearchParams`.
+    - Eyebrow now appends mode label (e.g. "myDHLi · Quote · Air freight").
+    - Header body adapts: "You came in focused on air freight — see how it compares to the other two modes below."
+    - Multi-mode comparison strip still renders all three modes side by side (Fastest/Cheapest/Greenest badges retained).
+- **Brand compliance:**
+  - Strict Sentence case headlines.
+  - Only approved hex codes: `#FFCC00` (yellow), `#D40511` (red), `#006B3F` (green), navy ink.
+  - Original copy — no verbatim text from DHL master site.
+- **Verification:**
+  - All 3 sections render with correct CTAs (verified via screenshot tool).
+  - Quote `?mode=AIR` URL reads correctly and updates eyebrow + body copy.
+  - Lint clean on Landing.jsx.
+
+## Phase 8.2.2 deferred / next phase items
+- P1 — Mobile landing parity: `/app/mobile/app/index.tsx` still uses Phase 8.1 hero. Needs the new 6-section structure for parity.
+- P1 — Phase 8.3: 12 PDF document generators (backend `document_generator.py`).
+- P1 — Phase 8.3: Brand Claim ("Excellence. Simply delivered.") in PDF footers + Login screen.
+- P2 — Remove Papua New Guinea lock from Register country dropdown.
+- P2 — Quote page currency default: switch `formatPGK` to `formatUSD` per global Brand Guide (still showing "K" prefix).
+- P2 — Real Search modal functionality (currently a stub).
+- P3 — Clean up orphan landing components in `/app/frontend/src/components/landing/` (DHLHeader, PngFlagSvg, RichFooter, etc.).

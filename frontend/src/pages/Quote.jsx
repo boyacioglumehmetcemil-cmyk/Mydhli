@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Calculator, ArrowRight, Loader2, Plane, Ship, Truck, Leaf, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,13 @@ const CURRENCIES = ["USD", "EUR", "GBP", "CHF", "SGD", "AUD", "JPY", "CNY", "PGK
 
 const Quote = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Phase 8.2.2 — landing's mode CTAs route here with ?mode=AIR|OCEAN|ROAD.
+  // We surface it as an eyebrow + tag on the result card; the multi-mode
+  // comparison still renders all three modes side by side.
+  const preselectedMode = (searchParams.get("mode") || "").toUpperCase();
+  const validModes = ["AIR", "OCEAN", "ROAD"];
+  const focusMode = validModes.includes(preselectedMode) ? preselectedMode : null;
   const [countries, setCountries] = useState([]);
   const [originCities, setOriginCities] = useState([]);
   const [destCities, setDestCities] = useState([]);
@@ -86,12 +93,15 @@ const Quote = () => {
   return (
     <div className="max-w-6xl mx-auto" data-testid="quote-page">
       <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-dhl-red mb-2">
-        myDHLi · Quote
+        myDHLi · Quote{focusMode ? ` · ${MODE_META[focusMode].label}` : ""}
       </div>
       <h1 className="font-display text-3xl lg:text-4xl font-bold text-dhl-text leading-tight tracking-tight mb-2">
         Quote & compare
       </h1>
-      <p className="text-sm text-dhl-muted mb-7">Live rates across air, ocean and road — side-by-side. No sign-up required to estimate.</p>
+      <p className="text-sm text-dhl-muted mb-7">{focusMode
+        ? `You came in focused on ${MODE_META[focusMode].label.toLowerCase()} — see how it compares to the other two modes below.`
+        : "Live rates across air, ocean and road — side-by-side. No sign-up required to estimate."
+      }</p>
 
       <div className="grid lg:grid-cols-[1fr_1.4fr] gap-6">
         {/* Left: form */}

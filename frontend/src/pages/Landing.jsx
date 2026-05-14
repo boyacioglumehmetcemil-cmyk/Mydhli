@@ -4,7 +4,7 @@ import {
   Search, ExternalLink, Globe, ChevronDown, ChevronRight, Menu, X,
   Plane, Ship, Truck, Calendar, Calculator, Building2, ArrowRight,
   Eye, ClipboardList, TrendingUp, ShieldCheck, Linkedin, Youtube,
-  Twitter,
+  Twitter, Container, Boxes,
 } from "lucide-react";
 import { toast } from "sonner";
 import BrandWordmark from "@/components/BrandWordmark";
@@ -206,6 +206,151 @@ const MobileDrawer = ({ open, onClose }) => (
     </div>
   )
 );
+
+/* -------------------------------------------------------------------------- */
+/* Freight mode silhouettes — minimal flat outlines used by FreightModeSection */
+/* -------------------------------------------------------------------------- */
+const PlaneSilhouette = () => (
+  <svg viewBox="0 0 400 260" width="100%" height="100%" aria-hidden="true">
+    <g fill="none" stroke="rgba(0,0,0,0.14)" strokeWidth="2.5" strokeLinejoin="round">
+      <path d="M40 160 L150 140 L240 60 L268 60 L230 145 L320 140 L360 120 L370 130 L300 165 L228 175 L150 230 L130 225 L160 180 L70 195 Z" />
+      <path d="M150 140 L150 230" opacity="0.35" />
+      <path d="M230 145 L320 145" opacity="0.35" />
+      <circle cx="372" cy="129" r="4" fill="rgba(0,0,0,0.14)" stroke="none" />
+    </g>
+  </svg>
+);
+
+const ContainerShipSilhouette = () => (
+  <svg viewBox="0 0 460 280" width="100%" height="100%" aria-hidden="true">
+    <g fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="2.5" strokeLinejoin="round">
+      <path d="M30 200 L80 200 L80 130 L380 130 L380 200 L430 200 L410 240 L50 240 Z" />
+      <path d="M80 200 L380 200" />
+      <path d="M120 130 L120 80 L210 80 L210 130" />
+      <path d="M150 80 L150 60 L195 60 L195 80" />
+      <g>
+        <rect x="100" y="145" width="60" height="40" />
+        <rect x="170" y="145" width="60" height="40" />
+        <rect x="240" y="145" width="60" height="40" />
+        <rect x="310" y="145" width="60" height="40" />
+        <rect x="130" y="105" width="60" height="35" />
+        <rect x="220" y="105" width="60" height="35" />
+        <rect x="310" y="105" width="60" height="35" />
+      </g>
+    </g>
+  </svg>
+);
+
+const TruckSilhouette = () => (
+  <svg viewBox="0 0 460 240" width="100%" height="100%" aria-hidden="true">
+    <g fill="none" stroke="rgba(255,204,0,0.18)" strokeWidth="2.5" strokeLinejoin="round">
+      <rect x="30" y="70" width="240" height="100" rx="4" />
+      <path d="M270 90 L350 90 L390 130 L420 130 L420 170 L270 170 Z" />
+      <path d="M350 90 L350 130 L420 130" />
+      <line x1="50" y1="100" x2="250" y2="100" opacity="0.5" />
+      <line x1="50" y1="120" x2="250" y2="120" opacity="0.5" />
+      <line x1="50" y1="140" x2="250" y2="140" opacity="0.5" />
+      <circle cx="110" cy="180" r="22" />
+      <circle cx="110" cy="180" r="9" />
+      <circle cx="200" cy="180" r="22" />
+      <circle cx="200" cy="180" r="9" />
+      <circle cx="320" cy="180" r="22" />
+      <circle cx="320" cy="180" r="9" />
+      <circle cx="395" cy="180" r="22" />
+      <circle cx="395" cy="180" r="9" />
+    </g>
+  </svg>
+);
+
+/* -------------------------------------------------------------------------- */
+/* FreightModeSection — single DRY component, 3 instances in main()           */
+/* -------------------------------------------------------------------------- */
+const ChevronBullet = ({ children }) => (
+  <li className="flex items-start gap-3">
+    <span aria-hidden="true" className="shrink-0 w-6 h-6 bg-dhl-yellow rounded-sm flex items-center justify-center mt-0.5">
+      <ChevronRight className="w-4 h-4 text-dhl-red" strokeWidth={3} />
+    </span>
+    <span className="text-[15px] text-dhl-text leading-snug">{children}</span>
+  </li>
+);
+
+const SubCard = ({ icon: Icon, title, body, href }) => (
+  <Link to={href}
+    className="group bg-white border border-dhl-border rounded-lg p-4 flex items-center gap-4 hover:border-dhl-yellow hover:shadow-md transition-all">
+    <span className="shrink-0 w-12 h-12 bg-dhl-yellow rounded-md flex items-center justify-center">
+      <Icon className="w-5 h-5 text-dhl-red" strokeWidth={2} />
+    </span>
+    <div className="flex-1 min-w-0">
+      <div className="font-display font-bold text-dhl-text text-[15px] mb-0.5">{title}</div>
+      <div className="text-[12px] text-dhl-muted leading-snug">{body}</div>
+    </div>
+    <ChevronRight className="w-4 h-4 text-dhl-muted group-hover:text-dhl-red transition-colors" />
+  </Link>
+);
+
+const FreightModeSection = ({
+  mode, align = "image-right", bg = "white",
+  eyebrow, headline, subhead, body, bullets, subCards, cta,
+  imageVariant = "yellow", imageIcon, swapTarget,
+}) => {
+  const imageOnRight = align === "image-right";
+  const bgCls = bg === "gray-50" ? "bg-dhl-panel" : "bg-white";
+  const ContentBlock = (
+    <div>
+      <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-4">{eyebrow}</div>
+      <h2 className="font-display font-bold text-dhl-text leading-tight tracking-tight mb-4 text-[28px] lg:text-[44px]">
+        {headline}
+      </h2>
+      {subhead && (
+        <p className="text-dhl-text font-medium text-lg lg:text-xl mb-4">{subhead}</p>
+      )}
+      <p className="text-dhl-muted text-[15px] lg:text-base leading-relaxed mb-7 max-w-prose">{body}</p>
+      {bullets && bullets.length > 0 && (
+        <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-3 mb-7" data-testid={`mode-bullets-${mode.toLowerCase()}`}>
+          {bullets.map((b) => <ChevronBullet key={b}>{b}</ChevronBullet>)}
+        </ul>
+      )}
+      {subCards && subCards.length > 0 && (
+        <div className="space-y-3 mb-7" data-testid={`mode-subcards-${mode.toLowerCase()}`}>
+          {subCards.map((c) => <SubCard key={c.title} {...c} />)}
+        </div>
+      )}
+      {cta && (
+        <Link to={cta.href} data-testid={`mode-cta-${mode.toLowerCase()}`}
+          className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors">
+          {cta.label} <ArrowRight className="w-4 h-4" />
+        </Link>
+      )}
+    </div>
+  );
+  const ImageBlock = (
+    <BrandImagePlaceholder
+      variant={imageVariant}
+      icon={imageIcon}
+      iconAlign="center"
+      iconSize={420}
+      className="aspect-[4/3] lg:min-h-[480px] rounded-xl"
+      testId={swapTarget}
+    />
+  );
+  return (
+    <section data-testid={`freight-mode-${mode.toLowerCase()}`} className={bgCls}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-10 py-14 lg:py-24 grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+        {imageOnRight ? (
+          <>
+            <div className="order-2 lg:order-1">{ContentBlock}</div>
+            <div className="order-1 lg:order-2">{ImageBlock}</div>
+          </>
+        ) : (
+          <>
+            <div className="order-1">{ImageBlock}</div>
+            <div className="order-2">{ContentBlock}</div>
+          </>
+        )}
+      </div>
+    </section>
+  );
+};
 
 /* -------------------------------------------------------------------------- */
 /* Hero                                                                        */
@@ -507,6 +652,60 @@ const Landing = () => {
         <Hero />
         <FloatingCards />
         <InfoBand />
+        <FreightModeSection
+          mode="AIR"
+          align="image-right"
+          bg="white"
+          eyebrow="Air freight"
+          headline="Time-critical air freight, delivered globally."
+          subhead="For shippers who need speed."
+          body="Consolidated and charter air services across more than two hundred destinations, with integrated customs clearance and door-to-door visibility from booking to delivery."
+          bullets={[
+            "Daily consolidation flights",
+            "Door-to-door visibility",
+            "Charter and time-definite options",
+            "HAWB and MAWB managed end-to-end",
+          ]}
+          cta={{ label: "Explore air freight", href: "/dashboard/quote?mode=AIR" }}
+          imageVariant="yellow"
+          imageIcon={PlaneSilhouette}
+          swapTarget="air-freight-hero"
+        />
+        <FreightModeSection
+          mode="OCEAN"
+          align="image-left"
+          bg="gray-50"
+          eyebrow="Ocean freight"
+          headline="FCL, LCL and project cargo on every major lane."
+          subhead="Business shippers, end to end."
+          body="From a single pallet on an LCL consolidation to full-container chartering and oversized project cargo, our ocean teams plan, document and dispatch across global trade lanes."
+          subCards={[
+            { icon: Container, title: "FCL — Full container load", body: "Dedicated container capacity with sailing schedules and HBL/MBL handling.", href: "/dashboard/quote?mode=OCEAN" },
+            { icon: Boxes,     title: "LCL — Less than container load", body: "Consolidate smaller volumes with predictable transit and shared costs.", href: "/dashboard/quote?mode=OCEAN" },
+          ]}
+          imageVariant="red"
+          imageIcon={ContainerShipSilhouette}
+          swapTarget="ocean-freight-hero"
+        />
+        <FreightModeSection
+          mode="ROAD"
+          align="image-right"
+          bg="white"
+          eyebrow="Road freight"
+          headline="Cross-border road freight without the friction."
+          subhead="Domestic, regional and multimodal."
+          body="Truckloads, less-than-truckload consolidations, and reefer or oversized cargo coordinated across borders with full customs documentation."
+          bullets={[
+            "Cross-border consolidations",
+            "Domestic distribution networks",
+            "Reefer and oversized cargo",
+            "Multimodal handoffs",
+          ]}
+          cta={{ label: "Explore road freight", href: "/dashboard/quote?mode=ROAD" }}
+          imageVariant="navy"
+          imageIcon={TruckSilhouette}
+          swapTarget="road-freight-hero"
+        />
         <Sustainability />
         <WhyChooseUs />
       </main>
