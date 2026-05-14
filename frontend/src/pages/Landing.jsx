@@ -1,58 +1,83 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Search, ExternalLink, Globe, ChevronDown, ChevronRight, Menu, X,
+  Search, ExternalLink, Globe, ChevronDown, ChevronRight, Menu, X, Check,
   Plane, Ship, Truck, Calendar, Calculator, Building2, ArrowRight,
   Linkedin, Youtube, Twitter, Container, Boxes, Facebook, Instagram,
 } from "lucide-react";
 import { toast } from "sonner";
 import BrandWordmark from "@/components/BrandWordmark";
 import BrandImagePlaceholder from "@/components/BrandImagePlaceholder";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import useTitle from "@/hooks/useTitle";
 
 /* -------------------------------------------------------------------------- */
 /* Header — utility bar + nav bar (2 rows, sticky)                             */
 /* -------------------------------------------------------------------------- */
-const COUNTRIES = ["Global", "United States", "United Kingdom", "Germany", "Singapore", "Australia", "Papua New Guinea"];
+// Demo language picker — selecting an item only flips the displayed code; no
+// real i18n routing is wired up (out of scope for the pitch build).
+const LANGUAGES = [
+  { code: "EN", label: "English" },
+  { code: "ES", label: "Español" },
+  { code: "FR", label: "Français" },
+  { code: "DE", label: "Deutsch" },
+  { code: "ZH", label: "中文" },
+  { code: "JA", label: "日本語" },
+  { code: "PT", label: "Português" },
+  { code: "ID", label: "Bahasa Indonesia" },
+];
 
-const UtilityBar = ({ onSearch, country, setCountry }) => {
-  const [openCountry, setOpenCountry] = useState(false);
-  const dropdownRef = useRef(null);
-  useEffect(() => {
-    const onClick = (e) => { if (!dropdownRef.current?.contains(e.target)) setOpenCountry(false); };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, []);
+const UtilityBar = ({ onSearch, language, setLanguage }) => {
   return (
     <div className="bg-dhl-yellow border-b border-dhl-yellow-dark" data-testid="utility-bar">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between gap-4">
         <BrandWordmark to="/" placement="header" data-testid="utility-bar-logo" />
-        <nav className="hidden md:flex items-center gap-6 text-[13px] text-dhl-ink/85">
+        <nav className="hidden md:flex items-center gap-4 text-[13px] text-dhl-ink/85">
           <Link to="/locations" className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-find-location">
             Find a service point <ExternalLink className="w-3 h-3" />
           </Link>
           <button type="button" onClick={onSearch} className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-search">
             <Search className="w-3.5 h-3.5" /> Search
           </button>
-          <div className="relative" ref={dropdownRef}>
-            <button type="button" onClick={() => setOpenCountry(!openCountry)} data-testid="utility-country"
-              className="inline-flex items-center gap-1.5 hover:text-dhl-red">
-              <Globe className="w-3.5 h-3.5" />
-              {country}
-              <ChevronDown className="w-3 h-3" />
-            </button>
-            {openCountry && (
-              <div data-testid="country-dropdown" className="absolute right-0 top-full mt-1 bg-white border border-dhl-border rounded-md shadow-lg min-w-[200px] py-1 z-50">
-                {COUNTRIES.map(c => (
-                  <button key={c} type="button"
-                    onClick={() => { setCountry(c); setOpenCountry(false); }}
-                    className={`w-full text-left px-4 py-2 text-[13px] hover:bg-dhl-panel ${c === country ? "font-bold text-dhl-red" : "text-dhl-text"}`}>
-                    {c}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                data-testid="utility-language"
+                className="text-sm font-medium h-8 px-3 inline-flex items-center gap-1.5 rounded-sm hover:bg-black/5 outline-none focus-visible:ring-2 focus-visible:ring-dhl-red/40"
+              >
+                <Globe className="w-4 h-4" />
+                {language}
+                <ChevronDown className="w-[14px] h-[14px]" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              sideOffset={6}
+              data-testid="language-dropdown"
+              className="w-[220px] bg-white shadow-lg rounded-md border border-stone-200 p-1"
+            >
+              {LANGUAGES.map((l) => (
+                <DropdownMenuItem
+                  key={l.code}
+                  data-testid={`language-option-${l.code}`}
+                  onSelect={() => setLanguage(l.code)}
+                  className="text-sm h-9 px-3 cursor-pointer focus:bg-stone-100 hover:bg-stone-100 flex items-center justify-between rounded-sm"
+                >
+                  <span className="flex items-baseline gap-2">
+                    <span className="text-dhl-text">{l.label}</span>
+                    <span className="text-stone-400 text-xs">({l.code})</span>
+                  </span>
+                  {language === l.code && <Check className="w-4 h-4 text-dhl-red" />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
       </div>
     </div>
@@ -623,7 +648,9 @@ const Hero = () => {
         className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-transparent"
         aria-hidden="true"
       />
-      <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 py-12 lg:py-20 min-h-[50vh] flex flex-col justify-center">
+      {/* pb-* clears the FloatingCards section's `-mt-20 lg:-mt-24` overlap
+          so the helper text below the input card is never visually clipped. */}
+      <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 pt-12 lg:pt-20 pb-32 lg:pb-40 min-h-[50vh] flex flex-col justify-center">
         <div className="w-full max-w-xl mx-auto">
           <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-3 text-[22px] sm:text-[26px] lg:text-[32px] text-center [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
             Track your shipment
@@ -647,9 +674,16 @@ const Hero = () => {
               Track
             </button>
           </form>
-          <div className="mt-3 text-[12px] text-white/80 text-center [text-shadow:0_1px_4px_rgba(0,0,0,0.4)]">
+          {/* Helper microcopy — sits OUTSIDE the white input card as a sibling
+              <p>. Strong contrast (text-white/90 + drop shadow) keeps it
+              legible on the dark hero photo even at small screen sizes. */}
+          <p
+            data-testid="hero-track-helper"
+            className="mt-3 text-sm text-white/90 text-center"
+            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.45)" }}
+          >
             AWB, HBL, container number or booking reference
-          </div>
+          </p>
         </div>
       </div>
     </section>
@@ -1096,13 +1130,13 @@ const SearchModal = ({ open, onClose }) =>
 /* -------------------------------------------------------------------------- */
 const Landing = () => {
   useTitle("Freight forwarding");
-  const [country, setCountry] = useState("Global");
+  const [language, setLanguage] = useState("EN");
   const [searchOpen, setSearchOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   return (
     <div className="min-h-screen bg-white" data-testid="landing-page">
       <header data-testid="landing-header">
-        <UtilityBar onSearch={() => setSearchOpen(true)} country={country} setCountry={setCountry} />
+        <UtilityBar onSearch={() => setSearchOpen(true)} language={language} setLanguage={setLanguage} />
         <NavBar onMobileMenu={() => setDrawerOpen(true)} />
         <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       </header>

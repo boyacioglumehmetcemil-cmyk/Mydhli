@@ -1,0 +1,58 @@
+{
+  "images": [
+    {
+      "src": "fotolar2-01.jpg",
+      "alt": "Courier scheduling pickup",
+      "eyebrow": "Pickup",
+      "headline": "Pickup, Anywhere",
+      "sub": "Schedule a courier in minutes, anywhere in the country. Same-day windows and recurring options for frequent shippers.",
+      "ctaLabel": "Schedule a Pickup",
+      "cta": { "type": "auth-route", "to": "/dashboard/pickup" }
+    },
+    {
+      "src": "fotolar2-02.jpg",
+      "alt": "Cold-chain shipment in refrigerated handling",
+      "eyebrow": "Specialised",
+      "headline": "Cold-Chain Ready",
+      "sub": "Refrigerated lanes for medical and perishable cargo — temperature-mapped from origin to destination.",
+      "ctaLabel": "Explore Solutions",
+      "cta": { "type": "modal", "title": "Cold-Chain Solutions" }
+    },
+    {
+      "src": "fotolar2-03.jpg",
+      "alt": "Customs paperwork and consolidated shipment",
+      "eyebrow": "Customs",
+      "headline": "Customs, Simplified",
+      "sub": "Single-entry consolidation reduces border friction for multi-receiver shipments and speeds clearance.",
+      "ctaLabel": "See Customs Tools",
+      "cta": { "type": "modal", "title": "Customs Tools" }
+    },
+    {
+      "src": "fotolar2-04.jpg",
+      "alt": "Customs specialist on a phone call",
+      "eyebrow": "Customs Expertise",
+      "headline": "Borders, sorted.",
+      "sub": "Reach more than 200 countries with a team that handles customs documentation, classifications, and clearance on your behalf — so your shipments keep moving.",
+      "ctaLabel": "Get Customs Help",
+      "cta": { "type": "modal", "title": "Customs Clearance Advice" }
+    },
+    {
+      "src": "../fotolar/fotolar-05.jpg",
+      "alt": "Careful packing",
+      "eyebrow": "Packing",
+      "headline": "Packed with care.",
+      "sub": "Smart packing keeps fragile shipments safe through every handoff. Tips and best practices from the pros.",
+      "ctaLabel": "Packing Guide",
+      "cta": { "type": "modal", "title": "Packing with Care" }
+    },
+    {
+      "src": "../fotolar/fotolar-07.png",
+      "alt": "Aircraft and operations",
+      "eyebrow": "Network",
+      "headline": "Built to travel.",
+      "sub": "From hangars to hubs — our network is engineered for time-definite delivery, every day, in every region.",
+      "ctaLabel": "See the Network",
+      "cta": { "type": "modal", "title": "Our Network" }
+    }
+  ]
+}
