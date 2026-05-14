@@ -431,26 +431,26 @@ const Hero = () => {
 /* -------------------------------------------------------------------------- */
 /* Floating action cards                                                       */
 /* -------------------------------------------------------------------------- */
-const ActionCard = ({ to, icon: Icon, title, sub, testId }) => (
+const ActionCard = ({ to, icon: Icon, title, sub, testId, cardClass = "" }) => (
   <Link to={to} data-testid={testId}
-    className="group bg-white rounded-xl shadow-lg p-7 lg:p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 block">
-    <div className="w-12 h-12 bg-dhl-red/10 rounded-md flex items-center justify-center mb-5">
-      <Icon className="w-6 h-6 text-dhl-red" strokeWidth={2} />
+    className={`group bg-white shadow-lg p-4 lg:p-5 hover:bg-dhl-panel/40 transition-colors duration-200 block ${cardClass}`}>
+    <div className="w-9 h-9 bg-dhl-red/10 rounded-md flex items-center justify-center mb-3">
+      <Icon className="w-4 h-4 text-dhl-red" strokeWidth={2} />
     </div>
-    <h3 className="font-display font-bold text-dhl-text text-xl mb-2">{title}</h3>
-    <p className="text-[14px] text-dhl-muted leading-relaxed">{sub}</p>
-    <div className="flex items-center gap-1 mt-5 text-[12px] font-bold text-dhl-red group-hover:gap-2 transition-all">
-      Get started <ArrowRight className="w-3.5 h-3.5" />
+    <h3 className="font-display font-semibold text-dhl-text text-base lg:text-lg mb-1">{title}</h3>
+    <p className="text-[12px] text-dhl-muted leading-snug">{sub}</p>
+    <div className="flex items-center gap-1 mt-3 text-[11px] font-bold text-dhl-red group-hover:gap-2 transition-all">
+      Get started <ArrowRight className="w-3 h-3" />
     </div>
   </Link>
 );
 
 const FloatingCards = () => (
   <section data-testid="landing-cards" className="relative z-10 -mt-20 lg:-mt-24 mb-16 lg:mb-24 px-6 lg:px-10">
-    <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
-      <ActionCard to="/dashboard/ship" icon={Calendar} title="Ship now" sub="Find the right service mode for your freight." testId="card-ship-now" />
-      <ActionCard to="/dashboard/quote" icon={Calculator} title="Get a quote" sub="Compare air, ocean and road side by side." testId="card-get-quote" />
-      <ActionCard to="/register?type=business" icon={Building2} title="Request a business account" sub="For regular shippers seeking volume rates." testId="card-business-account" />
+    <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_1fr_1.2fr] gap-3 md:gap-0">
+      <ActionCard to="/dashboard/ship"            icon={Calendar}    title="Ship now"                   sub="Find the right service mode for your freight." testId="card-ship-now"        cardClass="rounded-xl md:rounded-l-xl md:rounded-r-none md:border-r md:border-dhl-border" />
+      <ActionCard to="/dashboard/quote"           icon={Calculator}  title="Get a quote"                sub="Compare air, ocean and road side by side."     testId="card-get-quote"       cardClass="rounded-xl md:rounded-none md:border-r md:border-dhl-border" />
+      <ActionCard to="/register?type=business"    icon={Building2}   title="Request a business account" sub="For regular shippers seeking volume rates."    testId="card-business-account" cardClass="rounded-xl md:rounded-r-xl md:rounded-l-none" />
     </div>
   </section>
 );
