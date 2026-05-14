@@ -1,28 +1,97 @@
 import { Link } from "react-router-dom";
 
 /**
- * PLACEHOLDER wordmark for DHL Global Forwarding.
+ * Wordmark / lockup component for DHL Global Forwarding.
  *
- * Two-tier mark — yellow tile with red "DHL" + small "Global Forwarding"
- * sublabel beneath. Replace this single component with the official
- * `<Image src="/images/dhl-gf.svg" />` lockup when the asset lands.
+ * Three rendering modes:
+ *   • placement="header" → official red-on-yellow DHL PNG + "Global Forwarding"
+ *                          sub-line (used in page headers and the mobile drawer).
+ *   • placement="footer" → official black "DHL Group" lockup PNG (used in the
+ *                          footer bottom strip — no sub-line, the asset
+ *                          already includes "Group" text).
+ *   • placement="default" (legacy) → typographic yellow/red tile placeholder.
  *
- * Brand guide rules enforced here:
- *   • Minimum width  → desktop 140px, mobile 112px
- *   • Clear-space    → padding equal to the "D" height around the tile
- *   • No shadows / gradients / outlines
- *   • Title-case sublabel — "Global Forwarding"
+ * Brand guide rules:
+ *   • No filters / recolor on the official PNGs.
+ *   • Keep aspect ratio (`w-auto`).
+ *   • Header asset renders eagerly (above the fold); footer asset is lazy.
  */
+const HEADER_LOGO = "/assets/dhl/brand/dhl-logo-red-yellow.png";
+const FOOTER_LOGO = "/assets/dhl/brand/dhl-group-black.png";
+
 const sizeMap = { sm: "compact", md: "default", lg: "default", xl: "stack" };
 
 const BrandWordmark = ({
   to = "/",
+  placement,
   variant = "default",
   size,
   theme = "light",
   className = "",
   showSublabel = true,
 }) => {
+  /* ---------- placement="header" — official red-on-yellow DHL bug ---------- */
+  if (placement === "header") {
+    const lockup = (
+      <span
+        data-testid="brand-wordmark"
+        className={`inline-flex flex-col items-start gap-1 select-none ${className}`}
+        aria-label="DHL Global Forwarding"
+      >
+        <img
+          src={HEADER_LOGO}
+          alt="DHL"
+          className="h-7 sm:h-9 w-auto block"
+          width="338"
+          height="63"
+          decoding="async"
+        />
+        {showSublabel && (
+          <span
+            data-testid="brand-wordmark-sub"
+            className="font-display font-medium text-[9px] sm:text-[10px] text-dhl-ink leading-tight tracking-tight"
+          >
+            Global Forwarding
+          </span>
+        )}
+      </span>
+    );
+    if (!to) return lockup;
+    return (
+      <Link to={to} data-testid="brand-wordmark-link" className="inline-flex shrink-0">
+        {lockup}
+      </Link>
+    );
+  }
+
+  /* ---------- placement="footer" — official black "DHL Group" lockup ---------- */
+  if (placement === "footer") {
+    const lockup = (
+      <span
+        data-testid="brand-wordmark"
+        className={`inline-flex items-center select-none ${className}`}
+        aria-label="DHL Group"
+      >
+        <img
+          src={FOOTER_LOGO}
+          alt="DHL Group"
+          className="h-[22px] sm:h-7 w-auto block"
+          width="353"
+          height="110"
+          loading="lazy"
+          decoding="async"
+        />
+      </span>
+    );
+    if (!to) return lockup;
+    return (
+      <Link to={to} data-testid="brand-wordmark-link" className="inline-flex shrink-0">
+        {lockup}
+      </Link>
+    );
+  }
+
+  /* ---------- placement="default" (legacy) — typographic placeholder ---------- */
   const v = size ? sizeMap[size] || variant : variant;
 
   // Per-variant tokens. min-widths are mobile-first then upscaled on sm+.

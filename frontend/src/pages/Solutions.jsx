@@ -24,7 +24,7 @@ const Solutions = () => {
     <div className="min-h-screen bg-white" data-testid="solutions-page">
       <div className="bg-dhl-yellow border-b border-dhl-yellow-dark">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-14 flex items-center">
-          <BrandWordmark to="/" variant="default" />
+          <BrandWordmark to="/" placement="header" />
         </div>
       </div>
       <main className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16 lg:py-20">

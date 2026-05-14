@@ -27,7 +27,7 @@ const UtilityBar = ({ onSearch, country, setCountry }) => {
   return (
     <div className="bg-dhl-yellow border-b border-dhl-yellow-dark" data-testid="utility-bar">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between gap-4">
-        <BrandWordmark to="/" variant="default" data-testid="utility-bar-logo" />
+        <BrandWordmark to="/" placement="header" data-testid="utility-bar-logo" />
         <nav className="hidden md:flex items-center gap-6 text-[13px] text-dhl-ink/85">
           <Link to="/locations" className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-find-location">
             Find a service point <ExternalLink className="w-3 h-3" />
@@ -140,7 +140,7 @@ const NavBar = ({ onMobileMenu }) => {
         </button>
         <div className="relative hidden md:block">
           <button type="button" onClick={() => setPortalOpen(!portalOpen)} data-testid="customer-portal-logins"
-            className="inline-flex items-center gap-2 h-10 px-5 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors">
+            className="inline-flex items-center gap-2 h-10 px-5 bg-stone-100 text-dhl-ink border border-stone-300 hover:bg-stone-200 font-semibold text-sm rounded-md transition-colors">
             Customer portal logins <ChevronDown className="w-3.5 h-3.5" />
           </button>
           {portalOpen && (
@@ -173,7 +173,7 @@ const MobileDrawer = ({ open, onClose }) => (
       <div onClick={(e) => e.stopPropagation()}
         className="absolute right-0 top-0 bottom-0 w-[78vw] max-w-sm bg-white shadow-xl flex flex-col">
         <div className="flex items-center justify-between px-5 py-4 border-b border-dhl-border">
-          <BrandWordmark to="/" variant="compact" />
+          <BrandWordmark to="/" placement="header" />
           <button type="button" onClick={onClose} className="p-1" data-testid="mobile-drawer-close">
             <X className="w-5 h-5 text-dhl-ink" />
           </button>
@@ -1062,7 +1062,7 @@ const Footer = () => {
         <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-8 lg:py-10">
           {/* Row A: brand + social */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 pb-6 border-b border-dhl-border">
-            <BrandWordmark to={null} theme="light" variant="inline" />
+            <BrandWordmark to={null} placement="footer" />
             <div className="flex items-center gap-4">
               <span className="text-[12px] uppercase tracking-[0.2em] font-bold text-dhl-muted">Follow us</span>
               <div className="flex items-center gap-2">
