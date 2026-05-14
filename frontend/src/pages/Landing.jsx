@@ -510,6 +510,79 @@ const OceanFreightOverlappingSection = () => {
 };
 
 /* -------------------------------------------------------------------------- */
+/* RoadFreightOverlappingSection — same direction as AIR (content LEFT, photo  */
+/* RIGHT). Closes the freight-mode trio with an alternating bg-white rhythm.   */
+/* -------------------------------------------------------------------------- */
+const RoadFreightOverlappingSection = () => {
+  const bullets = [
+    "Cross-border consolidations",
+    "Domestic distribution networks",
+    "Reefer and oversized cargo",
+    "Multimodal handoffs",
+  ];
+  return (
+    <section data-testid="freight-mode-road" className="bg-white py-16 lg:py-24">
+      <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
+        <div className="grid lg:grid-cols-[6fr_5fr] gap-8 lg:gap-0 items-center relative">
+          {/* CONTENT CARD — LEFT, z-10 */}
+          <div className="relative z-10 bg-white rounded-xl shadow-xl border border-black/5 p-6 sm:p-8 lg:p-10 lg:max-w-[640px]">
+            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-3">
+              Road freight
+            </div>
+            <h2 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-3 text-[26px] lg:text-[36px]">
+              Cross-border road freight without the friction.
+            </h2>
+            <p className="text-dhl-ink/70 text-[15px] lg:text-base mb-4">
+              Domestic, regional and multimodal.
+            </p>
+            <p className="text-dhl-ink/85 text-[14px] lg:text-[15px] leading-relaxed mb-6 max-w-prose">
+              Truckloads, less-than-truckload consolidations, and reefer or oversized cargo coordinated across borders with full customs documentation.
+            </p>
+
+            <div className="bg-dhl-panel/60 rounded-lg p-4 lg:p-5 mb-6" data-testid="road-services-card">
+              <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-dhl-ink mb-3">
+                Service capabilities
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {bullets.map((b, i) => (
+                  <div key={i} className="flex items-start gap-3" data-testid={`road-bullet-${i}`}>
+                    <div className="w-5 h-5 bg-dhl-yellow rounded-sm flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <ChevronRight className="w-3.5 h-3.5 text-dhl-red" strokeWidth={3} />
+                    </div>
+                    <span className="text-[13px] lg:text-sm text-dhl-ink/90 leading-snug">{b}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Link
+              to="/dashboard/quote?mode=ROAD"
+              data-testid="mode-cta-road"
+              className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
+            >
+              Explore road freight <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* PHOTO — RIGHT, z-0, bleeds left into card + vertically beyond on lg+ */}
+          <div
+            data-testid="road-freight-photo"
+            className="relative z-0 lg:-ml-16 lg:-my-16 rounded-xl lg:rounded-2xl overflow-hidden shadow-xl"
+          >
+            <img
+              src="/assets/dhl/road-freight-photo.png"
+              alt="DHL trucking fleet at a cross-dock terminal"
+              className="w-full h-[280px] sm:h-[360px] lg:h-[640px] object-cover"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
 /* Hero                                                                        */
 /* -------------------------------------------------------------------------- */
 const HeroFreightSilhouette = () => (
@@ -833,25 +906,7 @@ const Landing = () => {
         <InfoBand />
         <AirFreightOverlappingSection />
         <OceanFreightOverlappingSection />
-        <FreightModeSection
-          mode="ROAD"
-          align="image-right"
-          bg="white"
-          eyebrow="Road freight"
-          headline="Cross-border road freight without the friction."
-          subhead="Domestic, regional and multimodal."
-          body="Truckloads, less-than-truckload consolidations, and reefer or oversized cargo coordinated across borders with full customs documentation."
-          bullets={[
-            "Cross-border consolidations",
-            "Domestic distribution networks",
-            "Reefer and oversized cargo",
-            "Multimodal handoffs",
-          ]}
-          cta={{ label: "Explore road freight", href: "/dashboard/quote?mode=ROAD" }}
-          imageVariant="navy"
-          imageIcon={TruckSilhouette}
-          swapTarget="road-freight-hero"
-        />
+        <RoadFreightOverlappingSection />
         <Sustainability />
         <WhyChooseUs />
       </main>
