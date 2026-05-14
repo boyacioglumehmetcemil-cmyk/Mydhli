@@ -714,8 +714,8 @@ const ChecklistMark = () => (
 
 const InfoBand = () => (
   <section data-testid="landing-info-band" className="bg-dhl-yellow">
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16 lg:py-24 grid lg:grid-cols-[5fr_7fr] gap-10 lg:gap-16 items-stretch">
-      <div data-testid="info-band-image" className="aspect-[4/5] lg:aspect-auto lg:-my-24 rounded-xl lg:rounded-none border border-black/10 lg:border-0 overflow-hidden bg-white">
+    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-10 lg:py-14 grid lg:grid-cols-[5fr_7fr] gap-10 lg:gap-16 items-stretch">
+      <div data-testid="info-band-image" className="aspect-[4/5] lg:aspect-auto lg:-my-14 rounded-xl lg:rounded-none border border-black/10 lg:border-0 overflow-hidden bg-white">
         <img
           src="/assets/dhl/info-band-tariff.png"
           alt="DHL freight forwarder reviewing customs documents"
@@ -804,15 +804,15 @@ const WHY = [
 /* -------------------------------------------------------------------------- */
 const SMBBusinessSection = () => (
   <section data-testid="smb-business" className="bg-dhl-yellow relative overflow-hidden">
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16 lg:py-24">
+    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-10 lg:py-14">
       <div className="grid lg:grid-cols-[5fr_7fr] gap-8 lg:gap-12 items-center">
         {/* PHOTO + soft right-edge fade into yellow */}
         <div className="relative">
-          <div className="relative overflow-hidden rounded-xl lg:rounded-2xl shadow-xl lg:-my-16">
+          <div className="relative overflow-hidden rounded-xl lg:rounded-2xl shadow-xl lg:-my-14">
             <img
               src="/assets/dhl/smb-business.png"
               alt="Small business owner managing online orders and shipping"
-              className="w-full h-[280px] sm:h-[360px] lg:h-[560px] object-cover"
+              className="w-full h-[260px] sm:h-[320px] lg:h-[420px] object-cover"
               loading="lazy"
             />
             {/* Right-edge dissolve into the band's yellow (only on lg+) */}
