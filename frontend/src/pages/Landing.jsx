@@ -353,6 +353,86 @@ const FreightModeSection = ({
 };
 
 /* -------------------------------------------------------------------------- */
+/* AirFreightOverlappingSection — bespoke layout for the AIR freight block.    */
+/* Mirrors the dhl.com "card-overlapping-photo" pattern: a white content card  */
+/* with shadow sits on top of a tall photo column on the right; on lg+ the    */
+/* photo bleeds vertically beyond the card edges so the card visually "punches */
+/* into" the photo. Mobile collapses to a normal stacked layout.              */
+/* Copy is OUR original — no verbatim copy from any DHL marketing source.     */
+/* -------------------------------------------------------------------------- */
+const AirFreightOverlappingSection = () => {
+  const bullets = [
+    "Daily consolidation flights",
+    "Door-to-door visibility",
+    "Charter and time-definite options",
+    "HAWB and MAWB managed end-to-end",
+  ];
+  return (
+    <section data-testid="freight-mode-air" className="bg-white py-16 lg:py-24">
+      <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
+        <div className="grid lg:grid-cols-[6fr_5fr] gap-8 lg:gap-0 items-center relative">
+          {/* CONTENT CARD — left column, raised above photo on lg+ */}
+          <div className="relative z-10 bg-white rounded-xl shadow-xl border border-black/5 p-6 sm:p-8 lg:p-10 lg:max-w-[640px]">
+            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-3">
+              Air freight
+            </div>
+            <h2 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-3 text-[26px] lg:text-[36px]">
+              Time-critical air freight, delivered globally.
+            </h2>
+            <p className="text-dhl-ink/70 text-[15px] lg:text-base mb-4">
+              For shippers who need speed.
+            </p>
+            <p className="text-dhl-ink/85 text-[14px] lg:text-[15px] leading-relaxed mb-6 max-w-prose">
+              Consolidated and charter air services across more than two hundred destinations, with integrated customs clearance and door-to-door visibility from booking to delivery.
+            </p>
+
+            {/* Service capabilities — yellow chevron bullets */}
+            <div className="bg-dhl-panel/60 rounded-lg p-4 lg:p-5 mb-6" data-testid="air-services-card">
+              <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-dhl-ink mb-3">
+                Service capabilities
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {bullets.map((b, i) => (
+                  <div key={i} className="flex items-start gap-3" data-testid={`air-bullet-${i}`}>
+                    <div className="w-5 h-5 bg-dhl-yellow rounded-sm flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <ChevronRight className="w-3.5 h-3.5 text-dhl-red" strokeWidth={3} />
+                    </div>
+                    <span className="text-[13px] lg:text-sm text-dhl-ink/90 leading-snug">{b}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Link
+              to="/dashboard/quote?mode=AIR"
+              data-testid="mode-cta-air"
+              className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
+            >
+              Explore air freight <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* PHOTO — right column. On lg+ negative left margin pulls it under the
+              card, and negative vertical margin makes it taller than the card so
+              the card visually sits within a frame of photo above and below. */}
+          <div
+            data-testid="air-freight-photo"
+            className="relative z-0 lg:-ml-16 lg:-my-16 rounded-xl lg:rounded-2xl overflow-hidden shadow-xl"
+          >
+            <img
+              src="/assets/dhl/air-freight-photo.png"
+              alt="DHL courier handing a parcel to a customer at their doorstep"
+              className="w-full h-[280px] sm:h-[360px] lg:h-[640px] object-cover"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
 /* Hero                                                                        */
 /* -------------------------------------------------------------------------- */
 const HeroFreightSilhouette = () => (
@@ -674,25 +754,7 @@ const Landing = () => {
         <Hero />
         <FloatingCards />
         <InfoBand />
-        <FreightModeSection
-          mode="AIR"
-          align="image-right"
-          bg="white"
-          eyebrow="Air freight"
-          headline="Time-critical air freight, delivered globally."
-          subhead="For shippers who need speed."
-          body="Consolidated and charter air services across more than two hundred destinations, with integrated customs clearance and door-to-door visibility from booking to delivery."
-          bullets={[
-            "Daily consolidation flights",
-            "Door-to-door visibility",
-            "Charter and time-definite options",
-            "HAWB and MAWB managed end-to-end",
-          ]}
-          cta={{ label: "Explore air freight", href: "/dashboard/quote?mode=AIR" }}
-          imageVariant="yellow"
-          imageIcon={PlaneSilhouette}
-          swapTarget="air-freight-hero"
-        />
+        <AirFreightOverlappingSection />
         <FreightModeSection
           mode="OCEAN"
           align="image-left"
