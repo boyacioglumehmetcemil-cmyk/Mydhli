@@ -145,3 +145,36 @@ A pitch demo for DHL Papua New Guinea that mirrors MyDHL Express functionality. 
 - P2 — Quote page currency default: switch `formatPGK` to `formatUSD` per global Brand Guide (still showing "K" prefix).
 - P2 — Real Search modal functionality (currently a stub).
 - P3 — Clean up orphan landing components in `/app/frontend/src/components/landing/` (DHLHeader, PngFlagSvg, RichFooter, etc.).
+
+## Phase 8.2.2 — Bug fix pass — 2026-05-14
+Two bugs caught by tester, both resolved.
+
+### Bug 1 — OCEAN section had no CTA
+- **Fix:** Added `cta={{ label: "Explore ocean freight", href: "/dashboard/quote?mode=OCEAN" }}` to the OCEAN `<FreightModeSection>` in `Landing.jsx`.
+- `<FreightModeSection>` already renders `bullets`, `subCards`, and `cta` blocks independently (no suppression), so adding the prop alone shipped the button below the FCL/LCL sub-cards as required.
+- **Verified:** screenshot tool — `data-testid="mode-cta-ocean"` text "Explore ocean freight", href `/dashboard/quote?mode=OCEAN`.
+
+### Bug 2 — `?mode=X` lost through logged-out CTA → login → quote flow
+- **Root cause:** `ProtectedRoute` was passing only `location` via React Router `state`, and `Login.jsx` read only `location.state.from.pathname` — search/hash were dropped.
+- **Fix path:** moved redirect intent to `?next=` query param so it survives reloads and shared links.
+  - `ProtectedRoute.jsx` now builds: `/login?next=${encodeURIComponent(pathname + search + hash)}` and `<Navigate>` to it.
+  - `Login.jsx` reads `searchParams.get("next")`, validates with a safe-redirect helper, and falls back to `/dashboard`.
+- **Open-redirect protection** (`resolveNext()` in `Login.jsx`):
+  - Whitelist regex: `^/(?!\/)` — must start with `/`, but 2nd char MUST NOT be another `/`.
+  - Rejects: `https://evil.com`, `//evil.com`, `\\evil.com`, `javascript:…`, anything that doesn't decode to a relative path.
+  - Decodes with `decodeURIComponent`, wrapped in try/catch (malformed URI → null → /dashboard fallback).
+  - Strips entries containing `\` (browsers may normalize `\\` to `//`).
+
+### Verification (all 5 acceptance criteria)
+1. ✅ OCEAN CTA visible and routes to `/dashboard/quote?mode=OCEAN`.
+2. ✅ Round-trip tested for all 3 modes (AIR / OCEAN / ROAD):
+   - Guard redirect URL: `/login?next=%2Fdashboard%2Fquote%3Fmode%3DAIR` (and equivalents)
+   - Post-login destination: `/dashboard/quote?mode=AIR` (etc.) with eyebrow correctly showing mode name.
+3. ✅ Open-redirect: `?next=https://evil.com` and `?next=//evil.com` both rejected → fallback to `/dashboard`.
+4. ✅ Backend pytest: **119 passed, 1 skipped** (unchanged — only frontend touched).
+5. ✅ Direct deep-link `/dashboard/quote?mode=ROAD` still works for authed users.
+
+### Files changed (this pass)
+- `frontend/src/pages/Landing.jsx` (1-line cta prop addition)
+- `frontend/src/components/ProtectedRoute.jsx` (Navigate target rewritten)
+- `frontend/src/pages/Login.jsx` (added `resolveNext` helper + searchParams read)

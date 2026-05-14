@@ -20,7 +20,15 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Capture intended destination (pathname + search + hash) as a single
+    // ?next= query param so the login page can round-trip it. We URL-encode
+    // it so the inner '?' and '=' don't conflict with the outer query string.
+    const intended = `${location.pathname}${location.search}${location.hash}`;
+    const target =
+      intended && intended !== "/"
+        ? `/login?next=${encodeURIComponent(intended)}`
+        : "/login";
+    return <Navigate to={target} replace />;
   }
 
   return children;

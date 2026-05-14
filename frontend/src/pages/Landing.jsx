@@ -683,6 +683,7 @@ const Landing = () => {
             { icon: Container, title: "FCL — Full container load", body: "Dedicated container capacity with sailing schedules and HBL/MBL handling.", href: "/dashboard/quote?mode=OCEAN" },
             { icon: Boxes,     title: "LCL — Less than container load", body: "Consolidate smaller volumes with predictable transit and shared costs.", href: "/dashboard/quote?mode=OCEAN" },
           ]}
+          cta={{ label: "Explore ocean freight", href: "/dashboard/quote?mode=OCEAN" }}
           imageVariant="red"
           imageIcon={ContainerShipSilhouette}
           swapTarget="ocean-freight-hero"

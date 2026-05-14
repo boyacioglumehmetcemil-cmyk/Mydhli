@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Logo from "@/components/Logo";
@@ -9,9 +9,36 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 
+/**
+ * Safely resolve a post-login redirect target.
+ *
+ * Accepts only same-origin RELATIVE paths starting with a single forward
+ * slash. Anything that looks like a protocol-relative URL (`//evil.com`),
+ * an absolute URL (`http://evil.com`, `https://...`), or a non-path
+ * (`javascript:alert(1)`) is rejected to prevent open-redirect abuse.
+ *
+ * Whitelist regex: `^/(?!\/)` — must start with `/`, but the 2nd char
+ * MUST NOT be another `/`.
+ */
+const SAFE_NEXT = /^\/(?!\/)/;
+const resolveNext = (raw) => {
+  if (!raw) return null;
+  let decoded;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    return null;
+  }
+  // Strip any embedded backslash (browsers can normalize `\\` to `//`).
+  if (decoded.includes("\\")) return null;
+  if (!SAFE_NEXT.test(decoded)) return null;
+  return decoded;
+};
+
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -20,7 +47,14 @@ const Login = () => {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const from = location.state?.from?.pathname || "/dashboard";
+  // Two redirect sources, in priority order:
+  //   1) ?next= query param (set by ProtectedRoute on un-auth redirects;
+  //      this is the one that survives full reloads / shared links)
+  //   2) location.state.from.pathname (legacy fallback)
+  const safeNext = resolveNext(searchParams.get("next"));
+  const stateFrom = location.state?.from?.pathname;
+  const stateFromSafe = stateFrom && SAFE_NEXT.test(stateFrom) ? stateFrom : null;
+  const redirectTo = safeNext || stateFromSafe || "/dashboard";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,7 +66,7 @@ const Login = () => {
     try {
       const user = await login(email, password);
       toast.success(`Welcome back, ${user.firstName}`);
-      navigate(from, { replace: true });
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       const msg = err?.response?.data?.detail || "Sign-in failed";
       toast.error(msg);
