@@ -616,7 +616,7 @@ const Hero = () => {
       {/* Real DHL operational photo (image19 from PCT asset pack — outdoor delivery scene with mountain backdrop). Kept as a CSS background so we can keep the existing flow-layout that determines hero height. */}
       <div
         data-testid="hero-image"
-        className="absolute inset-0 bg-cover bg-no-repeat bg-center"
+        className="absolute inset-0 bg-cover bg-no-repeat bg-[center_30%]"
         style={{ backgroundImage: "url('/assets/dhl/hero-delivery.png')" }}
         aria-hidden="true"
       />
