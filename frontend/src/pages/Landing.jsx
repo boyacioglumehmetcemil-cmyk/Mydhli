@@ -1,365 +1,416 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Plane, Ship, Truck, Search, ArrowRight, Eye, ClipboardList, FileText, Leaf,
-  ShieldCheck, BadgeCheck, X,
+  Search, ExternalLink, Globe, ChevronDown, ChevronRight, Menu, X,
+  Plane, Ship, Truck, Calendar, Calculator, Building2, ArrowRight,
+  Eye, ClipboardList, TrendingUp, ShieldCheck, Linkedin, Youtube,
+  Twitter,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import BrandWordmark from "@/components/BrandWordmark";
 import BrandClaim from "@/components/BrandClaim";
+import BrandImagePlaceholder from "@/components/BrandImagePlaceholder";
 import useTitle from "@/hooks/useTitle";
 
 /* -------------------------------------------------------------------------- */
-/* Top utility + nav bar                                                       */
+/* Header — utility bar + nav bar (2 rows, sticky)                             */
 /* -------------------------------------------------------------------------- */
-const TopBar = () => (
-  <header
-    data-testid="landing-topbar"
-    className="sticky top-0 z-40 bg-white border-b border-dhl-border"
-  >
-    <div className="bg-dhl-ink text-white">
-      <div className="max-w-[1280px] mx-auto px-6 lg:px-10 h-9 flex items-center justify-between text-[11px]">
-        <span className="font-mono uppercase tracking-[0.18em] text-dhl-yellow">
-          Pitch demo · myDHLi
-        </span>
-        <span className="text-white/70 hidden sm:inline">
-          Need a quote? Call <b className="text-white">+675 7000 0000</b>
-        </span>
-      </div>
-    </div>
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 h-[68px] flex items-center justify-between">
-      <div className="flex items-center gap-10">
-        <BrandWordmark to="/" variant="default" />
-        <nav className="hidden lg:flex items-center gap-7 text-[13px] font-semibold text-dhl-text">
-          <a href="#freight" className="hover:text-dhl-red">Freight Modes</a>
-          <a href="#why" className="hover:text-dhl-red">Why myDHLi</a>
-          <a href="#network" className="hover:text-dhl-red">PNG Network</a>
-          <a href="#trust" className="hover:text-dhl-red">Compliance</a>
+const COUNTRIES = ["Global", "United States", "United Kingdom", "Germany", "Singapore", "Australia", "Papua New Guinea"];
+
+const UtilityBar = ({ onSearch, country, setCountry }) => {
+  const [openCountry, setOpenCountry] = useState(false);
+  const dropdownRef = useRef(null);
+  useEffect(() => {
+    const onClick = (e) => { if (!dropdownRef.current?.contains(e.target)) setOpenCountry(false); };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+  return (
+    <div className="bg-dhl-yellow border-b border-dhl-yellow-dark" data-testid="utility-bar">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between gap-4">
+        <BrandWordmark to="/" variant="default" data-testid="utility-bar-logo" />
+        <nav className="hidden md:flex items-center gap-6 text-[13px] text-dhl-ink/85">
+          <Link to="/locations" className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-find-location">
+            Find a service point <ExternalLink className="w-3 h-3" />
+          </Link>
+          <button type="button" onClick={onSearch} className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-search">
+            <Search className="w-3.5 h-3.5" /> Search
+          </button>
+          <div className="relative" ref={dropdownRef}>
+            <button type="button" onClick={() => setOpenCountry(!openCountry)} data-testid="utility-country"
+              className="inline-flex items-center gap-1.5 hover:text-dhl-red">
+              <Globe className="w-3.5 h-3.5" />
+              {country}
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            {openCountry && (
+              <div data-testid="country-dropdown" className="absolute right-0 top-full mt-1 bg-white border border-dhl-border rounded-md shadow-lg min-w-[200px] py-1 z-50">
+                {COUNTRIES.map(c => (
+                  <button key={c} type="button"
+                    onClick={() => { setCountry(c); setOpenCountry(false); }}
+                    className={`w-full text-left px-4 py-2 text-[13px] hover:bg-dhl-panel ${c === country ? "font-bold text-dhl-red" : "text-dhl-text"}`}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
       </div>
-      <div className="flex items-center gap-2">
-        <Link
-          to="/track"
-          data-testid="topbar-track"
-          className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-semibold text-dhl-text hover:text-dhl-red px-3 h-9"
-        >
-          <Search className="w-4 h-4" /> Track
+    </div>
+  );
+};
+
+const NAV_ITEMS = [
+  { label: "Track", to: "/track" },
+  {
+    label: "Ship",
+    items: [
+      { label: "Air freight",   to: "/dashboard/ship?mode=AIR",   icon: Plane },
+      { label: "Ocean freight", to: "/dashboard/ship?mode=OCEAN", icon: Ship },
+      { label: "Road freight",  to: "/dashboard/ship?mode=ROAD",  icon: Truck },
+    ],
+  },
+  {
+    label: "Solutions",
+    items: [
+      { label: "Industries",        to: "/solutions" },
+      { label: "Service modes",     to: "/solutions" },
+      { label: "Customs clearance", to: "/solutions" },
+      { label: "Sustainability",    to: "/solutions" },
+    ],
+  },
+  { label: "Customer Service", to: "/help" },
+];
+
+const PORTAL_ITEMS = [
+  { label: "myDHLi (Global Forwarding)",  to: "/login", testId: "portal-mydhli" },
+  { label: "Other DHL portals",           to: "https://www.dhl.com", external: true, testId: "portal-other" },
+];
+
+const NavDropdown = ({ items, open, onClose }) => (
+  <div data-testid="nav-dropdown" className="absolute left-0 top-full mt-0.5 bg-white border border-dhl-border rounded-md shadow-lg min-w-[240px] py-2 z-50">
+    {items.map((it) => {
+      const Icon = it.icon;
+      return (
+        <Link key={it.label} to={it.to} onClick={onClose}
+          className="flex items-center gap-3 px-4 py-2.5 text-[13px] text-dhl-text hover:bg-dhl-panel hover:text-dhl-red">
+          {Icon && <Icon className="w-4 h-4 text-dhl-red" />}
+          {it.label}
         </Link>
-        <Link
-          to="/login"
-          data-testid="topbar-signin"
-          className="inline-flex items-center h-10 px-4 text-[12px] font-bold uppercase tracking-wider text-dhl-text border border-dhl-ink hover:bg-dhl-panel"
-        >
-          Sign in to myDHLi
-        </Link>
-        <Link
-          to="/register"
-          data-testid="topbar-register"
-          className="hidden sm:inline-flex items-center h-10 px-4 text-[12px] font-bold uppercase tracking-wider bg-dhl-yellow text-dhl-ink border-2 border-dhl-ink hover:bg-dhl-yellow-dark"
-        >
-          Open an account
-        </Link>
+      );
+    })}
+  </div>
+);
+
+const NavBar = ({ onMobileMenu }) => {
+  const [openIdx, setOpenIdx] = useState(null);
+  const [portalOpen, setPortalOpen] = useState(false);
+  const navRef = useRef(null);
+  useEffect(() => {
+    const onClick = (e) => { if (!navRef.current?.contains(e.target)) { setOpenIdx(null); setPortalOpen(false); } };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+  return (
+    <div className="bg-white border-b border-dhl-border sticky top-0 z-40 shadow-sm" data-testid="nav-bar">
+      <div ref={navRef} className="max-w-[1440px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
+        <nav className="hidden md:flex items-center gap-1">
+          {NAV_ITEMS.map((it, i) => {
+            const hasDropdown = !!it.items;
+            return (
+              <div key={it.label} className="relative">
+                {hasDropdown ? (
+                  <button type="button" onClick={() => setOpenIdx(openIdx === i ? null : i)} data-testid={`nav-${it.label.toLowerCase().replace(/\s+/g, "-")}`}
+                    className="px-4 py-2 text-sm font-semibold text-dhl-text hover:text-dhl-red inline-flex items-center gap-1 border-b-2 border-transparent hover:border-dhl-yellow transition-colors">
+                    {it.label} <ChevronDown className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <Link to={it.to} data-testid={`nav-${it.label.toLowerCase().replace(/\s+/g, "-")}`}
+                    className="px-4 py-2 text-sm font-semibold text-dhl-text hover:text-dhl-red border-b-2 border-transparent hover:border-dhl-yellow inline-block transition-colors">
+                    {it.label}
+                  </Link>
+                )}
+                {hasDropdown && openIdx === i && <NavDropdown items={it.items} open={true} onClose={() => setOpenIdx(null)} />}
+              </div>
+            );
+          })}
+        </nav>
+        <button type="button" onClick={onMobileMenu} className="md:hidden p-2" data-testid="mobile-menu-toggle">
+          <Menu className="w-6 h-6 text-dhl-ink" />
+        </button>
+        <div className="relative hidden md:block">
+          <button type="button" onClick={() => setPortalOpen(!portalOpen)} data-testid="customer-portal-logins"
+            className="inline-flex items-center gap-2 h-10 px-5 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors">
+            Customer portal logins <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+          {portalOpen && (
+            <div data-testid="portal-dropdown" className="absolute right-0 top-full mt-1 bg-white border border-dhl-border rounded-md shadow-lg min-w-[260px] py-2 z-50">
+              {PORTAL_ITEMS.map(p => (
+                p.external ? (
+                  <a key={p.label} href={p.to} target="_blank" rel="noopener noreferrer" data-testid={p.testId}
+                    className="flex items-center justify-between px-4 py-2.5 text-[13px] text-dhl-text hover:bg-dhl-panel hover:text-dhl-red">
+                    {p.label} <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                ) : (
+                  <Link key={p.label} to={p.to} onClick={() => setPortalOpen(false)} data-testid={p.testId}
+                    className="flex items-center justify-between px-4 py-2.5 text-[13px] text-dhl-text hover:bg-dhl-panel hover:text-dhl-red">
+                    {p.label} <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                )
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  </header>
+  );
+};
+
+const MobileDrawer = ({ open, onClose }) => (
+  open && (
+    <div data-testid="mobile-drawer" className="fixed inset-0 z-[100] md:hidden" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/40" />
+      <div onClick={(e) => e.stopPropagation()}
+        className="absolute right-0 top-0 bottom-0 w-[78vw] max-w-sm bg-white shadow-xl flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-dhl-border">
+          <BrandWordmark to="/" variant="compact" />
+          <button type="button" onClick={onClose} className="p-1" data-testid="mobile-drawer-close">
+            <X className="w-5 h-5 text-dhl-ink" />
+          </button>
+        </div>
+        <nav className="flex-1 overflow-y-auto py-4">
+          {NAV_ITEMS.map(it => (
+            <div key={it.label}>
+              {it.items ? (
+                <>
+                  <div className="px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-dhl-muted">{it.label}</div>
+                  {it.items.map(sub => (
+                    <Link key={sub.label} to={sub.to} onClick={onClose}
+                      className="block px-7 py-2.5 text-sm text-dhl-text hover:bg-dhl-panel hover:text-dhl-red">{sub.label}</Link>
+                  ))}
+                </>
+              ) : (
+                <Link to={it.to} onClick={onClose}
+                  className="block px-5 py-3 text-sm font-semibold text-dhl-text hover:bg-dhl-panel hover:text-dhl-red border-b border-dhl-border">{it.label}</Link>
+              )}
+            </div>
+          ))}
+        </nav>
+        <div className="p-4 border-t border-dhl-border">
+          <Link to="/login" onClick={onClose} className="block w-full h-11 inline-flex items-center justify-center bg-dhl-red text-white font-bold rounded-md text-sm" data-testid="mobile-drawer-login">
+            Sign in to myDHLi
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
 );
 
 /* -------------------------------------------------------------------------- */
 /* Hero                                                                        */
 /* -------------------------------------------------------------------------- */
+const HeroFreightSilhouette = () => (
+  <svg viewBox="0 0 480 320" width="100%" height="100%" aria-hidden="true">
+    <g fill="none" stroke="rgba(0,0,0,0.10)" strokeWidth="2">
+      <path d="M50 230 Q140 210 230 230 T410 230" />
+      <path d="M70 250 L380 250" />
+      <rect x="120" y="170" width="160" height="60" rx="4" />
+      <path d="M120 170 L160 150 L240 150 L280 170" />
+      <circle cx="160" cy="240" r="14" />
+      <circle cx="220" cy="240" r="14" />
+      <path d="M320 110 L420 120 L440 100 L420 95 L380 90 Z" />
+      <path d="M380 95 L400 70 L405 95" />
+      <path d="M295 270 Q310 250 340 268 L420 268 L420 290 L295 290 Z" />
+      <path d="M340 268 L340 250" />
+    </g>
+  </svg>
+);
+
 const Hero = () => {
   const navigate = useNavigate();
-  const [awb, setAwb] = useState("");
-  const onTrack = (e) => {
-    e?.preventDefault?.();
-    const v = awb.trim().toUpperCase();
-    if (!v) return toast.error("Enter a tracking reference (HAWB / MAWB / BL)");
-    navigate(`/track?awb=${encodeURIComponent(v)}`);
+  const [ref, setRef] = useState("");
+  const onSubmit = (e) => {
+    e?.preventDefault();
+    const v = ref.trim().toUpperCase();
+    if (!v) return toast.error("Enter a tracking reference");
+    navigate(`/track/${encodeURIComponent(v)}`);
   };
   return (
-    <section
-      data-testid="landing-hero"
-      className="relative bg-dhl-ink text-white overflow-hidden"
-    >
-      {/* subtle grain backdrop */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 opacity-[0.04] pointer-events-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(#FFCC00 1px, transparent 1px), radial-gradient(#D40511 1px, transparent 1px)",
-          backgroundSize: "32px 32px, 64px 64px",
-          backgroundPosition: "0 0, 16px 16px",
-        }}
+    <section data-testid="landing-hero" className="relative isolate">
+      <BrandImagePlaceholder
+        variant="yellow"
+        iconAlign="br"
+        iconSize={420}
+        icon={HeroFreightSilhouette}
+        className="absolute inset-0"
+        testId="hero-placeholder"
       />
-      <div className="relative max-w-[1280px] mx-auto px-6 lg:px-10 pt-16 lg:pt-24 pb-20 lg:pb-28 grid lg:grid-cols-[1.15fr_1fr] gap-12 items-center">
-        <div>
-          <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.28em] text-dhl-yellow mb-5">
-            <span className="w-8 h-px bg-dhl-yellow" />
-            Freight forwarding · PNG
-          </div>
-          <h1 className="font-display text-4xl sm:text-5xl lg:text-[64px] font-bold leading-[0.95] tracking-tight mb-6">
-            Move freight smarter, <br className="hidden sm:inline" />
-            <span className="text-dhl-yellow">everywhere.</span>
-          </h1>
-          <p className="text-base lg:text-lg text-white/75 leading-relaxed max-w-[560px] mb-8">
-            Air, ocean and road freight forwarding for shippers who carry liability.
-            End-to-end visibility, customs-cleared shipments, and a single portal —
-            myDHLi — to quote, book and watch every leg of the journey.
-          </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              to="/login"
-              data-testid="hero-signin"
-              className="inline-flex items-center gap-2 h-12 px-6 bg-dhl-yellow text-dhl-ink border-2 border-dhl-yellow font-bold uppercase tracking-wider text-[12px] hover:bg-white"
-            >
-              Sign in to myDHLi <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              to="/register"
-              data-testid="hero-register"
-              className="inline-flex items-center gap-2 h-12 px-6 border-2 border-white/40 text-white font-bold uppercase tracking-wider text-[12px] hover:border-white"
-            >
-              Open an account
-            </Link>
-          </div>
-        </div>
-        {/* Track widget — distinct yellow card, asymmetric position */}
-        <form
-          onSubmit={onTrack}
-          data-testid="hero-track-widget"
-          className="bg-dhl-yellow text-dhl-ink p-6 lg:p-7 border-2 border-dhl-yellow shadow-[10px_10px_0px_0px_#D40511]"
-        >
-          <div className="text-[10px] font-bold uppercase tracking-[0.28em] text-dhl-red mb-3">
-            Track a freight shipment
-          </div>
-          <div className="font-display text-2xl font-black leading-tight mb-5">
-            HAWB · MAWB · Booking ref · Container No.
-          </div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider mb-2">
-            Reference number
-          </label>
-          <Input
-            value={awb}
-            onChange={(e) => setAwb(e.target.value)}
+      <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 py-20 lg:py-28 min-h-[60vh] flex flex-col justify-center items-center text-center">
+        <h1 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-2 text-[32px] sm:text-[42px] lg:text-[56px]">
+          Track your shipment
+        </h1>
+        <p className="text-dhl-ink/80 max-w-2xl mb-8 text-[15px] lg:text-base">
+          Air, ocean and road — one tracking surface for every freight reference.
+        </p>
+        <form onSubmit={onSubmit} data-testid="hero-track-form"
+          className="bg-white border border-dhl-border rounded-md shadow-lg p-1.5 flex flex-col sm:flex-row gap-1.5 w-full max-w-2xl">
+          <input
+            value={ref}
+            onChange={(e) => setRef(e.target.value)}
+            type="text"
             data-testid="hero-track-input"
-            placeholder="e.g. DHL1234567890"
-            className="h-12 bg-white border-2 border-dhl-ink rounded-none font-mono text-base"
+            placeholder="Enter your tracking number"
+            className="flex-1 h-12 px-4 text-base bg-transparent border-0 outline-none font-mono uppercase placeholder:text-dhl-muted placeholder:normal-case placeholder:font-sans placeholder:text-[14px]"
+            aria-label="Tracking number"
           />
-          <Button
-            type="submit"
-            data-testid="hero-track-submit"
-            className="mt-4 w-full h-12 bg-dhl-ink text-white hover:bg-dhl-red rounded-none font-bold uppercase tracking-wider text-[12px]"
-          >
-            Track shipment <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-          <div className="text-[11px] mt-3 text-dhl-ink/70">
-            Public tracking is available without sign-in for compliance.
-          </div>
+          <button type="submit" data-testid="hero-track-submit"
+            className="h-12 px-8 bg-dhl-red text-white hover:bg-dhl-red-dark font-bold text-sm rounded-md transition-colors">
+            Track
+          </button>
         </form>
+        <div className="mt-3 text-[12px] text-dhl-ink/70">
+          AWB, HBL, container number or booking reference
+        </div>
       </div>
     </section>
   );
 };
 
 /* -------------------------------------------------------------------------- */
-/* Freight modes strip                                                         */
+/* Floating action cards                                                       */
 /* -------------------------------------------------------------------------- */
-const MODES = [
-  {
-    key: "air",
-    icon: Plane,
-    name: "Air freight",
-    line: "Time-critical, HAWB tracked, dangerous goods capable",
-    bullets: ["Priority + Economy", "Charter on request", "Cool chain available"],
-    accent: "bg-dhl-yellow",
-  },
-  {
-    key: "ocean",
-    icon: Ship,
-    name: "Ocean freight",
-    line: "FCL & LCL with weekly sailings between major hubs",
-    bullets: ["20'/40'/HC containers", "Reefer & special equipment", "Door + port options"],
-    accent: "bg-dhl-red text-white",
-  },
-  {
-    key: "road",
-    icon: Truck,
-    name: "Road freight",
-    line: "Cross-border long-haul + project cargo",
-    bullets: ["Europe, GCC, ASEAN, ANZ", "Mining + oil & gas projects", "Multi-modal feeders"],
-    accent: "bg-dhl-ink text-dhl-yellow",
-  },
-];
+const ActionCard = ({ to, icon: Icon, title, sub, testId }) => (
+  <Link to={to} data-testid={testId}
+    className="group bg-white rounded-xl shadow-lg p-7 lg:p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 block">
+    <div className="w-12 h-12 bg-dhl-red/10 rounded-md flex items-center justify-center mb-5">
+      <Icon className="w-6 h-6 text-dhl-red" strokeWidth={2} />
+    </div>
+    <h3 className="font-display font-bold text-dhl-text text-xl mb-2">{title}</h3>
+    <p className="text-[14px] text-dhl-muted leading-relaxed">{sub}</p>
+    <div className="flex items-center gap-1 mt-5 text-[12px] font-bold text-dhl-red group-hover:gap-2 transition-all">
+      Get started <ArrowRight className="w-3.5 h-3.5" />
+    </div>
+  </Link>
+);
 
-const FreightModes = ({ onSelect }) => (
-  <section id="freight" data-testid="landing-modes" className="bg-white py-16 lg:py-24">
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
-      <div className="mb-12 max-w-2xl">
-        <div className="text-[11px] font-bold uppercase tracking-[0.28em] text-dhl-red mb-3">
-          Freight modes
-        </div>
-        <h2 className="font-display text-3xl lg:text-5xl font-bold tracking-tight text-dhl-text mb-3">
-          One portal. Every leg. Pick the mode.
+const FloatingCards = () => (
+  <section data-testid="landing-cards" className="relative z-10 -mt-20 lg:-mt-24 mb-16 lg:mb-24 px-6 lg:px-10">
+    <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
+      <ActionCard to="/dashboard/ship" icon={Calendar} title="Ship now" sub="Find the right service mode for your freight." testId="card-ship-now" />
+      <ActionCard to="/dashboard/quote" icon={Calculator} title="Get a quote" sub="Compare air, ocean and road side by side." testId="card-get-quote" />
+      <ActionCard to="/register?type=business" icon={Building2} title="Request a business account" sub="For regular shippers seeking volume rates." testId="card-business-account" />
+    </div>
+  </section>
+);
+
+/* -------------------------------------------------------------------------- */
+/* Info band — yellow, image left + content right                              */
+/* -------------------------------------------------------------------------- */
+const ChecklistMark = () => (
+  <svg viewBox="0 0 200 200" width="100%" height="100%" aria-hidden="true">
+    <g fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="2.5">
+      <rect x="30" y="30" width="140" height="140" rx="8" />
+      <path d="M50 75 L70 92 L100 60" />
+      <path d="M115 75 L165 75" />
+      <path d="M50 120 L70 137 L100 105" />
+      <path d="M115 120 L165 120" />
+      <path d="M50 165 L70 182 L100 150" />
+      <path d="M115 165 L165 165" />
+    </g>
+  </svg>
+);
+
+const InfoBand = () => (
+  <section data-testid="landing-info-band" className="bg-dhl-yellow">
+    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16 lg:py-24 grid lg:grid-cols-[5fr_7fr] gap-10 lg:gap-16 items-center">
+      <BrandImagePlaceholder variant="yellow" icon={ChecklistMark} iconAlign="center" iconSize={280}
+        className="aspect-[4/3] rounded-xl border border-black/10" testId="info-band-image" />
+      <div>
+        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-4">Trade insights</div>
+        <h2 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-5 text-[28px] lg:text-[40px]">
+          Move forward with confidence in shifting trade flows.
         </h2>
-        <p className="text-dhl-muted">
-          Book and watch your freight through myDHLi — whether it flies, sails
-          or rolls.
+        <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-6 max-w-xl">
+          Global trade conditions evolve constantly. Our freight forwarding teams help shippers plan around tariff changes, capacity shifts, and route disruptions across every mode — air, ocean and road.
         </p>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {MODES.map((m, i) => (
-          <button
-            type="button"
-            key={m.key}
-            data-testid={`mode-card-${m.key}`}
-            onClick={() => onSelect(m)}
-            className="group text-left bg-white border-2 border-dhl-border p-8 hover:-translate-y-1 hover:border-dhl-ink hover:shadow-[10px_10px_0px_0px_#FFCC00] transition-all"
-          >
-            <div className={`w-14 h-14 flex items-center justify-center ${m.accent} mb-7`}>
-              <m.icon className="w-6 h-6" strokeWidth={2} />
-            </div>
-            <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-dhl-muted mb-2">
-              Mode {String(i + 1).padStart(2, "0")}
-            </div>
-            <h3 className="font-display text-2xl font-black text-dhl-text mb-2">
-              {m.name}
-            </h3>
-            <p className="text-sm text-dhl-muted mb-5">{m.line}</p>
-            <ul className="space-y-2 mb-6">
-              {m.bullets.map((b) => (
-                <li key={b} className="flex items-center gap-2 text-[13px] text-dhl-text">
-                  <span className="w-1.5 h-1.5 bg-dhl-red" />
-                  {b}
-                </li>
-              ))}
-            </ul>
-            <span className="inline-flex items-center text-[11px] font-bold uppercase tracking-wider text-dhl-red">
-              Explore <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </span>
-          </button>
-        ))}
+        <Link to="/solutions" data-testid="info-band-cta"
+          className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors">
+          Explore solutions <ArrowRight className="w-4 h-4" />
+        </Link>
       </div>
     </div>
   </section>
 );
 
 /* -------------------------------------------------------------------------- */
-/* Why myDHLi                                                                  */
+/* Sustainability — green, reversed layout                                     */
+/* -------------------------------------------------------------------------- */
+const LeafMark = () => (
+  <svg viewBox="0 0 200 200" width="100%" height="100%" aria-hidden="true">
+    <g fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="2.5">
+      <path d="M100 30 C150 60 150 130 100 170 C50 130 50 60 100 30 Z" />
+      <path d="M100 30 L100 170" />
+      <path d="M100 60 L130 70" />
+      <path d="M100 90 L138 105" />
+      <path d="M100 120 L130 138" />
+      <path d="M100 60 L70 70" />
+      <path d="M100 90 L62 105" />
+      <path d="M100 120 L70 138" />
+    </g>
+  </svg>
+);
+
+const Sustainability = () => (
+  <section data-testid="landing-sustainability" className="bg-white">
+    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16 lg:py-24 grid lg:grid-cols-[7fr_5fr] gap-10 lg:gap-16 items-center">
+      <div>
+        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-green mb-4">Sustainability</div>
+        <h2 className="font-display font-bold text-dhl-text leading-tight tracking-tight mb-5 text-[28px] lg:text-[40px]">
+          Lower-carbon freight is built into every quote.
+        </h2>
+        <p className="text-dhl-muted text-[15px] lg:text-base leading-relaxed mb-6 max-w-xl">
+          When you compare modes in our quote tool, you see emissions alongside cost and transit time. Choose what fits your impact targets — and report Scope 3 with one click.
+        </p>
+        <Link to="/dashboard/quote" data-testid="sustainability-cta"
+          className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-green text-white hover:opacity-90 font-semibold text-sm rounded-md transition-colors">
+          See our quote comparison <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+      <BrandImagePlaceholder variant="green" icon={LeafMark} iconAlign="center" iconSize={280}
+        className="aspect-[4/3] rounded-xl" testId="sustainability-image" />
+    </div>
+  </section>
+);
+
+/* -------------------------------------------------------------------------- */
+/* Why choose us — 4 icon grid                                                 */
 /* -------------------------------------------------------------------------- */
 const WHY = [
-  { icon: Eye, t: "End-to-end visibility", d: "Every milestone — origin pickup to final POD — in one timeline." },
-  { icon: ClipboardList, t: "Online quote & booking", d: "Rate, compare and book air or ocean freight without an email chain." },
-  { icon: FileText, t: "Documents on demand", d: "HAWBs, BLs, COOs, packing lists, invoices — generated and stored per shipment." },
-  { icon: Leaf, t: "Sustainability insight", d: "Per-shipment CO₂e estimates so procurement teams can report Scope 3." },
+  { Icon: Eye,          title: "End-to-end visibility", desc: "Track every leg from booking to proof of delivery."     },
+  { Icon: ClipboardList,title: "Documents on demand",   desc: "Access HBL, HAWB and customs paperwork instantly."     },
+  { Icon: TrendingUp,   title: "Capacity at scale",     desc: "Access global air, ocean and road networks."           },
+  { Icon: ShieldCheck,  title: "Customs expertise",     desc: "Compliance built into every shipment we move."         },
 ];
 
-const Why = () => (
-  <section id="why" data-testid="landing-why" className="bg-dhl-panel py-16 lg:py-24">
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
-      <div className="grid lg:grid-cols-[1.1fr_2fr] gap-10 lg:gap-16">
-        <div>
-          <div className="text-[11px] font-bold uppercase tracking-[0.28em] text-dhl-red mb-3">
-            Why myDHLi
-          </div>
-          <h2 className="font-display text-3xl lg:text-5xl font-black tracking-tight text-dhl-text leading-[0.98]">
-            A portal built for shippers who carry liability.
-          </h2>
-          <p className="text-dhl-muted mt-4 leading-relaxed">
-            myDHLi is the single online workspace for freight forwarding
-            customers — quote, book, track and pay without picking up the
-            phone. Global shippers use it daily for cross-border supply chains.
-          </p>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-5">
-          {WHY.map((w) => (
-            <div
-              key={w.t}
-              data-testid={`why-card-${w.t.toLowerCase().split(" ")[0]}`}
-              className="bg-white border border-dhl-border p-6 hover:border-dhl-yellow transition-colors"
-            >
-              <div className="w-10 h-10 bg-dhl-yellow flex items-center justify-center mb-5">
-                <w.icon className="w-5 h-5 text-dhl-ink" strokeWidth={2} />
-              </div>
-              <div className="font-display font-black text-dhl-text text-lg mb-1.5">{w.t}</div>
-              <p className="text-[13px] text-dhl-muted leading-relaxed">{w.d}</p>
-            </div>
-          ))}
-        </div>
+const WhyChooseUs = () => (
+  <section data-testid="landing-why" className="bg-dhl-panel">
+    <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16 lg:py-24">
+      <div className="text-center mb-12 lg:mb-16">
+        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-3">Why myDHLi</div>
+        <h2 className="font-display font-bold text-dhl-text leading-tight tracking-tight text-[28px] lg:text-[40px]">
+          Built for global freight movers.
+        </h2>
       </div>
-    </div>
-  </section>
-);
-
-/* -------------------------------------------------------------------------- */
-/* Stats / PNG network strip                                                   */
-/* -------------------------------------------------------------------------- */
-const STATS = [
-  { v: "120k+", l: "Tonnes freight moved monthly" },
-  { v: "8,200", l: "Active container bookings" },
-  { v: "220+",  l: "Origin / destination countries" },
-  { v: "60+",   l: "Trade lanes, weekly sailings" },
-];
-
-const Stats = () => (
-  <section id="network" data-testid="landing-stats" className="bg-dhl-yellow text-dhl-ink">
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-14 lg:py-20">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-10 gap-x-6 lg:gap-x-12">
-        {STATS.map((s, i) => (
-          <div
-            key={s.l}
-            data-testid={`stat-${i}`}
-            className="border-l-4 border-dhl-ink pl-4"
-          >
-            <div className="font-display text-4xl lg:text-5xl font-black leading-none tabular-nums">
-              {s.v}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-7">
+        {WHY.map((w) => (
+          <div key={w.title} data-testid={`why-${w.title.toLowerCase().split(" ")[0]}`}
+            className="bg-white p-6 lg:p-7 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-11 h-11 bg-dhl-red/10 rounded-md flex items-center justify-center mb-5">
+              <w.Icon className="w-5 h-5 text-dhl-red" strokeWidth={2} />
             </div>
-            <div className="mt-3 text-[12px] font-bold uppercase tracking-wider text-dhl-ink/80">
-              {s.l}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
-/* -------------------------------------------------------------------------- */
-/* Trust strip (compliance badges)                                             */
-/* -------------------------------------------------------------------------- */
-// TODO(brand): replace placeholders with the official certificate set DHL
-// Global Forwarding supplies (logos + valid-through dates).
-const BADGES = [
-  { label: "IATA", sub: "Cargo agent" },
-  { label: "FIATA", sub: "Member forwarder" },
-  { label: "AEO", sub: "Authorised operator" },
-  { label: "ISO 9001", sub: "Quality" },
-  { label: "C-TPAT", sub: "Supply-chain security" },
-];
-
-const Trust = () => (
-  <section id="trust" data-testid="landing-trust" className="bg-white py-14 border-y border-dhl-border">
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
-      <div className="flex items-center gap-3 mb-7">
-        <ShieldCheck className="w-4 h-4 text-dhl-red" />
-        <div className="text-[11px] font-bold uppercase tracking-[0.28em] text-dhl-muted">
-          Compliance & accreditation
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-3 lg:gap-4">
-        {BADGES.map((b) => (
-          <div
-            key={b.label}
-            data-testid={`trust-badge-${b.label.toLowerCase().replace(/\s+/g, "-")}`}
-            className="inline-flex items-center gap-3 px-4 py-2.5 border border-dhl-border bg-dhl-panel"
-          >
-            <BadgeCheck className="w-4 h-4 text-dhl-red" />
-            <div className="leading-tight">
-              <div className="font-display font-black text-dhl-text text-sm">{b.label}</div>
-              <div className="text-[10px] text-dhl-muted uppercase tracking-wider">{b.sub}</div>
-            </div>
+            <h3 className="font-display font-bold text-dhl-text text-base lg:text-lg mb-2">{w.title}</h3>
+            <p className="text-[13px] text-dhl-muted leading-relaxed">{w.desc}</p>
           </div>
         ))}
       </div>
@@ -372,33 +423,31 @@ const Trust = () => (
 /* -------------------------------------------------------------------------- */
 const Footer = () => (
   <footer data-testid="landing-footer" className="bg-dhl-ink text-white/80">
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-14 grid grid-cols-2 lg:grid-cols-5 gap-10">
+    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 pt-12 pb-10 text-center border-b border-white/10">
+      <BrandClaim variant="prominent" align="center" />
+    </div>
+    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-12 grid grid-cols-2 lg:grid-cols-5 gap-10">
       <div className="col-span-2">
         <BrandWordmark to={null} theme="dark" variant="stack" />
         <p className="text-[13px] text-white/60 mt-5 leading-relaxed max-w-sm">
-          DHL Global Forwarding — air, ocean and road freight, customs and
-          logistics for global trade. Demo build.
+          Air, ocean and road freight forwarding — quote, book, document and track every leg of your supply chain from one portal.
         </p>
-        <div className="mt-5">
-          <BrandClaim variant="normal" className="opacity-90" />
+        <div className="flex items-center gap-3 mt-5">
+          <a href="#" aria-label="LinkedIn" className="w-9 h-9 bg-white/5 hover:bg-white/10 rounded-md flex items-center justify-center transition-colors"><Linkedin className="w-4 h-4" /></a>
+          <a href="#" aria-label="Twitter"  className="w-9 h-9 bg-white/5 hover:bg-white/10 rounded-md flex items-center justify-center transition-colors"><Twitter  className="w-4 h-4" /></a>
+          <a href="#" aria-label="YouTube"  className="w-9 h-9 bg-white/5 hover:bg-white/10 rounded-md flex items-center justify-center transition-colors"><Youtube  className="w-4 h-4" /></a>
         </div>
       </div>
       {[
-        { h: "Freight", l: ["Air freight", "Ocean freight", "Road freight", "Project cargo"] },
+        { h: "Freight",  l: ["Air freight", "Ocean freight", "Road freight", "Project cargo"] },
         { h: "Services", l: ["Customs brokerage", "Insurance", "Warehousing", "Sustainability"] },
-        { h: "Company", l: ["About PNG", "Careers", "Press", "Compliance"] },
+        { h: "Company",  l: ["About", "Careers", "Press", "Compliance"] },
       ].map((c) => (
         <div key={c.h}>
-          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-yellow mb-4">
-            {c.h}
-          </div>
+          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-yellow mb-4">{c.h}</div>
           <ul className="space-y-2.5 text-[13px]">
             {c.l.map((x) => (
-              <li key={x}>
-                <a href="#" className="text-white/70 hover:text-white">
-                  {x}
-                </a>
-              </li>
+              <li key={x}><a href="#" className="text-white/70 hover:text-white">{x}</a></li>
             ))}
           </ul>
         </div>
@@ -407,7 +456,7 @@ const Footer = () => (
     <div className="border-t border-white/10">
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[11px] text-white/45">
         <div>
-          {/* TODO(brand): swap with real legal entity once DHL provides registration data. */}
+          {/* TODO(brand): swap real legal entity once DHL provides registration data. */}
           © 2026 DHL Global Forwarding — All rights reserved.
         </div>
         <div className="font-mono uppercase tracking-wider">
@@ -419,45 +468,23 @@ const Footer = () => (
 );
 
 /* -------------------------------------------------------------------------- */
-/* Coming-soon modal (for mode cards & TODO links)                             */
+/* Search modal (utility bar)                                                  */
 /* -------------------------------------------------------------------------- */
-const ComingSoonModal = ({ mode, onClose }) =>
-  mode && (
-    <div
-      data-testid="landing-coming-soon-modal"
-      onClick={onClose}
-      className="fixed inset-0 z-[110] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-    >
-      <div onClick={(e) => e.stopPropagation()} className="bg-white max-w-md w-full p-7 border-2 border-dhl-ink">
-        <div className="flex items-start justify-between mb-3">
-          <div className="text-[11px] font-bold uppercase tracking-[0.24em] text-dhl-red">
-            Coming next phase
-          </div>
-          <button onClick={onClose} className="p-1 hover:bg-dhl-panel">
+const SearchModal = ({ open, onClose }) =>
+  open && (
+    <div data-testid="search-modal" className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-start justify-center pt-24" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="bg-white max-w-xl w-full mx-4 rounded-xl shadow-2xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display font-bold text-lg text-dhl-text">Search myDHLi</h3>
+          <button type="button" onClick={onClose} className="p-1 hover:bg-dhl-panel rounded" data-testid="search-modal-close">
             <X className="w-4 h-4 text-dhl-muted" />
           </button>
         </div>
-        <h3 className="font-display text-2xl font-black text-dhl-text mb-3">
-          {mode.name} booking
-        </h3>
-        <p className="text-sm text-dhl-muted mb-5">
-          Quote and book {mode.name.toLowerCase()} directly from myDHLi. We're
-          wiring this up in the next sprint — meanwhile, sign in to track any
-          existing reference.
-        </p>
-        <div className="flex gap-3">
-          <Link
-            to="/login"
-            className="flex-1 h-11 inline-flex items-center justify-center bg-dhl-yellow text-dhl-ink border-2 border-dhl-ink font-bold uppercase tracking-wider text-[12px] hover:bg-dhl-yellow-dark"
-          >
-            Sign in
-          </Link>
-          <button
-            onClick={onClose}
-            className="flex-1 h-11 inline-flex items-center justify-center border-2 border-dhl-ink text-dhl-ink font-bold uppercase tracking-wider text-[12px] hover:bg-dhl-panel"
-          >
-            Close
-          </button>
+        <input autoFocus type="text" data-testid="search-modal-input"
+          placeholder="Tracking, FAQ, services…"
+          className="w-full h-12 px-4 text-base bg-dhl-panel border-2 border-dhl-border focus:border-dhl-yellow focus:outline-none rounded-md" />
+        <div className="text-[11px] text-dhl-muted mt-3">
+          Quick search ships in the next release — try the hero tracking input meanwhile.
         </div>
       </div>
     </div>
@@ -467,20 +494,24 @@ const ComingSoonModal = ({ mode, onClose }) =>
 /* Page                                                                        */
 /* -------------------------------------------------------------------------- */
 const Landing = () => {
-  useTitle("Freight forwarding for PNG");
-  const [comingMode, setComingMode] = useState(null);
+  useTitle("Freight forwarding");
+  const [country, setCountry] = useState("Global");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   return (
     <div className="min-h-screen bg-white" data-testid="landing-page">
-      <TopBar />
+      <UtilityBar onSearch={() => setSearchOpen(true)} country={country} setCountry={setCountry} />
+      <NavBar onMobileMenu={() => setDrawerOpen(true)} />
+      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <main>
         <Hero />
-        <FreightModes onSelect={setComingMode} />
-        <Why />
-        <Stats />
-        <Trust />
+        <FloatingCards />
+        <InfoBand />
+        <Sustainability />
+        <WhyChooseUs />
       </main>
       <Footer />
-      <ComingSoonModal mode={comingMode} onClose={() => setComingMode(null)} />
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 };
