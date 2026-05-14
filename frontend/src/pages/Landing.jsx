@@ -485,7 +485,7 @@ const ChecklistMark = () => (
 const InfoBand = () => (
   <section data-testid="landing-info-band" className="bg-dhl-yellow">
     <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16 lg:py-24 grid lg:grid-cols-[5fr_7fr] gap-10 lg:gap-16 items-stretch">
-      <div data-testid="info-band-image" className="aspect-[4/5] lg:aspect-auto lg:h-full rounded-xl border border-black/10 overflow-hidden bg-white">
+      <div data-testid="info-band-image" className="aspect-[4/5] lg:aspect-auto lg:-my-24 rounded-xl lg:rounded-none border border-black/10 lg:border-0 overflow-hidden bg-white">
         <img
           src="/assets/dhl/info-band-tariff.png"
           alt="DHL freight forwarder reviewing customs documents"
