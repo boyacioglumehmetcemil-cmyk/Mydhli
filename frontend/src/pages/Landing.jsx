@@ -397,7 +397,7 @@ const Hero = () => {
       />
       <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 py-20 lg:py-28 min-h-[60vh] flex flex-col justify-center">
         <div className="w-full max-w-2xl">
-          <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-2 text-[32px] sm:text-[42px] lg:text-[56px] [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
+          <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-3 text-[26px] sm:text-[32px] lg:text-[40px] [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
             Track your shipment
           </h1>
           <p className="text-white/90 mb-8 text-[15px] lg:text-base [text-shadow:0_1px_6px_rgba(0,0,0,0.4)]">
