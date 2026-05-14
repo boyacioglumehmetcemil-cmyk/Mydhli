@@ -72,7 +72,7 @@ const NAV_ITEMS = [
     ],
   },
   {
-    label: "Solutions",
+    label: "Enterprise Logistics Services",
     items: [
       { label: "Industries",        to: "/solutions" },
       { label: "Service modes",     to: "/solutions" },
@@ -114,7 +114,7 @@ const NavBar = ({ onMobileMenu }) => {
   }, []);
   return (
     <div className="bg-white border-b border-dhl-border sticky top-0 z-40 shadow-sm" data-testid="nav-bar">
-      <div ref={navRef} className="max-w-[1440px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
+      <div ref={navRef} className="max-w-[1440px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
         <nav className="hidden md:flex items-center gap-1">
           {NAV_ITEMS.map((it, i) => {
             const hasDropdown = !!it.items;
