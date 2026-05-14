@@ -4,11 +4,10 @@ import {
   Search, ExternalLink, Globe, ChevronDown, ChevronRight, Menu, X,
   Plane, Ship, Truck, Calendar, Calculator, Building2, ArrowRight,
   Eye, ClipboardList, TrendingUp, ShieldCheck, Linkedin, Youtube,
-  Twitter, Container, Boxes,
+  Twitter, Container, Boxes, Facebook, Instagram,
 } from "lucide-react";
 import { toast } from "sonner";
 import BrandWordmark from "@/components/BrandWordmark";
-import BrandClaim from "@/components/BrandClaim";
 import BrandImagePlaceholder from "@/components/BrandImagePlaceholder";
 import useTitle from "@/hooks/useTitle";
 
@@ -420,9 +419,9 @@ const AirFreightOverlappingSection = () => {
             className="relative z-0 lg:-ml-16 lg:-my-16 rounded-xl lg:rounded-2xl overflow-hidden shadow-xl"
           >
             <img
-              src="/assets/dhl/air-freight-photo.png"
-              alt="DHL courier handing a parcel to a customer at their doorstep"
-              className="w-full h-[280px] sm:h-[360px] lg:h-[640px] object-cover"
+              src="/assets/dhl/air-freight-cargo.jpg"
+              alt="DHL Aviation cargo freighter and ULDs on the apron"
+              className="w-full h-[280px] sm:h-[360px] lg:h-[640px] object-cover object-[center_55%]"
               loading="lazy"
             />
           </div>
@@ -875,51 +874,235 @@ const WhyChooseUs = () => (
 /* -------------------------------------------------------------------------- */
 /* Footer                                                                      */
 /* -------------------------------------------------------------------------- */
-const Footer = () => (
-  <footer data-testid="landing-footer" className="bg-dhl-ink text-white/80">
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 pt-12 pb-10 text-center border-b border-white/10">
-      <BrandClaim variant="prominent" align="center" />
-    </div>
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-12 grid grid-cols-2 lg:grid-cols-5 gap-10">
-      <div className="col-span-2">
-        <BrandWordmark to={null} theme="dark" variant="stack" />
-        <p className="text-[13px] text-white/60 mt-5 leading-relaxed max-w-sm">
-          Air, ocean and road freight forwarding — quote, book, document and track every leg of your supply chain from one portal.
-        </p>
-        <div className="flex items-center gap-3 mt-5">
-          <a href="#" aria-label="LinkedIn" className="w-9 h-9 bg-white/5 hover:bg-white/10 rounded-md flex items-center justify-center transition-colors"><Linkedin className="w-4 h-4" /></a>
-          <a href="#" aria-label="Twitter"  className="w-9 h-9 bg-white/5 hover:bg-white/10 rounded-md flex items-center justify-center transition-colors"><Twitter  className="w-4 h-4" /></a>
-          <a href="#" aria-label="YouTube"  className="w-9 h-9 bg-white/5 hover:bg-white/10 rounded-md flex items-center justify-center transition-colors"><Youtube  className="w-4 h-4" /></a>
-        </div>
-      </div>
-      {[
-        { h: "Freight",  l: ["Air freight", "Ocean freight", "Road freight", "Project cargo"] },
-        { h: "Services", l: ["Customs brokerage", "Insurance", "Warehousing", "Sustainability"] },
-        { h: "Company",  l: ["About", "Careers", "Press", "Compliance"] },
-      ].map((c) => (
-        <div key={c.h}>
-          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-yellow mb-4">{c.h}</div>
-          <ul className="space-y-2.5 text-[13px]">
-            {c.l.map((x) => (
-              <li key={x}><a href="#" className="text-white/70 hover:text-white">{x}</a></li>
+const Footer = () => {
+  /* ---------- Tier 1: Service updates band ---------- */
+  const updates = [
+    "Operational update — Pacific region",
+    "Weekly fuel surcharge adjustment",
+  ];
+
+  /* ---------- Tier 2: Promo cards (no new asset for Innovation) ---------- */
+  const promoCards = [
+    {
+      title: "Sustainability",
+      body: "Lower-carbon supply chains start with the modes you choose. We surface emissions alongside cost and transit time so you can balance impact and delivery in the same view.",
+      image: "/assets/dhl/sustainability-photo.png",
+      alt: "DHL electric delivery van on a tree-lined street",
+    },
+    {
+      title: "Innovation",
+      body: "Customer-centric tooling — from instant multi-mode quotes to AI-assisted customs prep. Every release we ship pulls another minute out of the booking flow for shippers.",
+      image: null, // Yellow gradient placeholder — no dedicated asset yet
+      alt: null,
+    },
+    {
+      title: "Global connectedness",
+      body: "Our 2026 outlook tracks how trade lanes are reshaping across regions. See where capacity is shifting and how mode-switching is unlocking shorter, more resilient routes.",
+      image: "/assets/dhl/ocean-freight-photo.png",
+      alt: "Container port with cargo ship and STS cranes",
+    },
+  ];
+
+  /* ---------- Tier 3: Four-column footer ---------- */
+  const columns = [
+    {
+      h: "Quick links",
+      l: [
+        "Customer service",
+        "Customer portal login",
+        "Strategic partner directory",
+        "Developer portal",
+        "Get a quote",
+        "Request a business account",
+        "Shipping guidance",
+        "Aviation cargo",
+      ],
+    },
+    {
+      h: "Our divisions",
+      l: ["DHL Express", "DHL Global Forwarding", "DHL Supply Chain", "DHL eCommerce", "Other global divisions"],
+    },
+    {
+      h: "Industry sectors",
+      l: [
+        "Auto-Mobility",
+        "Energy",
+        "Engineering & Manufacturing",
+        "Life Sciences & Healthcare",
+        "Retail & Fashion",
+        "Technology",
+      ],
+    },
+    {
+      h: "Company information",
+      l: [
+        "About DHL",
+        "Delivered Magazine",
+        "Careers",
+        "Press Center",
+        "Investors",
+        "Sustainability",
+        "Supplier Diversity",
+        "Innovation",
+        "Events",
+        "Brand Partnerships",
+      ],
+    },
+  ];
+
+  const legalLinks = [
+    "Fraud awareness",
+    "Legal notice",
+    "Terms of use",
+    "Privacy notice",
+    "Additional information",
+    "Cookie settings",
+  ];
+
+  const socials = [
+    { Icon: Youtube,   label: "YouTube"   },
+    { Icon: Facebook,  label: "Facebook"  },
+    { Icon: Linkedin,  label: "LinkedIn"  },
+    { Icon: Instagram, label: "Instagram" },
+  ];
+
+  return (
+    <footer data-testid="landing-footer" className="bg-white text-dhl-ink">
+      {/* TIER 1 — Service updates band */}
+      <section data-testid="footer-updates" className="border-b border-dhl-border">
+        <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-10 lg:py-12 grid lg:grid-cols-[1fr_2fr] gap-8 lg:gap-12 items-start">
+          <div>
+            <h3 className="font-display font-bold text-dhl-ink text-[22px] lg:text-[26px] leading-tight mb-2">
+              Important service updates
+            </h3>
+            <p className="text-dhl-muted text-[14px] leading-relaxed max-w-md">
+              Service bulletins keep you up to date with news and alerts.
+            </p>
+          </div>
+          <ul className="divide-y divide-dhl-border border-t border-b border-dhl-border">
+            {updates.map((u) => (
+              <li key={u}>
+                <a
+                  href="#"
+                  data-testid="footer-update-link"
+                  className="flex items-center justify-between gap-4 py-4 group hover:bg-dhl-panel/40 transition-colors px-2"
+                >
+                  <span className="text-[14px] lg:text-[15px] text-dhl-ink group-hover:text-dhl-red transition-colors">{u}</span>
+                  <ChevronRight className="w-4 h-4 text-dhl-red flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                </a>
+              </li>
             ))}
           </ul>
         </div>
-      ))}
-    </div>
-    <div className="border-t border-white/10">
-      <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[11px] text-white/45">
-        <div>
-          {/* TODO(brand): swap real legal entity once DHL provides registration data. */}
-          © 2026 DHL Global Forwarding — All rights reserved.
+      </section>
+
+      {/* TIER 2 — Promo cards */}
+      <section data-testid="footer-promo-cards" className="bg-white">
+        <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-12 lg:py-16 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          {promoCards.map((c) => (
+            <a
+              key={c.title}
+              href="#"
+              data-testid={`footer-promo-${c.title.toLowerCase().replace(/\s+/g, "-")}`}
+              className="group block bg-white rounded-2xl shadow-md border border-dhl-border/60 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200"
+            >
+              {/* Image OR yellow gradient fallback for Innovation */}
+              <div className="aspect-[16/9] bg-dhl-yellow relative overflow-hidden">
+                {c.image ? (
+                  <img src={c.image} alt={c.alt} className="w-full h-full object-cover" loading="lazy" />
+                ) : (
+                  <>
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0"
+                      style={{ background: "linear-gradient(135deg, #FFCC00 0%, #FFE066 60%, #FFF3B0 100%)" }}
+                    />
+                    <div className="absolute inset-0 flex items-end p-6">
+                      <span className="font-display font-bold text-dhl-ink/30 text-5xl lg:text-6xl leading-none uppercase tracking-tighter">
+                        {c.title}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="p-6 lg:p-7">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <h4 className="font-display font-bold text-dhl-ink text-[18px] lg:text-[20px] leading-tight">{c.title}</h4>
+                  <ChevronRight className="w-5 h-5 text-dhl-red flex-shrink-0 mt-0.5 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+                <p className="text-dhl-muted text-[13px] lg:text-[14px] leading-relaxed">{c.body}</p>
+              </div>
+            </a>
+          ))}
         </div>
-        <div className="font-mono uppercase tracking-wider">
-          Demo build · Not affiliated with Deutsche Post DHL Group · myDHLi placeholder
+      </section>
+
+      {/* TIER 3 — Four-column link footer */}
+      <section data-testid="footer-columns" className="bg-neutral-50 border-t border-dhl-border">
+        <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-12 lg:py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
+          {columns.map((c) => (
+            <div key={c.h}>
+              <h5 className="font-display font-bold text-dhl-red text-[14px] lg:text-[15px] mb-4">{c.h}</h5>
+              <ul className="space-y-2.5">
+                {c.l.map((x) => (
+                  <li key={x}>
+                    <a href="#" className="text-[13px] lg:text-[14px] text-dhl-ink hover:underline hover:text-dhl-red transition-colors">
+                      {x}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-      </div>
-    </div>
-  </footer>
-);
+      </section>
+
+      {/* TIER 4 — Bottom strip */}
+      <section data-testid="footer-bottom" className="bg-neutral-100 border-t border-dhl-border">
+        <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-8 lg:py-10">
+          {/* Row A: brand + social */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 pb-6 border-b border-dhl-border">
+            <BrandWordmark to={null} theme="light" variant="inline" />
+            <div className="flex items-center gap-4">
+              <span className="text-[12px] uppercase tracking-[0.2em] font-bold text-dhl-muted">Follow us</span>
+              <div className="flex items-center gap-2">
+                {socials.map(({ Icon, label }) => (
+                  <a
+                    key={label}
+                    href="#"
+                    aria-label={label}
+                    data-testid={`footer-social-${label.toLowerCase()}`}
+                    className="w-9 h-9 rounded-md bg-white border border-dhl-border flex items-center justify-center text-dhl-muted hover:text-dhl-red hover:border-dhl-red transition-colors"
+                  >
+                    <Icon className="w-4 h-4" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Row B: legal links */}
+          <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 py-5 text-[12px] text-dhl-muted">
+            {legalLinks.map((x, i) => (
+              <li key={x} className="flex items-center gap-x-5">
+                <a href="#" className="hover:text-dhl-red transition-colors">{x}</a>
+                {i < legalLinks.length - 1 && <span className="text-dhl-border" aria-hidden="true">·</span>}
+              </li>
+            ))}
+          </ul>
+
+          {/* Row C: copyright + demo badge */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-5 border-t border-dhl-border text-[11px] text-dhl-muted">
+            <div className="text-center md:text-left">© 2026 — All rights reserved.</div>
+            <div className="font-mono uppercase tracking-wider text-dhl-muted/70 text-[10px]">
+              Demo build · Not affiliated with Deutsche Post DHL Group · myDHLi placeholder
+            </div>
+          </div>
+        </div>
+      </section>
+    </footer>
+  );
+};
 
 /* -------------------------------------------------------------------------- */
 /* Search modal (utility bar)                                                  */
