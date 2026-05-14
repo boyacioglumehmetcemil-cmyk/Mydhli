@@ -383,19 +383,23 @@ const Hero = () => {
   };
   return (
     <section data-testid="landing-hero" className="relative isolate">
-      <BrandImagePlaceholder
-        variant="yellow"
-        iconAlign="br"
-        iconSize={420}
-        icon={HeroFreightSilhouette}
-        className="absolute inset-0"
-        testId="hero-placeholder"
+      {/* Real DHL operational photo (image19 from PCT asset pack — outdoor delivery scene with mountain backdrop). Kept as a CSS background so we can keep the existing flow-layout that determines hero height. */}
+      <div
+        data-testid="hero-image"
+        className="absolute inset-0 bg-cover bg-no-repeat bg-[center_35%]"
+        style={{ backgroundImage: "url('/assets/dhl/hero-delivery.png')" }}
+        aria-hidden="true"
+      />
+      {/* Readability overlay — concentrated near the top where the headline + tracking widget sit. Keeps the lower half of the photo (DHL van, courier) visible. */}
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-transparent"
+        aria-hidden="true"
       />
       <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 py-20 lg:py-28 min-h-[60vh] flex flex-col justify-center items-center text-center">
-        <h1 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-2 text-[32px] sm:text-[42px] lg:text-[56px]">
+        <h1 className="font-display font-bold text-white leading-tight tracking-tight mb-2 text-[32px] sm:text-[42px] lg:text-[56px] [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
           Track your shipment
         </h1>
-        <p className="text-dhl-ink/80 max-w-2xl mb-8 text-[15px] lg:text-base">
+        <p className="text-white/90 max-w-2xl mb-8 text-[15px] lg:text-base [text-shadow:0_1px_6px_rgba(0,0,0,0.4)]">
           Air, ocean and road — one tracking surface for every freight reference.
         </p>
         <form onSubmit={onSubmit} data-testid="hero-track-form"
@@ -414,7 +418,7 @@ const Hero = () => {
             Track
           </button>
         </form>
-        <div className="mt-3 text-[12px] text-dhl-ink/70">
+        <div className="mt-3 text-[12px] text-white/80 [text-shadow:0_1px_4px_rgba(0,0,0,0.4)]">
           AWB, HBL, container number or booking reference
         </div>
       </div>
