@@ -770,12 +770,18 @@ const Sustainability = () => (
           When you compare modes in our quote tool, you see emissions alongside cost and transit time. Choose what fits your impact targets — and report Scope 3 with one click.
         </p>
         <Link to="/dashboard/quote" data-testid="sustainability-cta"
-          className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-green text-white hover:opacity-90 font-semibold text-sm rounded-md transition-colors">
+          className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors">
           See our quote comparison <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
-      <BrandImagePlaceholder variant="green" icon={LeafMark} iconAlign="center" iconSize={280}
-        className="aspect-[4/3] rounded-xl" testId="sustainability-image" />
+      <div data-testid="sustainability-image" className="aspect-[3/2] rounded-xl overflow-hidden shadow-lg bg-white">
+        <img
+          src="/assets/dhl/sustainability-photo.png"
+          alt="DHL electric delivery van on a tree-lined street"
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
     </div>
   </section>
 );
