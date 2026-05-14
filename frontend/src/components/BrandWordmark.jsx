@@ -78,7 +78,6 @@ const BrandWordmark = ({
           className="h-[22px] sm:h-7 w-auto block"
           width="353"
           height="110"
-          loading="lazy"
           decoding="async"
         />
       </span>

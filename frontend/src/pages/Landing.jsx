@@ -820,7 +820,7 @@ const SMBBusinessSection = () => (
             DHL for your business.
           </h2>
           <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-8 max-w-prose">
-            Scale your small and medium-sized business with end-to-end freight forwarding, customs expertise and reliable transit. Our specialists adapt to your customers' changing needs.
+            Scale your small and medium-sized business with door-to-door freight forwarding, customs brokerage and reliable transit. Our specialists adapt to your customers' changing needs.
           </p>
           <Link
             to="/solutions"
@@ -1101,9 +1101,11 @@ const Landing = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   return (
     <div className="min-h-screen bg-white" data-testid="landing-page">
-      <UtilityBar onSearch={() => setSearchOpen(true)} country={country} setCountry={setCountry} />
-      <NavBar onMobileMenu={() => setDrawerOpen(true)} />
-      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <header data-testid="landing-header">
+        <UtilityBar onSearch={() => setSearchOpen(true)} country={country} setCountry={setCountry} />
+        <NavBar onMobileMenu={() => setDrawerOpen(true)} />
+        <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      </header>
       <main>
         <Hero />
         <FloatingCards />
