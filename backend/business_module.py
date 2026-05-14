@@ -92,6 +92,76 @@ BASE_PER_KG = {"EXPRESS_12_00": 28.0, "EXPRESS_WORLDWIDE": 18.5, "ECONOMY_SELECT
 BASE_HANDLING = {"EXPRESS_12_00": 35.0, "EXPRESS_WORLDWIDE": 22.0, "ECONOMY_SELECT": 12.0}
 
 
+# ============ PHASE 8.2 — Global ports dataset =================================
+# Air = IATA 3-letter, Ocean = UNLOCODE 5-letter, Road = city codes.
+# Globally distributed so the demo doesn't read PNG-specific.
+PORTS = [
+    # ----- AIR / IATA -----
+    {"mode": "AIR", "code": "SIN", "name": "Singapore Changi",        "city": "Singapore",    "country": "SG"},
+    {"mode": "AIR", "code": "HKG", "name": "Hong Kong Intl",          "city": "Hong Kong",    "country": "HK"},
+    {"mode": "AIR", "code": "PVG", "name": "Shanghai Pudong",         "city": "Shanghai",     "country": "CN"},
+    {"mode": "AIR", "code": "PEK", "name": "Beijing Capital",         "city": "Beijing",      "country": "CN"},
+    {"mode": "AIR", "code": "NRT", "name": "Tokyo Narita",            "city": "Tokyo",        "country": "JP"},
+    {"mode": "AIR", "code": "ICN", "name": "Seoul Incheon",           "city": "Seoul",        "country": "KR"},
+    {"mode": "AIR", "code": "BKK", "name": "Bangkok Suvarnabhumi",    "city": "Bangkok",      "country": "TH"},
+    {"mode": "AIR", "code": "KUL", "name": "Kuala Lumpur",            "city": "Kuala Lumpur", "country": "MY"},
+    {"mode": "AIR", "code": "DXB", "name": "Dubai International",     "city": "Dubai",        "country": "AE"},
+    {"mode": "AIR", "code": "DOH", "name": "Doha Hamad",              "city": "Doha",         "country": "QA"},
+    {"mode": "AIR", "code": "JED", "name": "Jeddah King Abdulaziz",   "city": "Jeddah",       "country": "SA"},
+    {"mode": "AIR", "code": "FRA", "name": "Frankfurt am Main",       "city": "Frankfurt",    "country": "DE"},
+    {"mode": "AIR", "code": "AMS", "name": "Amsterdam Schiphol",      "city": "Amsterdam",    "country": "NL"},
+    {"mode": "AIR", "code": "LHR", "name": "London Heathrow",         "city": "London",       "country": "UK"},
+    {"mode": "AIR", "code": "CDG", "name": "Paris Charles de Gaulle", "city": "Paris",        "country": "FR"},
+    {"mode": "AIR", "code": "MAD", "name": "Madrid Barajas",          "city": "Madrid",       "country": "ES"},
+    {"mode": "AIR", "code": "JFK", "name": "New York JFK",            "city": "New York",     "country": "US"},
+    {"mode": "AIR", "code": "LAX", "name": "Los Angeles Intl",        "city": "Los Angeles",  "country": "US"},
+    {"mode": "AIR", "code": "MIA", "name": "Miami Intl",              "city": "Miami",        "country": "US"},
+    {"mode": "AIR", "code": "ORD", "name": "Chicago O'Hare",          "city": "Chicago",      "country": "US"},
+    {"mode": "AIR", "code": "YYZ", "name": "Toronto Pearson",         "city": "Toronto",      "country": "CA"},
+    {"mode": "AIR", "code": "GRU", "name": "São Paulo Guarulhos",     "city": "São Paulo",    "country": "BR"},
+    {"mode": "AIR", "code": "JNB", "name": "Johannesburg O.R. Tambo", "city": "Johannesburg", "country": "ZA"},
+    {"mode": "AIR", "code": "SYD", "name": "Sydney Kingsford Smith",  "city": "Sydney",       "country": "AU"},
+    {"mode": "AIR", "code": "MEL", "name": "Melbourne Tullamarine",   "city": "Melbourne",    "country": "AU"},
+    {"mode": "AIR", "code": "BNE", "name": "Brisbane",                "city": "Brisbane",     "country": "AU"},
+    {"mode": "AIR", "code": "AKL", "name": "Auckland",                "city": "Auckland",     "country": "NZ"},
+    {"mode": "AIR", "code": "POM", "name": "Port Moresby Jacksons",   "city": "Port Moresby", "country": "PG"},
+
+    # ----- OCEAN / UNLOCODE -----
+    {"mode": "OCEAN", "code": "SGSIN", "name": "Singapore",            "city": "Singapore",    "country": "SG"},
+    {"mode": "OCEAN", "code": "HKHKG", "name": "Hong Kong",            "city": "Hong Kong",    "country": "HK"},
+    {"mode": "OCEAN", "code": "CNSHA", "name": "Shanghai",             "city": "Shanghai",     "country": "CN"},
+    {"mode": "OCEAN", "code": "CNNGB", "name": "Ningbo",               "city": "Ningbo",       "country": "CN"},
+    {"mode": "OCEAN", "code": "CNYTN", "name": "Yantian",              "city": "Shenzhen",     "country": "CN"},
+    {"mode": "OCEAN", "code": "KRPUS", "name": "Busan",                "city": "Busan",        "country": "KR"},
+    {"mode": "OCEAN", "code": "JPTYO", "name": "Tokyo Port",           "city": "Tokyo",        "country": "JP"},
+    {"mode": "OCEAN", "code": "MYPKG", "name": "Port Klang",           "city": "Port Klang",   "country": "MY"},
+    {"mode": "OCEAN", "code": "AEJEA", "name": "Jebel Ali",            "city": "Dubai",        "country": "AE"},
+    {"mode": "OCEAN", "code": "SAJED", "name": "Jeddah",               "city": "Jeddah",       "country": "SA"},
+    {"mode": "OCEAN", "code": "NLRTM", "name": "Rotterdam",            "city": "Rotterdam",    "country": "NL"},
+    {"mode": "OCEAN", "code": "DEHAM", "name": "Hamburg",              "city": "Hamburg",      "country": "DE"},
+    {"mode": "OCEAN", "code": "GBFXT", "name": "Felixstowe",           "city": "Felixstowe",   "country": "UK"},
+    {"mode": "OCEAN", "code": "USNYC", "name": "New York / NJ",        "city": "New York",     "country": "US"},
+    {"mode": "OCEAN", "code": "USLAX", "name": "Los Angeles",          "city": "Los Angeles",  "country": "US"},
+    {"mode": "OCEAN", "code": "USHOU", "name": "Houston",              "city": "Houston",      "country": "US"},
+    {"mode": "OCEAN", "code": "USMIA", "name": "Miami",                "city": "Miami",        "country": "US"},
+    {"mode": "OCEAN", "code": "BRSSZ", "name": "Santos",               "city": "Santos",       "country": "BR"},
+    {"mode": "OCEAN", "code": "ZADUR", "name": "Durban",               "city": "Durban",       "country": "ZA"},
+    {"mode": "OCEAN", "code": "AUSYD", "name": "Sydney",               "city": "Sydney",       "country": "AU"},
+    {"mode": "OCEAN", "code": "AUBNE", "name": "Brisbane",             "city": "Brisbane",     "country": "AU"},
+    {"mode": "OCEAN", "code": "AUMEL", "name": "Melbourne",            "city": "Melbourne",    "country": "AU"},
+    {"mode": "OCEAN", "code": "NZAKL", "name": "Auckland",             "city": "Auckland",     "country": "NZ"},
+    {"mode": "OCEAN", "code": "PGPOM", "name": "Port Moresby",         "city": "Port Moresby", "country": "PG"},
+
+    # ----- ROAD / city codes -----
+    {"mode": "ROAD", "code": "RTM-AMS",   "name": "Rotterdam — Amsterdam",     "city": "Rotterdam", "country": "NL"},
+    {"mode": "ROAD", "code": "FRA-MUC",   "name": "Frankfurt — Munich",         "city": "Frankfurt", "country": "DE"},
+    {"mode": "ROAD", "code": "DXB-RUH",   "name": "Dubai — Riyadh",             "city": "Dubai",     "country": "AE"},
+    {"mode": "ROAD", "code": "SIN-KUL",   "name": "Singapore — Kuala Lumpur",   "city": "Singapore", "country": "SG"},
+    {"mode": "ROAD", "code": "SYD-MEL",   "name": "Sydney — Melbourne",         "city": "Sydney",    "country": "AU"},
+    {"mode": "ROAD", "code": "POM-LAE",   "name": "Port Moresby — Lae",         "city": "Port Moresby", "country": "PG"},
+]
+
+
 # ============ MODELS ============
 class AddressBase(BaseModel):
     label: str = Field(..., max_length=60)

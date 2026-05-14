@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import BrandWordmark from "@/components/BrandWordmark";
+import BrandClaim from "@/components/BrandClaim";
 import useTitle from "@/hooks/useTitle";
 
 /* -------------------------------------------------------------------------- */
@@ -21,7 +22,7 @@ const TopBar = () => (
     <div className="bg-dhl-ink text-white">
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 h-9 flex items-center justify-between text-[11px]">
         <span className="font-mono uppercase tracking-[0.18em] text-dhl-yellow">
-          Pitch demo · Papua New Guinea
+          Pitch demo · myDHLi
         </span>
         <span className="text-white/70 hidden sm:inline">
           Need a quote? Call <b className="text-white">+675 7000 0000</b>
@@ -99,15 +100,14 @@ const Hero = () => {
             <span className="w-8 h-px bg-dhl-yellow" />
             Freight forwarding · PNG
           </div>
-          <h1 className="font-display text-4xl sm:text-5xl lg:text-[64px] font-black leading-[0.95] tracking-tight mb-6">
-            Move freight smarter <br className="hidden sm:inline" />
-            across the <span className="text-dhl-yellow">Pacific</span>.
+          <h1 className="font-display text-4xl sm:text-5xl lg:text-[64px] font-bold leading-[0.95] tracking-tight mb-6">
+            Move freight smarter, <br className="hidden sm:inline" />
+            <span className="text-dhl-yellow">everywhere.</span>
           </h1>
           <p className="text-base lg:text-lg text-white/75 leading-relaxed max-w-[560px] mb-8">
-            Air, ocean and road freight forwarding tailored for Papua New Guinea
-            businesses. End-to-end visibility, customs-cleared shipments, and a
-            single portal — myDHLi — to quote, book and watch every leg of the
-            journey.
+            Air, ocean and road freight forwarding for shippers who carry liability.
+            End-to-end visibility, customs-cleared shipments, and a single portal —
+            myDHLi — to quote, book and watch every leg of the journey.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <Link
@@ -171,7 +171,7 @@ const MODES = [
   {
     key: "air",
     icon: Plane,
-    name: "Air Freight",
+    name: "Air freight",
     line: "Time-critical, HAWB tracked, dangerous goods capable",
     bullets: ["Priority + Economy", "Charter on request", "Cool chain available"],
     accent: "bg-dhl-yellow",
@@ -179,17 +179,17 @@ const MODES = [
   {
     key: "ocean",
     icon: Ship,
-    name: "Ocean Freight",
-    line: "FCL & LCL with weekly sailings to AU, NZ, SG, CN",
+    name: "Ocean freight",
+    line: "FCL & LCL with weekly sailings between major hubs",
     bullets: ["20'/40'/HC containers", "Reefer & special equipment", "Door + port options"],
     accent: "bg-dhl-red text-white",
   },
   {
     key: "road",
     icon: Truck,
-    name: "Road Freight",
-    line: "Domestic milk-runs + project cargo across PNG",
-    bullets: ["Lae · Mt Hagen · Madang", "Mining + oil & gas projects", "Cross-border to ID/AU links"],
+    name: "Road freight",
+    line: "Cross-border long-haul + project cargo",
+    bullets: ["Europe, GCC, ASEAN, ANZ", "Mining + oil & gas projects", "Multi-modal feeders"],
     accent: "bg-dhl-ink text-dhl-yellow",
   },
 ];
@@ -201,12 +201,12 @@ const FreightModes = ({ onSelect }) => (
         <div className="text-[11px] font-bold uppercase tracking-[0.28em] text-dhl-red mb-3">
           Freight modes
         </div>
-        <h2 className="font-display text-3xl lg:text-5xl font-black tracking-tight text-dhl-text mb-3">
+        <h2 className="font-display text-3xl lg:text-5xl font-bold tracking-tight text-dhl-text mb-3">
           One portal. Every leg. Pick the mode.
         </h2>
         <p className="text-dhl-muted">
           Book and watch your freight through myDHLi — whether it flies, sails
-          or rolls into Port Moresby.
+          or rolls.
         </p>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -270,7 +270,7 @@ const Why = () => (
           <p className="text-dhl-muted mt-4 leading-relaxed">
             myDHLi is the single online workspace for freight forwarding
             customers — quote, book, track and pay without picking up the
-            phone. PNG businesses use it daily for cross-border supply chains.
+            phone. Global shippers use it daily for cross-border supply chains.
           </p>
         </div>
         <div className="grid sm:grid-cols-2 gap-5">
@@ -297,10 +297,10 @@ const Why = () => (
 /* Stats / PNG network strip                                                   */
 /* -------------------------------------------------------------------------- */
 const STATS = [
-  { v: "2,400+", l: "Tonnes freight moved monthly" },
-  { v: "180+", l: "Active container bookings" },
-  { v: "40+", l: "Partner carriers and airlines" },
-  { v: "3", l: "PNG offices — Port Moresby · Lae · Madang" },
+  { v: "120k+", l: "Tonnes freight moved monthly" },
+  { v: "8,200", l: "Active container bookings" },
+  { v: "220+",  l: "Origin / destination countries" },
+  { v: "60+",   l: "Trade lanes, weekly sailings" },
 ];
 
 const Stats = () => (
@@ -376,13 +376,11 @@ const Footer = () => (
       <div className="col-span-2">
         <BrandWordmark to={null} theme="dark" variant="stack" />
         <p className="text-[13px] text-white/60 mt-5 leading-relaxed max-w-sm">
-          DHL Global Forwarding — Papua New Guinea. Freight forwarding,
-          customs and logistics across air, ocean and road. Demo build.
+          DHL Global Forwarding — air, ocean and road freight, customs and
+          logistics for global trade. Demo build.
         </p>
-        <div className="text-[11px] text-white/40 mt-5 leading-relaxed">
-          Port Moresby Office<br />
-          12 Coronation Drive, Konedobu, NCD<br />
-          T <b className="text-white/70">+675 7000 0000</b> · <span className="text-white/70">hello@dhlpng.com</span>
+        <div className="mt-5">
+          <BrandClaim variant="normal" className="opacity-90" />
         </div>
       </div>
       {[
@@ -409,8 +407,8 @@ const Footer = () => (
     <div className="border-t border-white/10">
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[11px] text-white/45">
         <div>
-          {/* TODO(brand): swap real legal entity once DHL Global Forwarding PNG provides company registration number. */}
-          © 2026 DHL Global Forwarding PNG Ltd. — All rights reserved.
+          {/* TODO(brand): swap with real legal entity once DHL provides registration data. */}
+          © 2026 DHL Global Forwarding — All rights reserved.
         </div>
         <div className="font-mono uppercase tracking-wider">
           Demo build · Not affiliated with Deutsche Post DHL Group · myDHLi placeholder

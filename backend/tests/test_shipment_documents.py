@@ -378,7 +378,184 @@ def test_existing_openapi_still_works():
         assert path in paths, f"missing path {path} in openapi"
     # Old endpoints still present
     assert "/api/shipments/{awb}/label.pdf" in paths
-    assert "/api/track/{awb}" in paths
+    # Phase 8.2: /api/track was renamed to use a generic `ref` path param so
+    # it can accept AWB / HAWB / HBL / booking-ref / container-no. The route
+    # still exists; the path key is now /api/track/{ref}.
+    assert any(p in paths for p in ("/api/track/{ref}", "/api/track/{awb}")), \
+        f"track path missing — keys: {[k for k in paths if 'track' in k]}"
+
+
+# ============ PHASE 8.2 — Multi-mode booking + multi-format tracking ============
+def _login_token(email="demo@dhlpng.com", password="Demo@2026"):
+    r = requests.post(f"{API}/auth/login", json={"email": email, "password": password}, timeout=10)
+    assert r.status_code == 200, r.text
+    return r.json()["access_token"]
+
+
+def _auth(token):
+    return {"Authorization": f"Bearer {token}"}
+
+
+def test_phase82_seed_distribution():
+    """Demo user seed should now have ~10 AIR / 10 OCEAN / 5 ROAD bookings."""
+    tok = _login_token()
+    counts = {}
+    for mode in ("AIR", "OCEAN", "ROAD"):
+        r = requests.get(f"{API}/shipments?mode={mode}&pageSize=100", headers=_auth(tok), timeout=10)
+        assert r.status_code == 200
+        counts[mode] = r.json()["total"]
+    assert counts["AIR"] >= 8, f"AIR too low: {counts}"
+    assert counts["OCEAN"] >= 8, f"OCEAN too low: {counts}"
+    assert counts["ROAD"] >= 4, f"ROAD too low: {counts}"
+    assert sum(counts.values()) >= 23, f"Total too low: {counts}"
+
+
+def test_phase82_legacy_awb_still_tracks():
+    """Backward compat: DHL1234567890 must still resolve via /api/track."""
+    r = requests.get(f"{API}/track/DHL1234567890", timeout=10)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["awb"] == "DHL1234567890"
+    assert "mode" in body
+    assert body["mode"] in ("AIR", "OCEAN", "ROAD")
+
+
+def test_phase82_track_by_booking_reference():
+    tok = _login_token()
+    r = requests.get(f"{API}/bookings?pageSize=5", headers=_auth(tok), timeout=10)
+    assert r.status_code == 200
+    items = r.json()["items"]
+    ref = next((it["bookingReference"] for it in items if it.get("bookingReference")), None)
+    assert ref and ref.startswith("MYDH-"), f"no booking ref in seed: {items[:1]}"
+    pub = requests.get(f"{API}/track/{ref}", timeout=10)
+    assert pub.status_code == 200, pub.text
+    assert pub.json().get("bookingReference") == ref
+
+
+def test_phase82_track_unknown_ref_404():
+    r = requests.get(f"{API}/track/NOSUCH-XXX-000000", timeout=10)
+    assert r.status_code == 404
+
+
+def test_phase82_bookings_alias():
+    tok = _login_token()
+    a = requests.get(f"{API}/shipments?pageSize=3", headers=_auth(tok), timeout=10).json()
+    b = requests.get(f"{API}/bookings?pageSize=3", headers=_auth(tok), timeout=10).json()
+    assert a["total"] == b["total"]
+    assert {x["awb"] for x in a["items"]} == {x["awb"] for x in b["items"]}
+
+
+def _booking_payload(mode, **overrides):
+    base = {
+        "mode": mode,
+        "sender": {
+            "name": "Pitch Sender", "company": "Pitch Co",
+            "address": "1 Test Way", "city": "Sydney", "country": "AU",
+            "phone": "+61 200 000 000", "email": "pitch@example.com", "postalCode": "2000",
+        },
+        "receiver": {
+            "name": "Pitch Receiver", "company": "Pitch Receiver Co",
+            "address": "2 Demo Lane", "city": "Singapore", "country": "SG",
+            "phone": "+65 6000 0000", "email": "recv@example.com", "postalCode": "018989",
+        },
+        "package": {
+            "pieces": 2, "weightKg": 18.5,
+            "dimensions": {"l": 50, "w": 35, "h": 25},
+            "description": "Generic cargo", "declaredValueUSD": 1500,
+        },
+    }
+    base.update(overrides)
+    return base
+
+
+def test_phase82_create_booking_air():
+    tok = _login_token()
+    payload = _booking_payload("AIR", incoterms="CIF", commodity="Electronics",
+                               hsCode="847130", originPort="SYD", destinationPort="SIN")
+    r = requests.post(f"{API}/bookings", headers=_auth(tok), json=payload, timeout=15)
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["mode"] == "AIR"
+    assert body["bookingReference"].startswith("MYDH-")
+    assert body["incoterms"] == "CIF"
+    assert body["airSpecifics"] is not None
+    assert body["oceanSpecifics"] is None
+    pub = requests.get(f"{API}/track/{body['bookingReference']}", timeout=10)
+    assert pub.status_code == 200
+
+
+def test_phase82_create_booking_ocean():
+    tok = _login_token()
+    payload = _booking_payload(
+        "OCEAN", incoterms="FOB",
+        oceanSpecifics={"containerType": "40HC", "cbm": 67, "bolType": "HBL"},
+        originPort="HKHKG", destinationPort="NLRTM",
+    )
+    payload["sender"]["city"] = "Hong Kong"; payload["sender"]["country"] = "HK"
+    payload["receiver"]["city"] = "Rotterdam"; payload["receiver"]["country"] = "NL"
+    payload["package"]["weightKg"] = 2800
+    r = requests.post(f"{API}/bookings", headers=_auth(tok), json=payload, timeout=15)
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["mode"] == "OCEAN"
+    assert body["oceanSpecifics"]["containerType"] == "40HC"
+    assert body["airSpecifics"] is None
+
+
+def test_phase82_create_booking_road():
+    tok = _login_token()
+    payload = _booking_payload(
+        "ROAD", incoterms="DAP",
+        roadSpecifics={"truckType": "FLATBED", "pallets": 2, "crossBorder": False},
+    )
+    payload["sender"]["city"] = "Port Moresby"; payload["sender"]["country"] = "PG"
+    payload["receiver"]["city"] = "Lae"; payload["receiver"]["country"] = "PG"
+    payload["package"]["weightKg"] = 450
+    r = requests.post(f"{API}/bookings", headers=_auth(tok), json=payload, timeout=15)
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["mode"] == "ROAD"
+    assert body["roadSpecifics"]["truckType"] == "FLATBED"
+
+
+def test_phase82_create_booking_rejects_cross_mode_specs():
+    tok = _login_token()
+    payload = _booking_payload("AIR", oceanSpecifics={"containerType": "20GP"})
+    r = requests.post(f"{API}/bookings", headers=_auth(tok), json=payload, timeout=10)
+    assert r.status_code == 422, r.text
+
+
+def test_phase82_multi_mode_quote():
+    tok = _login_token()
+    payload = {
+        "originCountry": "AU", "originCity": "Sydney",
+        "destinationCountry": "SG", "destinationCity": "Singapore",
+        "weightKg": 250, "cbm": 1.5,
+    }
+    r = requests.post(f"{API}/quotes/multi-mode", headers=_auth(tok), json=payload, timeout=10)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert len(body["quotes"]) == 3
+    modes = {q["mode"] for q in body["quotes"]}
+    assert modes == {"AIR", "OCEAN", "ROAD"}
+    for q in body["quotes"]:
+        assert q["pricePGK"] > 0
+        assert q["transitDaysMin"] > 0
+        assert q["co2EstimateKg"] >= 0
+    assert body["fastest"] in modes
+    assert body["cheapest"] in modes
+    assert body["greenest"] in modes
+
+
+def test_phase82_ports_endpoint():
+    r = requests.get(f"{API}/locations/ports?mode=AIR&q=fra", timeout=10)
+    assert r.status_code == 200
+    rows = r.json()
+    assert any(p["code"] == "FRA" for p in rows), [p["code"] for p in rows]
+    r2 = requests.get(f"{API}/locations/ports?mode=OCEAN", timeout=10)
+    assert r2.status_code == 200
+    codes = [p["code"] for p in r2.json()]
+    assert "SGSIN" in codes and "NLRTM" in codes
 
 
 if __name__ == "__main__":

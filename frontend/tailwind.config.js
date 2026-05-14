@@ -8,9 +8,11 @@ module.exports = {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', 'system-ui', 'sans-serif'],
-                display: ['"Cabinet Grotesk"', 'Inter', 'sans-serif'],
-                mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+                // Brand-guide aligned. DHL "Delivery" is a proprietary
+                // typeface — fallback to Inter + system Helvetica chain.
+                sans:    ['Inter', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
+                display: ['Inter', '"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'],
+                mono:    ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
             },
             colors: {
                 dhl: {
@@ -23,6 +25,9 @@ module.exports = {
                     muted: '#666666',
                     panel: '#F5F5F5',
                     border: '#E5E7EB',
+                    // Sustainability-only — used for carbon emissions, eco modes
+                    green: '#006B3F',
+                    'green-light': '#E1F1E8',
                 },
                 background: 'hsl(var(--background))',
                 foreground: 'hsl(var(--foreground))',

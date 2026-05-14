@@ -48,10 +48,10 @@ export default function Landing() {
 
         {/* Hero */}
         <View style={styles.hero} testID="landing-hero">
-          <Text style={styles.heroLabel}>myDHLi · PAPUA NEW GUINEA</Text>
-          <Text style={styles.heroTitle}>Move freight{'\n'}across the Pacific.</Text>
+          <Text style={styles.heroLabel}>myDHLi · GLOBAL FORWARDING</Text>
+          <Text style={styles.heroTitle}>Move freight{'\n'}worldwide.</Text>
           <Text style={styles.heroSub}>
-            Air, ocean and road freight forwarding tailored for PNG businesses.
+            Air, ocean and road freight forwarding tailored for global businesses.
             Book, track and pay from one portal.
           </Text>
           <View style={styles.heroBtns}>

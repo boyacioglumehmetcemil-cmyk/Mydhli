@@ -52,7 +52,7 @@ const Track = () => {
     e.preventDefault();
     const trimmed = input.trim();
     if (!trimmed) {
-      toast.error("Please enter an AWB number");
+      toast.error("Please enter a tracking reference");
       return;
     }
     navigate(`/track/${encodeURIComponent(trimmed.toUpperCase())}`);
@@ -70,33 +70,33 @@ const Track = () => {
           </div>
           <h1
             data-testid="track-headline"
-            className="font-display text-4xl lg:text-5xl font-black text-dhl-text leading-tight tracking-tighter mb-3"
+            className="font-display text-4xl lg:text-5xl font-bold text-dhl-text leading-tight tracking-tight mb-3"
           >
-            Track Your Shipment
+            Track your shipment
           </h1>
           <p className="text-base text-dhl-muted max-w-2xl mb-7">
-            Enter your AWB (Air Waybill) number to see real-time status, milestones and ETA.
-            No account needed.
+            Enter any freight reference — air waybill, bill of lading, container number or
+            booking reference — to see real-time status, milestones and ETA. No account needed.
           </p>
 
           <form
             onSubmit={handleSubmit}
             data-testid="track-form"
-            className="bg-white border-2 border-dhl-ink p-1 flex flex-col sm:flex-row gap-1 max-w-2xl shadow-[6px_6px_0px_0px_#FFCC00]"
+            className="bg-white border-2 border-dhl-ink p-1 flex flex-col sm:flex-row gap-1 max-w-2xl shadow-[6px_6px_0px_0px_#FFCC00] rounded-lg"
           >
             <Input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="e.g. DHL1234567890"
+              placeholder="AWB / HAWB / MAWB / HBL / MBL / Booking ref / Container no"
               data-testid="track-input"
-              className="flex-1 h-12 border-0 bg-transparent focus-visible:ring-0 text-base font-mono uppercase placeholder:text-dhl-muted placeholder:normal-case"
+              className="flex-1 h-12 border-0 bg-transparent focus-visible:ring-0 text-base font-mono uppercase placeholder:text-dhl-muted placeholder:normal-case placeholder:text-sm rounded-lg"
             />
             <Button
               type="submit"
               disabled={loading}
               data-testid="track-submit"
-              className="h-12 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark font-bold px-6 rounded-none uppercase tracking-wider text-sm"
+              className="h-12 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark font-bold px-6 rounded-lg text-sm"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -109,7 +109,7 @@ const Track = () => {
           </form>
 
           <div className="mt-4 text-xs text-dhl-muted">
-            Try the demo AWB:{" "}
+            Try the demo references:{" "}
             <button
               type="button"
               data-testid="demo-awb-button"
@@ -120,6 +120,18 @@ const Track = () => {
               className="font-mono font-bold text-dhl-red hover:underline"
             >
               DHL1234567890
+            </button>
+            <span className="mx-2 text-dhl-border">·</span>
+            <button
+              type="button"
+              data-testid="demo-booking-ref-button"
+              onClick={() => {
+                setInput("MYDH-2026-100005");
+                navigate("/track/MYDH-2026-100005");
+              }}
+              className="font-mono font-bold text-dhl-red hover:underline"
+            >
+              MYDH-2026-100005
             </button>
           </div>
         </div>
@@ -143,20 +155,21 @@ const Track = () => {
               <div className="w-20 h-20 mx-auto mb-6 border-2 border-dashed border-dhl-border flex items-center justify-center">
                 <PackageX className="w-10 h-10 text-dhl-muted" strokeWidth={1.5} />
               </div>
-              <h2 className="font-display text-2xl font-black text-dhl-text mb-3">
+              <h2 className="font-display text-2xl font-bold text-dhl-text mb-3">
                 No shipment found
               </h2>
               <p className="text-sm text-dhl-muted max-w-md mx-auto mb-6">
-                We couldn't find a shipment with AWB{" "}
+                We couldn't find a shipment for reference{" "}
                 <span className="font-mono font-bold text-dhl-text">{error.awb}</span>.
-                Please double-check the number and try again.
+                Double-check the number and try again — we accept AWB, HAWB, MAWB, HBL, MBL,
+                booking reference or container number.
               </p>
               <Button
                 data-testid="track-retry"
                 onClick={() => navigate("/track")}
-                className="h-11 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark font-bold rounded-none uppercase tracking-wider text-xs px-6 border-2 border-dhl-ink"
+                className="h-11 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark font-bold rounded-lg text-sm px-6 border-2 border-dhl-ink"
               >
-                Try Another AWB
+                Try another reference
               </Button>
             </div>
           )}

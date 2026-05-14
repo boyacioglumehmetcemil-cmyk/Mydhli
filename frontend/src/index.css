@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800,900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -26,7 +25,7 @@
         --border: 220 13% 91%;
         --input: 220 13% 91%;
         --ring: 48 100% 50%;
-        --radius: 0.25rem;
+        --radius: 0.5rem;     /* Brand guide: rounded corners — 8px */
     }
 }
 
@@ -36,7 +35,8 @@
     }
 
     html {
-        font-family: 'Inter', system-ui, sans-serif;
+        /* DHL Brand Guide — Inter as fallback for proprietary "Delivery" font. */
+        font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
 
     body {
@@ -45,13 +45,19 @@
         color: #333333;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        font-family: 'Inter', system-ui, sans-serif;
+        font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        line-height: 1.5;     /* Brand guide min 1.4 */
+        font-size: 15px;
     }
 
     h1, h2, h3, h4, .font-display {
-        font-family: 'Cabinet Grotesk', 'Inter', sans-serif;
-        letter-spacing: -0.02em;
+        font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        letter-spacing: -0.01em;
+        font-weight: 700;
+        line-height: 1.2;
     }
+
+    h5, h6 { font-weight: 500; }
 
     /* Custom selection color */
     ::selection {

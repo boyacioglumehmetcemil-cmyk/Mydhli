@@ -52,7 +52,7 @@ const Footer = () => {
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Logo size="sm" to={null} />
-            <span className="text-xs text-white/50">Papua New Guinea</span>
+            <span className="text-xs text-white/50">DHL Global Forwarding</span>
           </div>
           <div className="text-xs text-white/40 font-mono">
             DEMO BUILD · NOT AFFILIATED WITH DEUTSCHE POST DHL GROUP

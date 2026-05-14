@@ -87,7 +87,7 @@ export default function Register() {
           <View style={styles.form}>
             <Text style={styles.label}>OPEN ACCOUNT</Text>
             <Text style={styles.title}>Start shipping in{'\n'}two minutes.</Text>
-            <Text style={styles.subtitle}>Create your MyDHL Global Forwarding account for Papua New Guinea.</Text>
+            <Text style={styles.subtitle}>Create your myDHLi account.</Text>
 
             <View style={styles.row}>
               <View style={styles.halfField}>

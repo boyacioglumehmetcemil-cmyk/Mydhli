@@ -189,7 +189,7 @@ const Login = () => {
               <span className="text-dhl-yellow">Deliver.</span>
             </div>
             <div className="mt-8 max-w-sm text-sm text-white/75 leading-relaxed">
-              Freight forwarding across the Pacific. Real-time visibility, customs-cleared shipments,
+              Freight forwarding worldwide. Real-time visibility, customs-cleared shipments,
               and dependable next-day delivery options.
             </div>
           </div>
