@@ -625,7 +625,7 @@ const Hero = () => {
         className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-transparent"
         aria-hidden="true"
       />
-      <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 py-20 lg:py-28 min-h-[60vh] flex flex-col justify-center">
+      <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 py-12 lg:py-20 min-h-[50vh] flex flex-col justify-center">
         <div className="w-full max-w-xl mx-auto">
           <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-3 text-[22px] sm:text-[26px] lg:text-[32px] text-center [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
             Track your shipment
