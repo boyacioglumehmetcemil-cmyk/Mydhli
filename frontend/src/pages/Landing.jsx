@@ -395,31 +395,33 @@ const Hero = () => {
         className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-transparent"
         aria-hidden="true"
       />
-      <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 py-20 lg:py-28 min-h-[60vh] flex flex-col justify-center items-center text-center">
-        <h1 className="font-display font-bold text-white leading-tight tracking-tight mb-2 text-[32px] sm:text-[42px] lg:text-[56px] [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
-          Track your shipment
-        </h1>
-        <p className="text-white/90 max-w-2xl mb-8 text-[15px] lg:text-base [text-shadow:0_1px_6px_rgba(0,0,0,0.4)]">
-          Air, ocean and road — one tracking surface for every freight reference.
-        </p>
-        <form onSubmit={onSubmit} data-testid="hero-track-form"
-          className="bg-white border border-dhl-border rounded-md shadow-lg p-1.5 flex flex-col sm:flex-row gap-1.5 w-full max-w-2xl">
-          <input
-            value={ref}
-            onChange={(e) => setRef(e.target.value)}
-            type="text"
-            data-testid="hero-track-input"
-            placeholder="Enter your tracking number"
-            className="flex-1 h-12 px-4 text-base bg-transparent border-0 outline-none font-mono uppercase placeholder:text-dhl-muted placeholder:normal-case placeholder:font-sans placeholder:text-[14px]"
-            aria-label="Tracking number"
-          />
-          <button type="submit" data-testid="hero-track-submit"
-            className="h-12 px-8 bg-dhl-red text-white hover:bg-dhl-red-dark font-bold text-sm rounded-md transition-colors">
-            Track
-          </button>
-        </form>
-        <div className="mt-3 text-[12px] text-white/80 [text-shadow:0_1px_4px_rgba(0,0,0,0.4)]">
-          AWB, HBL, container number or booking reference
+      <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 py-20 lg:py-28 min-h-[60vh] flex flex-col justify-center">
+        <div className="w-full max-w-2xl">
+          <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-2 text-[32px] sm:text-[42px] lg:text-[56px] [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
+            Track your shipment
+          </h1>
+          <p className="text-white/90 mb-8 text-[15px] lg:text-base [text-shadow:0_1px_6px_rgba(0,0,0,0.4)]">
+            Air, ocean and road — one tracking surface for every freight reference.
+          </p>
+          <form onSubmit={onSubmit} data-testid="hero-track-form"
+            className="bg-white border border-dhl-border rounded-md shadow-lg p-1.5 flex flex-col sm:flex-row gap-1.5 w-full">
+            <input
+              value={ref}
+              onChange={(e) => setRef(e.target.value)}
+              type="text"
+              data-testid="hero-track-input"
+              placeholder="Enter your tracking number"
+              className="flex-1 h-12 px-4 text-base bg-transparent border-0 outline-none font-mono uppercase placeholder:text-dhl-muted placeholder:normal-case placeholder:font-sans placeholder:text-[14px]"
+              aria-label="Tracking number"
+            />
+            <button type="submit" data-testid="hero-track-submit"
+              className="h-12 px-8 bg-dhl-red text-white hover:bg-dhl-red-dark font-bold text-sm rounded-md transition-colors">
+              Track
+            </button>
+          </form>
+          <div className="mt-3 text-[12px] text-white/80 [text-shadow:0_1px_4px_rgba(0,0,0,0.4)]">
+            AWB, HBL, container number or booking reference
+          </div>
         </div>
       </div>
     </section>
