@@ -3,8 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Search, ExternalLink, Globe, ChevronDown, ChevronRight, Menu, X,
   Plane, Ship, Truck, Calendar, Calculator, Building2, ArrowRight,
-  Eye, ClipboardList, TrendingUp, ShieldCheck, Linkedin, Youtube,
-  Twitter, Container, Boxes, Facebook, Instagram,
+  Linkedin, Youtube, Twitter, Container, Boxes, Facebook, Instagram,
 } from "lucide-react";
 import { toast } from "sonner";
 import BrandWordmark from "@/components/BrandWordmark";
@@ -786,16 +785,6 @@ const Sustainability = () => (
 );
 
 /* -------------------------------------------------------------------------- */
-/* Why choose us — 4 icon grid                                                 */
-/* -------------------------------------------------------------------------- */
-const WHY = [
-  { Icon: Eye,          title: "End-to-end visibility", desc: "Track every leg from booking to proof of delivery."     },
-  { Icon: ClipboardList,title: "Documents on demand",   desc: "Access HBL, HAWB and customs paperwork instantly."     },
-  { Icon: TrendingUp,   title: "Capacity at scale",     desc: "Access global air, ocean and road networks."           },
-  { Icon: ShieldCheck,  title: "Customs expertise",     desc: "Compliance built into every shipment we move."         },
-];
-
-/* -------------------------------------------------------------------------- */
 /* SMBBusinessSection — yellow band aimed at small/medium-sized businesses.   */
 /* Photo on the left with a soft yellow gradient fade on its right edge so it */
 /* dissolves into the band background. Body copy is OUR original — no         */
@@ -841,31 +830,6 @@ const SMBBusinessSection = () => (
             Explore business solutions <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-      </div>
-    </div>
-  </section>
-);
-
-const WhyChooseUs = () => (
-  <section data-testid="landing-why" className="bg-dhl-panel">
-    <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16 lg:py-24">
-      <div className="text-center mb-12 lg:mb-16">
-        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-3">Why myDHLi</div>
-        <h2 className="font-display font-bold text-dhl-text leading-tight tracking-tight text-[28px] lg:text-[40px]">
-          Built for global freight movers.
-        </h2>
-      </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-7">
-        {WHY.map((w) => (
-          <div key={w.title} data-testid={`why-${w.title.toLowerCase().split(" ")[0]}`}
-            className="bg-white p-6 lg:p-7 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-11 h-11 bg-dhl-red/10 rounded-md flex items-center justify-center mb-5">
-              <w.Icon className="w-5 h-5 text-dhl-red" strokeWidth={2} />
-            </div>
-            <h3 className="font-display font-bold text-dhl-text text-base lg:text-lg mb-2">{w.title}</h3>
-            <p className="text-[13px] text-dhl-muted leading-relaxed">{w.desc}</p>
-          </div>
-        ))}
       </div>
     </div>
   </section>
@@ -1149,7 +1113,6 @@ const Landing = () => {
         <RoadFreightOverlappingSection />
         <Sustainability />
         <SMBBusinessSection />
-        <WhyChooseUs />
       </main>
       <Footer />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />

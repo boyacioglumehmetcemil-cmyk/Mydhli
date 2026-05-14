@@ -11,6 +11,14 @@
  */
 import BrandWordmark from "@/components/BrandWordmark";
 
-const Logo = (props) => <BrandWordmark {...props} />;
+/**
+ * Default to `placement="header"` so any legacy call site (passing `size`,
+ * `variant`, `theme`, etc.) automatically renders the official DHL PNG
+ * instead of the legacy typographic placeholder. Callers can still override
+ * by passing an explicit `placement` prop (e.g. `placement="footer"`).
+ */
+const Logo = ({ placement = "header", ...props }) => (
+  <BrandWordmark placement={placement} {...props} />
+);
 
 export default Logo;
