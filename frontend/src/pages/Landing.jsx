@@ -396,11 +396,11 @@ const Hero = () => {
         aria-hidden="true"
       />
       <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 py-20 lg:py-28 min-h-[60vh] flex flex-col justify-center">
-        <div className="w-full max-w-2xl">
-          <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-3 text-[26px] sm:text-[32px] lg:text-[40px] [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
+        <div className="w-full max-w-xl mx-auto">
+          <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-3 text-[22px] sm:text-[26px] lg:text-[32px] text-center [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
             Track your shipment
           </h1>
-          <p className="text-white/90 mb-8 text-[15px] lg:text-base [text-shadow:0_1px_6px_rgba(0,0,0,0.4)]">
+          <p className="text-white/90 mb-8 text-[13px] lg:text-[14px] text-center [text-shadow:0_1px_6px_rgba(0,0,0,0.4)]">
             Air, ocean and road — one tracking surface for every freight reference.
           </p>
           <form onSubmit={onSubmit} data-testid="hero-track-form"
@@ -419,7 +419,7 @@ const Hero = () => {
               Track
             </button>
           </form>
-          <div className="mt-3 text-[12px] text-white/80 [text-shadow:0_1px_4px_rgba(0,0,0,0.4)]">
+          <div className="mt-3 text-[12px] text-white/80 text-center [text-shadow:0_1px_4px_rgba(0,0,0,0.4)]">
             AWB, HBL, container number or booking reference
           </div>
         </div>
@@ -433,7 +433,7 @@ const Hero = () => {
 /* -------------------------------------------------------------------------- */
 const ActionCard = ({ to, icon: Icon, title, sub, testId, highlight = false }) => (
   <Link to={to} data-testid={testId}
-    className="group relative overflow-hidden bg-white rounded-xl shadow-lg p-6 lg:p-7 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 block">
+    className="group relative overflow-hidden bg-white rounded-xl shadow-lg p-4 lg:p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 block">
     {/* DHL-style folded corner — yellow triangle in the top-right corner, used to highlight the featured card. CSS border trick keeps it crisp at any zoom level. */}
     {highlight && (
       <div
@@ -444,12 +444,12 @@ const ActionCard = ({ to, icon: Icon, title, sub, testId, highlight = false }) =
         <div className="absolute top-0 right-0 w-0 h-0 border-t-[48px] border-t-dhl-yellow border-l-[48px] border-l-transparent"></div>
       </div>
     )}
-    <div className="w-12 h-12 bg-dhl-red/10 rounded-md flex items-center justify-center mb-5">
-      <Icon className="w-6 h-6 text-dhl-red" strokeWidth={2} />
+    <div className="w-10 h-10 bg-dhl-red/10 rounded-md flex items-center justify-center mb-3">
+      <Icon className="w-5 h-5 text-dhl-red" strokeWidth={2} />
     </div>
-    <h3 className="font-display font-bold text-dhl-text text-lg lg:text-xl mb-2">{title}</h3>
-    <p className="text-[13px] lg:text-sm text-dhl-muted leading-relaxed">{sub}</p>
-    <div className="flex items-center gap-1 mt-5 text-[12px] font-bold text-dhl-red group-hover:gap-2 transition-all">
+    <h3 className="font-display font-bold text-dhl-text text-base lg:text-lg mb-1">{title}</h3>
+    <p className="text-[12px] lg:text-[13px] text-dhl-muted leading-snug">{sub}</p>
+    <div className="flex items-center gap-1 mt-3 text-[12px] font-bold text-dhl-red group-hover:gap-2 transition-all">
       Get started <ArrowRight className="w-3.5 h-3.5" />
     </div>
   </Link>
