@@ -3,11 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Logo from "@/components/Logo";
+import CountryPicker from "@/components/CountryPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCountry } from "@/contexts/CountryContext";
 
 const calcStrength = (pwd) => {
   if (!pwd) return { score: 0, label: "", color: "" };
@@ -31,6 +33,11 @@ const calcStrength = (pwd) => {
 const Register = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
+  // Country selection lives in the global CountryContext so it stays in
+  // sync with the utility-bar picker. The form ships `country.code` (ISO
+  // alpha-2) on submit — matching the existing API contract that already
+  // accepted `"PG"`.
+  const { country } = useCountry();
 
   const [form, setForm] = useState({
     firstName: "",
@@ -80,7 +87,7 @@ const Register = () => {
         email: form.email.trim().toLowerCase(),
         password: form.password,
         companyName: form.companyName.trim(),
-        country: "PG",
+        country: country.code,
         phone: `+675 ${form.phone.trim()}`,
       };
       const user = await register(payload);
@@ -262,14 +269,9 @@ const Register = () => {
             </div>
           </div>
 
-          <div className="space-y-2 lg:col-span-2">
+          <div className="space-y-2 lg:col-span-2" data-testid="register-country-row">
             <Label className="text-xs font-bold uppercase tracking-wider text-dhl-text">Country</Label>
-            <div className="h-12 px-4 flex items-center bg-dhl-panel border-2 border-dhl-border text-dhl-text font-medium">
-              Papua New Guinea
-              <span className="ml-auto text-[10px] font-bold uppercase tracking-wider text-dhl-muted">
-                Locked · PG
-              </span>
-            </div>
+            <CountryPicker variant="field" className="rounded-none" />
           </div>
 
           <div className="lg:col-span-2 flex items-start gap-3 pt-2">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { ArrowRight, ArrowLeft, Check, Loader2, Package, Truck, FileText, CreditCard, MapPin, User, FileCheck, Plane, Ship, Leaf } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,10 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
+import { COUNTRIES } from "@/data/countries";
+
+// Set of valid ISO alpha-2 country codes for the prefill validator.
+const VALID_COUNTRY_CODES = new Set(COUNTRIES.map((c) => c.code));
 
 // Phase 8.2 — 5-step wizard: Mode → Origin → Destination → Cargo → Customs → Review
 const STEPS = [
@@ -44,6 +48,15 @@ const ShipNow = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { state: incomingState } = useLocation();
+  const [searchParams] = useSearchParams();
+
+  // Read `?from=XX&to=XX` from the URL once on mount so the dashboard's
+  // green "Next" handoff can pre-route the booking. Invalid codes are
+  // silently ignored so unrelated query params never break the wizard.
+  const fromParam = searchParams.get("from");
+  const toParam = searchParams.get("to");
+  const fromValid = !!fromParam && VALID_COUNTRY_CODES.has(fromParam.toUpperCase());
+  const toValid = !!toParam && VALID_COUNTRY_CODES.has(toParam.toUpperCase());
 
   const [step, setStep] = useState(0);
   const [mode, setMode] = useState(incomingState?.mode || "AIR");
@@ -60,8 +73,14 @@ const ShipNow = () => {
     company: user?.companyName || "",
     phone: user?.phone || "",
     email: user?.email || "",
+    // If the dashboard handoff supplied a valid `?from=` code, honour it
+    // here so the country select renders Germany (etc.) on first paint.
+    country: fromValid ? fromParam.toUpperCase() : blankParty.country,
   }));
-  const [receiver, setReceiver] = useState(blankParty);
+  const [receiver, setReceiver] = useState(() => ({
+    ...blankParty,
+    country: toValid ? toParam.toUpperCase() : blankParty.country,
+  }));
   const [pkg, setPkg] = useState({
     pieces: 1, weightKg: 25, l: 60, w: 40, h: 30,
     description: "General cargo", declaredValueUSD: 500, cbm: 0,
@@ -271,7 +290,7 @@ const ShipNow = () => {
         )}
 
         {curKey === "sender" && (
-          <>
+          <div data-testid={fromValid ? "ship-from-prefilled" : undefined}>
             <h2 className="font-display text-2xl font-bold text-dhl-text mb-1">Where's it shipping from?</h2>
             <p className="text-sm text-dhl-muted mb-5">Pick from your address book to autofill.</p>
             {addresses.length > 0 && (
@@ -285,7 +304,7 @@ const ShipNow = () => {
               </div>
             )}
             <PartyForm party={sender} setParty={setSender} cities={originCities} countries={countries} prefix="sender" />
-          </>
+          </div>
         )}
 
         {curKey === "receiver" && (

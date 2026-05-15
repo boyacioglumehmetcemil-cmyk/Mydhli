@@ -44,9 +44,11 @@ const CountryPicker = ({ variant = "chip", className = "" }) => {
     setOpen(false);
   };
 
-  // Two trigger styles. `chip` is the compact utility-bar pill; `row` is a
-  // full-width list-item used inside the mobile drawer where the trigger
-  // needs to look like the other menu rows.
+  // Trigger styles per variant:
+  //   `chip`  — compact utility-bar pill (Globe + code + chevron)
+  //   `row`   — full-width drawer/menu row (Globe + label + flag/code on right)
+  //   `field` — full-width form-input shape (flag + name + chevron) — use
+  //             this when the picker needs to sit alongside other Inputs.
   const trigger =
     variant === "row" ? (
       <button
@@ -62,6 +64,21 @@ const CountryPicker = ({ variant = "chip", className = "" }) => {
           <span>{flagFor(country.code)}</span>
           <span className="font-mono text-xs">{country.code}</span>
           <ChevronDown className="w-3.5 h-3.5" />
+        </span>
+      </button>
+    ) : variant === "field" ? (
+      <button
+        type="button"
+        data-testid="country-picker-trigger"
+        className={`w-full h-12 px-4 inline-flex items-center justify-between bg-dhl-panel border-2 border-dhl-border focus:border-dhl-yellow focus:outline-none text-dhl-text font-medium transition-colors hover:border-dhl-yellow/60 ${className}`}
+      >
+        <span className="flex items-center gap-2.5 min-w-0">
+          <span className="text-lg leading-none" aria-hidden="true">{flagFor(country.code)}</span>
+          <span className="truncate">{country.name}</span>
+        </span>
+        <span className="flex items-center gap-2 text-dhl-muted shrink-0 pl-3">
+          <span data-testid="country-picker-code" className="font-mono text-xs">{country.code}</span>
+          <ChevronDown className="w-4 h-4" />
         </span>
       </button>
     ) : (

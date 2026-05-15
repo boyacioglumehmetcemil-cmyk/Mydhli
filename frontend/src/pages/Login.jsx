@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { AlertTriangle, Check, Eye, EyeOff } from "lucide-react";
+import { AlertTriangle, Calculator, Check, Eye, EyeOff, FileText, Lock, MapPin, Package } from "lucide-react";
 import Logo from "@/components/Logo";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,6 +34,32 @@ const resolveNext = (raw) => {
 // validation happens server-side.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/**
+ * Map a sanitised post-login `next` path to a friendly contextual banner.
+ *
+ * Only `/dashboard/*` paths are surfaced to the visitor — anything else
+ * (or a missing/equal-to-`/dashboard` value) returns null so we never leak
+ * unexpected redirect targets via the UI.
+ */
+const buildNextBanner = (safeNext) => {
+  if (!safeNext) return null;
+  if (safeNext === "/dashboard") return null;
+  if (!safeNext.startsWith("/dashboard/")) return null;
+  if (safeNext.startsWith("/dashboard/quote")) {
+    return { Icon: Calculator, message: "Sign in to continue to your freight quote." };
+  }
+  if (safeNext.startsWith("/dashboard/ship")) {
+    return { Icon: Package, message: "Sign in to continue your booking." };
+  }
+  if (safeNext.startsWith("/dashboard/track")) {
+    return { Icon: MapPin, message: "Sign in to view detailed tracking." };
+  }
+  if (safeNext.startsWith("/dashboard/invoices")) {
+    return { Icon: FileText, message: "Sign in to view your invoices." };
+  }
+  return { Icon: Lock, message: "Sign in to continue." };
+};
+
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -62,6 +88,10 @@ const Login = () => {
   const stateFrom = location.state?.from?.pathname;
   const stateFromSafe = stateFrom && SAFE_NEXT.test(stateFrom) ? stateFrom : null;
   const redirectTo = safeNext || stateFromSafe || "/dashboard";
+
+  // Contextual banner for the `?next=` flow — surfaces what the user was
+  // about to do BEFORE they got bounced here.
+  const nextBanner = buildNextBanner(safeNext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -97,6 +127,20 @@ const Login = () => {
           >
             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <span className="text-base font-semibold text-amber-900">Session expired</span>
+          </div>
+        )}
+
+        {/* Contextual ?next= banner — sits above H1, below expired alert.
+            Renders ONLY for /dashboard/* targets so we don't leak unknown
+            redirect destinations to the UI. */}
+        {nextBanner && (
+          <div
+            className="bg-dhl-yellow/20 border border-dhl-yellow/40 text-dhl-ink rounded-md text-sm px-4 py-3 mb-6 flex items-center gap-2"
+            data-testid="login-next-banner"
+            role="status"
+          >
+            <nextBanner.Icon className="w-4 h-4 shrink-0" />
+            <span>{nextBanner.message}</span>
           </div>
         )}
 
