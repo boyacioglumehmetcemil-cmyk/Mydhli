@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Search, ArrowRight, ArrowLeft, PackageX, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import Logo from "@/components/Logo";
 import LandingNavbar from "@/components/LandingNavbar";
 import Footer from "@/components/Footer";
 import TrackingDetail from "@/components/TrackingDetail";
