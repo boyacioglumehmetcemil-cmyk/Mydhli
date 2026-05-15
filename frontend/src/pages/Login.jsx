@@ -1,11 +1,7 @@
-import { useState } from "react";
-import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { useMemo, useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { AlertTriangle, Check, Eye, EyeOff } from "lucide-react";
 import Logo from "@/components/Logo";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -29,11 +25,14 @@ const resolveNext = (raw) => {
   } catch {
     return null;
   }
-  // Strip any embedded backslash (browsers can normalize `\\` to `//`).
   if (decoded.includes("\\")) return null;
   if (!SAFE_NEXT.test(decoded)) return null;
   return decoded;
 };
+
+// Quick syntactic email check — enough to flip the green tick. Real
+// validation happens server-side.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const Login = () => {
   const navigate = useNavigate();
@@ -46,10 +45,18 @@ const Login = () => {
   const [remember, setRemember] = useState(true);
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Inline error chip (replaces noisy toast on failed sign-in).
+  const [errorMsg, setErrorMsg] = useState("");
+
+  // Show the amber session-expired alert when ProtectedRoute (or any other
+  // caller) bounces the user here with `?expired=1`.
+  const sessionExpired = searchParams.get("expired") === "1";
+
+  const emailValid = useMemo(() => EMAIL_RE.test(email), [email]);
 
   // Two redirect sources, in priority order:
   //   1) ?next= query param (set by ProtectedRoute on un-auth redirects;
-  //      this is the one that survives full reloads / shared links)
+  //      this survives full reloads / shared links)
   //   2) location.state.from.pathname (legacy fallback)
   const safeNext = resolveNext(searchParams.get("next"));
   const stateFrom = location.state?.from?.pathname;
@@ -58,181 +65,170 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg("");
     if (!email || !password) {
-      toast.error("Email and password are required");
+      setErrorMsg("Email and password are required.");
       return;
     }
     setLoading(true);
     try {
-      const user = await login(email, password);
-      toast.success(`Welcome back, ${user.firstName}`);
+      await login(email, password);
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      const msg = err?.response?.data?.detail || "Sign-in failed";
-      toast.error(msg);
+      const apiMsg = err?.response?.data?.detail;
+      setErrorMsg(apiMsg || "Email or password is incorrect.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex bg-white">
-      {/* Left — form */}
-      <div className="flex-1 flex flex-col px-6 sm:px-10 py-10">
-        <div className="mb-12">
-          <Link to="/" data-testid="login-back-home" className="inline-flex">
-            <Logo size="md" to={null} />
+    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-10" data-testid="login-page">
+      <div
+        className="w-full max-w-[520px] bg-white rounded-2xl shadow-xl p-8 lg:p-10"
+        data-testid="login-card"
+      >
+        {/* Session-expired alert — only when ?expired=1. */}
+        {sessionExpired && (
+          <div
+            className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-8 flex items-start gap-3"
+            data-testid="session-expired-alert"
+            role="status"
+          >
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <span className="text-base font-semibold text-amber-900">Session expired</span>
+          </div>
+        )}
+
+        {/* Brand wordmark. <Logo /> defaults to placement="header" so it
+            renders the official PNG via BrandWordmark — never the legacy
+            CSS placeholder. */}
+        <div className="mb-6">
+          <Logo size="md" to="/" />
+        </div>
+
+        <h1 className="font-display font-bold text-4xl lg:text-5xl text-dhl-ink leading-tight mb-2">
+          Sign in to myDHLi
+        </h1>
+
+        <p className="text-sm text-stone-600 mb-8">
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            data-testid="login-register-link"
+            className="text-dhl-red font-bold underline underline-offset-4 hover:text-dhl-red-dark"
+          >
+            Create a login
           </Link>
-        </div>
+        </p>
 
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-full max-w-md">
-            <div className="text-xs font-bold uppercase tracking-[0.2em] text-dhl-red mb-3">
-              MyDHL Global Forwarding
-            </div>
-            <h1 className="font-display text-4xl font-black text-dhl-text leading-tight mb-2">
-              Welcome back.
-            </h1>
-            <p className="text-sm text-dhl-muted mb-8">
-              Sign in to ship, track and manage your PNG account.
-            </p>
+        {/* Inline error chip — appears above the email field on bad creds.
+            Sits in the same vertical slot a noisy toast used to occupy. */}
+        {errorMsg && (
+          <div
+            className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-3 rounded-md mb-6"
+            data-testid="login-error"
+            role="alert"
+          >
+            {errorMsg}
+          </div>
+        )}
 
-            <form onSubmit={handleSubmit} data-testid="login-form" className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-dhl-text">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com.pg"
-                  data-testid="login-email-input"
-                  className="h-12 bg-dhl-panel border-2 border-dhl-border focus-visible:border-dhl-yellow focus-visible:ring-0 rounded-none"
-                  required
+        <form onSubmit={handleSubmit} data-testid="login-form" noValidate>
+          {/* Email */}
+          <div className="mb-5">
+            <label
+              htmlFor="email"
+              className="block text-xs uppercase tracking-wider font-semibold text-stone-700 mb-1.5"
+            >
+              Email address
+            </label>
+            <div className="relative">
+              <input
+                id="email"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                data-testid="login-email-input"
+                className="w-full h-12 px-4 pr-11 rounded-md border border-stone-300 bg-stone-50 text-base focus:border-dhl-red focus:ring-2 focus:ring-dhl-red/20 outline-none transition"
+                required
+              />
+              {emailValid && (
+                <Check
+                  data-testid="login-email-valid"
+                  className="w-5 h-5 text-emerald-600 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
                 />
-              </div>
+              )}
+            </div>
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-dhl-text">
-                  Password
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPwd ? "text" : "password"}
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Your password"
-                    data-testid="login-password-input"
-                    className="h-12 bg-dhl-panel border-2 border-dhl-border focus-visible:border-dhl-yellow focus-visible:ring-0 rounded-none pr-12"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPwd(!showPwd)}
-                    data-testid="login-toggle-password"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-dhl-muted hover:text-dhl-text"
-                    aria-label={showPwd ? "Hide password" : "Show password"}
-                  >
-                    {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <Checkbox
-                    id="remember"
-                    checked={remember}
-                    onCheckedChange={(v) => setRemember(!!v)}
-                    data-testid="login-remember-checkbox"
-                    className="border-dhl-border data-[state=checked]:bg-dhl-yellow data-[state=checked]:text-dhl-ink data-[state=checked]:border-dhl-yellow rounded-none"
-                  />
-                  <span className="text-sm text-dhl-text font-medium">Remember me</span>
-                </label>
-                <Link
-                  to="/forgot-password"
-                  data-testid="login-forgot-link"
-                  className="text-sm font-semibold text-dhl-red hover:underline underline-offset-4"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={loading}
-                data-testid="login-submit-button"
-                className="w-full h-12 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark font-bold rounded-none uppercase tracking-wider text-sm border-2 border-dhl-ink hover:-translate-y-0.5 transition-transform disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
+          {/* Password */}
+          <div className="mb-4">
+            <label
+              htmlFor="password"
+              className="block text-xs uppercase tracking-wider font-semibold text-stone-700 mb-1.5"
+            >
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPwd ? "text" : "password"}
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                data-testid="login-password-input"
+                className="w-full h-12 px-4 pr-12 rounded-md border border-stone-300 bg-stone-50 text-base focus:border-dhl-red focus:ring-2 focus:ring-dhl-red/20 outline-none transition"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPwd((v) => !v)}
+                data-testid="login-toggle-password"
+                aria-label={showPwd ? "Hide password" : "Show password"}
+                className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 inline-flex items-center justify-center rounded-md text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition"
               >
-                {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    Sign In <ArrowRight className="ml-2 w-4 h-4" />
-                  </>
-                )}
-              </Button>
-            </form>
-
-            <div className="mt-8 pt-6 border-t border-dhl-border text-center">
-              <p className="text-sm text-dhl-muted">
-                Don't have an account?{" "}
-                <Link
-                  to="/register"
-                  data-testid="login-register-link"
-                  className="font-bold text-dhl-text hover:text-dhl-red"
-                >
-                  Open Account →
-                </Link>
-              </p>
-            </div>
-
-            <div className="mt-6 p-3 bg-dhl-panel border-l-2 border-dhl-yellow">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-dhl-muted mb-1">
-                Demo Credentials
-              </div>
-              <div className="text-xs font-mono text-dhl-text">
-                demo@dhlpng.com / Demo@2026
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right — branded panel */}
-      <div className="hidden lg:flex lg:w-[42%] relative overflow-hidden">
-        <img src="/images/hero-world-routes.jpg" alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-dhl-ink/80" />
-
-        <div className="relative z-10 flex flex-col justify-between p-12 w-full text-white">
-          <div className="font-mono text-xs font-bold uppercase tracking-[0.3em] text-dhl-yellow/80">
-            MyDHL · Global Logistics
-          </div>
-
-          <div>
-            <div className="font-display text-6xl xl:text-7xl font-black leading-none tracking-tighter">
-              Move.
-              <br />
-              Track.
-              <br />
-              <span className="text-dhl-yellow">Deliver.</span>
-            </div>
-            <div className="mt-8 max-w-sm text-sm text-white/75 leading-relaxed">
-              Freight forwarding worldwide. Real-time visibility, customs-cleared shipments,
-              and dependable next-day delivery options.
+                {showPwd ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs font-mono text-white/40">
-            <span className="w-8 h-px bg-white/30" />
-            DEMO BUILD — TYPOGRAPHIC LOGO PLACEHOLDER
+          {/* Remember + Forgot row */}
+          <div className="flex items-center justify-between mb-8">
+            <label htmlFor="remember" className="flex items-center gap-2 cursor-pointer">
+              <Checkbox
+                id="remember"
+                checked={remember}
+                onCheckedChange={(v) => setRemember(!!v)}
+                data-testid="login-remember-checkbox"
+                className="border-stone-400 data-[state=checked]:bg-dhl-red data-[state=checked]:text-white data-[state=checked]:border-dhl-red"
+              />
+              <span className="text-sm text-stone-700">Remember me</span>
+            </label>
+            <Link
+              to="/forgot-password"
+              data-testid="login-forgot-link"
+              className="text-sm text-dhl-red font-bold underline underline-offset-4 hover:text-dhl-red-dark"
+            >
+              Forgot / reset password
+            </Link>
           </div>
-        </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            data-testid="login-submit-button"
+            className="w-full h-14 bg-dhl-red text-white text-base font-bold rounded-md hover:bg-dhl-red-dark transition disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+
+        <p className="mt-6 text-xs text-stone-500 text-center" data-testid="login-demo-footer">
+          Demo build · Not affiliated with Deutsche Post DHL Group
+        </p>
       </div>
     </div>
   );
