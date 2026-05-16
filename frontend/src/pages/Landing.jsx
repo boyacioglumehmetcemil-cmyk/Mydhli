@@ -1121,7 +1121,11 @@ const InfoBand = () => (
      band sits inside the responsive container — never full-bleed. Yellow
      block carries its own internal padding + a soft rounded corner on lg+. */
   <section data-testid="landing-info-band" className="bg-white py-12 lg:py-16">
-    <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px]">
+    {/* InfoBand uses a SLIGHTLY WIDER container than the shared CONTAINER_CLASS
+        (~120px wider at each breakpoint) so the yellow card reads more
+        prominent — still contained, never full-bleed, just more breathing
+        room than the other sections. */}
+    <div className="mx-auto w-full px-4 sm:max-w-[600px] md:max-w-[820px] lg:max-w-[1060px] xl:max-w-[1240px] 2xl:max-w-[1440px]">
       <div className="bg-dhl-yellow rounded-xl lg:rounded-lg overflow-hidden px-6 lg:px-10 py-10 lg:py-14 grid lg:grid-cols-[5fr_7fr] gap-10 lg:gap-16 items-stretch">
         <div data-testid="info-band-image" className="aspect-[4/5] lg:aspect-auto rounded-xl lg:rounded-md border border-black/10 lg:border-0 overflow-hidden bg-white">
           <img
