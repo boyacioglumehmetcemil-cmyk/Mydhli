@@ -185,12 +185,14 @@ const Login = () => {
 
       {/* ─────────────── 2) HERO + CENTERED CARD ─────────────── */}
       {/* min-h calc keeps the photo filling the gap between utility bar and
-          footer at any viewport. The sustainability photo reused here matches
-          the reference (wind turbines / mountains). */}
+          footer at any viewport. Hero photo: wind turbines at sunset. */}
       <section
         data-testid="login-hero"
-        className="flex-1 bg-cover bg-center flex items-center justify-center px-4 py-10 min-h-[calc(100vh-64px-160px)]"
-        style={{ backgroundImage: "url('/assets/dhl/sustainability-photo.png')" }}
+        className="flex-1 bg-cover flex items-center justify-center px-4 py-10 min-h-[calc(100vh-64px-160px)]"
+        style={{
+          backgroundImage: "url('/assets/dhl/login-hero.png')",
+          backgroundPosition: "center 60%",
+        }}
       >
         <div
           className="w-full max-w-[480px] bg-white rounded-md shadow-2xl p-10 lg:p-12"
