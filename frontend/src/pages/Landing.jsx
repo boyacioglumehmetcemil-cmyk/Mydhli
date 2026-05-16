@@ -1034,9 +1034,9 @@ const Hero = () => {
 /* -------------------------------------------------------------------------- */
 /* Floating action cards                                                       */
 /* -------------------------------------------------------------------------- */
-const ActionCard = ({ to, icon: Icon, title, sub, testId, highlight = false }) => (
+const ActionCard = ({ to, icon: Icon, title, sub, testId, highlight = false, extraClass = "" }) => (
   <Link to={to} data-testid={testId}
-    className="group relative overflow-hidden bg-white rounded-xl shadow-lg p-4 lg:p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 block">
+    className={`group relative overflow-hidden bg-white rounded-xl shadow-lg p-4 lg:p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 block ${extraClass}`}>
     {/* DHL-style folded corner — yellow triangle in the top-right corner, used to highlight the featured card. CSS border trick keeps it crisp at any zoom level. */}
     {highlight && (
       <div
@@ -1060,10 +1060,15 @@ const ActionCard = ({ to, icon: Icon, title, sub, testId, highlight = false }) =
 
 const FloatingCards = () => (
   <section data-testid="landing-cards" className="relative z-10 -mt-20 lg:-mt-24 mb-16 lg:mb-24 px-6 lg:px-10">
-    <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 lg:gap-5">
-      <ActionCard to="/dashboard/ship"            icon={Calendar}    title="Ship now"                   sub="Find the right service mode for your freight." testId="card-ship-now" />
-      <ActionCard to="/dashboard/quote"           icon={Calculator}  title="Get a quote"                sub="Compare air, ocean and road side by side."     testId="card-get-quote" />
-      <ActionCard to="/register?type=business"    icon={Building2}   title="Request a business account" sub="For regular shippers seeking volume rates."    testId="card-business-account" highlight />
+    {/* Mobile keeps a small gap so the stacked cards don't fuse into one
+        visually heavy block. md+ collapses to gap-0 so the 3 cards read as
+        one connected panel of three columns. Per-card rounded utilities
+        flatten the inner-facing corners; thin border-r lines on cards 1 & 2
+        provide the seam divider that's missing once the gap is gone. */}
+    <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-0">
+      <ActionCard to="/dashboard/ship"            icon={Calendar}    title="Ship now"                   sub="Find the right service mode for your freight." testId="card-ship-now"          extraClass="md:rounded-r-none md:border-r md:border-stone-200" />
+      <ActionCard to="/dashboard/quote"           icon={Calculator}  title="Get a quote"                sub="Compare air, ocean and road side by side."     testId="card-get-quote"         extraClass="md:rounded-none md:border-r md:border-stone-200" />
+      <ActionCard to="/register?type=business"    icon={Building2}   title="Request a business account" sub="For regular shippers seeking volume rates."    testId="card-business-account"  extraClass="md:rounded-l-none" highlight />
     </div>
   </section>
 );
