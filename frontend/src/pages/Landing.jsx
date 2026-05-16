@@ -1004,7 +1004,10 @@ const Hero = () => {
         aria-hidden="true"
       />
       {/* pb-* clears the FloatingCards section's `-mt-20 lg:-mt-24` overlap. */}
-      <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 pt-12 lg:pt-20 pb-24 lg:pb-32 min-h-[50vh] flex flex-col justify-center">
+      {/* Container width aligned with every other Landing section (1280px) so
+          the hero's content block starts/ends at the same vertical x-coordinate
+          as Air/Ocean/Road/InfoBand/Sustainability/Footer. */}
+      <div className="relative max-w-[1280px] mx-auto px-6 lg:px-10 pt-12 lg:pt-20 pb-24 lg:pb-32 min-h-[50vh] flex flex-col justify-center">
         <div className="w-full max-w-xl mx-auto">
           <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-6 text-[22px] sm:text-[26px] lg:text-[32px] text-left [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
             Track your shipment
@@ -1060,7 +1063,9 @@ const FloatingCards = () => (
         one connected panel of three columns. Per-card rounded utilities
         flatten the inner-facing corners; thin border-r lines on cards 1 & 2
         provide the seam divider that's missing once the gap is gone. */}
-    <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-0 items-start">
+    {/* Container width matches every other Landing section (1280px) so all
+        section content blocks share the same left/right edges across the page. */}
+    <div className="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-0 items-start">
       <ActionCard to="/dashboard/ship"            icon={CalendarCheck} title="Ship Now"         sub="Find the right service"                                                              testId="floatcard-ship"     extraClass="md:rounded-r-none md:border-r md:border-stone-200" />
       <ActionCard to="/dashboard/quote"           icon={FileCheck}     title="Get a Quote"      sub="Estimate cost to share and compare"                                                  testId="floatcard-quote"    extraClass="md:rounded-none md:border-r md:border-stone-200" />
       <ActionCard to="/register?intent=business"  icon={Building2}     title="Request a Business Account" sub="Shipping regularly or frequently? Learn about volume discounts" testId="floatcard-business" extraClass="md:rounded-l-none" highlight />
