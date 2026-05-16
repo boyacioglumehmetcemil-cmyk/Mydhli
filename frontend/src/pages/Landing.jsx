@@ -23,6 +23,32 @@ import {
 import useTitle from "@/hooks/useTitle";
 
 /* -------------------------------------------------------------------------- */
+/* Container width                                                            */
+/* -------------------------------------------------------------------------- */
+// Bootstrap-style responsive fixed-breakpoint container used on every section
+// of this page (header utility bar, nav bar, hero, floating cards, info band,
+// freight overlap sections, sustainability, footer 4-tier). At narrow
+// viewports the content sits inside a fixed-width centered card — it never
+// goes full-bleed below xl, so the user always sees a comfortable left/right
+// margin instead of edge-to-edge text.
+//
+//   Breakpoint     |  max-width
+//   ───────────────|───────────
+//   < sm (640)     |  100% with px-4
+//   sm  (640+)     |  540px
+//   md  (768+)     |  720px
+//   lg  (1024+)    |  960px
+//   xl  (1280+)    |  1140px
+//   2xl (1536+)    |  1320px
+//
+// NOTE: Tailwind v3 default breakpoints. The class string is inlined in each
+// section's outer wrapper (rather than via a JS constant) so JIT picks up
+// the arbitrary values during a single class scan. Kept here as documentation:
+// const CONTAINER_CLASS =
+//   "mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] " +
+//   "lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px]";
+
+/* -------------------------------------------------------------------------- */
 /* Header — utility bar + nav bar (2 rows, sticky)                             */
 /* -------------------------------------------------------------------------- */
 // NOTE: shared header & footer pieces exported as named exports so other
@@ -31,7 +57,7 @@ import useTitle from "@/hooks/useTitle";
 export const UtilityBar = ({ onSearch }) => {
   return (
     <div className="bg-dhl-yellow border-b border-dhl-yellow-dark" data-testid="utility-bar">
-      <div className="max-w-[1280px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between gap-4">
+      <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] h-14 flex items-center justify-between gap-4">
         <BrandWordmark to="/" placement="header-bug-only" data-testid="utility-bar-logo" />
         <nav className="hidden md:flex items-center gap-4 text-[13px] text-dhl-ink/85">
           <Link to="/locations" className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-find-location">
@@ -479,7 +505,7 @@ export const NavBar = ({ onMobileMenu }) => {
   }, []);
   return (
     <div className="bg-white border-b border-dhl-border sticky top-0 z-40 shadow-sm" data-testid="nav-bar">
-      <div ref={navRef} className="max-w-[1280px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
+      <div ref={navRef} className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] h-14 flex items-center justify-between">
         <nav className="hidden md:flex items-center gap-1">
           {NAV_ITEMS.map((it, i) => {
             // Ship + ELS render via their dedicated mega-menu components.
@@ -741,7 +767,7 @@ const AirFreightOverlappingSection = () => {
   ];
   return (
     <section data-testid="freight-mode-air" className="bg-white py-16 lg:py-24">
-      <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
+      <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px]">
         <div className="grid lg:grid-cols-[6fr_5fr] gap-8 lg:gap-0 items-center relative">
           {/* CONTENT CARD — left column, raised above photo on lg+ */}
           <div className="relative z-10 bg-white rounded-xl shadow-xl border border-black/5 p-6 sm:p-8 lg:p-10 lg:max-w-[640px]">
@@ -818,7 +844,7 @@ const OceanFreightOverlappingSection = () => {
   ];
   return (
     <section data-testid="freight-mode-ocean" className="bg-dhl-panel/40 py-16 lg:py-24">
-      <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
+      <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px]">
         <div className="grid lg:grid-cols-[5fr_6fr] gap-8 lg:gap-0 items-center relative">
           {/* PHOTO — order-2 on mobile (below content), order-1 on lg (left side) */}
           <div
@@ -898,7 +924,7 @@ const RoadFreightOverlappingSection = () => {
   ];
   return (
     <section data-testid="freight-mode-road" className="bg-white py-16 lg:py-24">
-      <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
+      <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px]">
         <div className="grid lg:grid-cols-[6fr_5fr] gap-8 lg:gap-0 items-center relative">
           {/* CONTENT CARD — LEFT, z-10 */}
           <div className="relative z-10 bg-white rounded-xl shadow-xl border border-black/5 p-6 sm:p-8 lg:p-10 lg:max-w-[640px]">
@@ -1007,7 +1033,7 @@ const Hero = () => {
       {/* Container width aligned with every other Landing section (1280px) so
           the hero's content block starts/ends at the same vertical x-coordinate
           as Air/Ocean/Road/InfoBand/Sustainability/Footer. */}
-      <div className="relative max-w-[1280px] mx-auto px-6 lg:px-10 pt-12 lg:pt-20 pb-24 lg:pb-32 min-h-[50vh] flex flex-col justify-center">
+      <div className="relative mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] pt-12 lg:pt-20 pb-24 lg:pb-32 min-h-[50vh] flex flex-col justify-center">
         <div className="w-full max-w-xl mx-auto">
           <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-6 text-[22px] sm:text-[26px] lg:text-[32px] text-left [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
             Track your shipment
@@ -1065,7 +1091,7 @@ const FloatingCards = () => (
         provide the seam divider that's missing once the gap is gone. */}
     {/* Container width matches every other Landing section (1280px) so all
         section content blocks share the same left/right edges across the page. */}
-    <div className="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-0 items-start">
+    <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-0 items-start">
       <ActionCard to="/dashboard/ship"            icon={CalendarCheck} title="Ship Now"         sub="Find the right service"                                                              testId="floatcard-ship"     extraClass="md:rounded-r-none md:border-r md:border-stone-200" />
       <ActionCard to="/dashboard/quote"           icon={FileCheck}     title="Get a Quote"      sub="Estimate cost to share and compare"                                                  testId="floatcard-quote"    extraClass="md:rounded-none md:border-r md:border-stone-200" />
       <ActionCard to="/register?intent=business"  icon={Building2}     title="Request a Business Account" sub="Shipping regularly or frequently? Learn about volume discounts" testId="floatcard-business" extraClass="md:rounded-l-none" highlight />
@@ -1092,7 +1118,7 @@ const ChecklistMark = () => (
 
 const InfoBand = () => (
   <section data-testid="landing-info-band" className="bg-dhl-yellow">
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-10 lg:py-14 grid lg:grid-cols-[5fr_7fr] gap-10 lg:gap-16 items-stretch">
+    <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] py-10 lg:py-14 grid lg:grid-cols-[5fr_7fr] gap-10 lg:gap-16 items-stretch">
       <div data-testid="info-band-image" className="aspect-[4/5] lg:aspect-auto lg:-my-14 rounded-xl lg:rounded-none border border-black/10 lg:border-0 overflow-hidden bg-white">
         <img
           src="/assets/dhl/info-band-tariff.png"
@@ -1143,7 +1169,7 @@ const LeafMark = () => (
 
 const Sustainability = () => (
   <section data-testid="landing-sustainability" className="bg-white">
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16 lg:py-24 grid lg:grid-cols-[7fr_5fr] gap-10 lg:gap-16 items-center">
+    <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] py-16 lg:py-24 grid lg:grid-cols-[7fr_5fr] gap-10 lg:gap-16 items-center">
       <div>
         <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-green mb-4">Sustainability</div>
         <h2 className="font-display font-bold text-dhl-text leading-tight tracking-tight mb-5 text-[28px] lg:text-[40px]">
@@ -1289,7 +1315,7 @@ export const Footer = ({ showPromoCards = true }) => {
     <footer data-testid="landing-footer" className="bg-white text-dhl-ink">
       {/* TIER 1 — Service updates band */}
       <section data-testid="footer-updates" className="border-b border-dhl-border">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-10 lg:py-12 grid lg:grid-cols-[1fr_2fr] gap-8 lg:gap-12 items-start">
+        <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] py-10 lg:py-12 grid lg:grid-cols-[1fr_2fr] gap-8 lg:gap-12 items-start">
           <div>
             <h3 className="font-display font-bold text-dhl-ink text-[22px] lg:text-[26px] leading-tight mb-2">
               Important service updates
@@ -1320,7 +1346,7 @@ export const Footer = ({ showPromoCards = true }) => {
       {/* TIER 2 — Promo cards (hidden on Customer Service / `/help`) */}
       {showPromoCards && (
         <section data-testid="footer-promo-cards" className="bg-white">
-          <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-12 lg:py-16 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] py-12 lg:py-16 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             {promoCards.map((c) => (
               <a
                 key={c.title}
@@ -1364,7 +1390,7 @@ export const Footer = ({ showPromoCards = true }) => {
 
       {/* TIER 3 — Four-column link footer */}
       <section data-testid="footer-columns" className="bg-neutral-50 border-t border-dhl-border">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-12 lg:py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
+        <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] py-12 lg:py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           {columns.map((c) => (
             <div key={c.h}>
               <h5 className="font-display font-bold text-dhl-red text-[14px] lg:text-[15px] mb-4">{c.h}</h5>
@@ -1389,7 +1415,7 @@ export const Footer = ({ showPromoCards = true }) => {
 
       {/* TIER 4 — Bottom strip */}
       <section data-testid="footer-bottom" className="bg-neutral-100 border-t border-dhl-border">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-8 lg:py-10">
+        <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] py-8 lg:py-10">
           {/* Row A: brand + social */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 pb-6 border-b border-dhl-border">
             <BrandWordmark to={null} placement="footer" />
