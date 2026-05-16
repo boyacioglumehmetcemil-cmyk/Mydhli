@@ -277,7 +277,8 @@ const Track = () => {
         </>
       )}
 
-      <Footer />
+      {/* Tier 2 promo cards hidden on this page — same treatment as /help. */}
+      <Footer showPromoCards={false} />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
