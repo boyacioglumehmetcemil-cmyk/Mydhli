@@ -1206,67 +1206,78 @@ export const Footer = ({ showPromoCards = true }) => {
     },
   ];
 
-  /* ---------- Tier 3: Four-column footer ---------- */
+  /* ---------- Tier 3: Four-column footer ----------
+     Each entry is { label, type, target } so the renderer can pick the
+     right element (`<Link>` for internal app routes, `<a target="_blank">`
+     for DHL global-en URLs and subdomains). All external dhl.com links
+     use the /global-en/ locale so geo-redirects land users on the
+     intended global English page regardless of where they click from. */
   const columns = [
     {
       h: "Quick links",
       l: [
-        "Customer service",
-        "Customer portal login",
-        "Strategic partner directory",
-        "Developer portal",
-        "Get a quote",
-        "Request a business account",
-        "Shipping guidance",
-        "Aviation cargo",
+        { label: "Customer service",            type: "internal", target: "/help" },
+        { label: "Customer portal login",       type: "internal", target: "/login" },
+        { label: "Strategic partner directory", type: "external", target: "https://www.dhl.com/global-en/home/our-divisions.html" },
+        { label: "Developer portal",            type: "external", target: "https://developer.dhl.com/" },
+        { label: "Get a quote",                 type: "internal", target: "/dashboard/quote" },
+        { label: "Request a business account",  type: "internal", target: "/register?intent=business" },
+        { label: "Shipping guidance",           type: "external", target: "https://www.dhl.com/global-en/home/customer-service/shipping-advice.html" },
+        { label: "Aviation cargo",              type: "external", target: "https://www.dhl.com/global-en/home/our-divisions/aviation.html" },
       ],
     },
     {
       h: "Our divisions",
-      l: ["DHL Express", "DHL Global Forwarding", "DHL Supply Chain", "DHL eCommerce", "Other global divisions"],
+      l: [
+        { label: "DHL Express",            type: "external", target: "https://www.dhl.com/global-en/home/our-divisions/express.html" },
+        { label: "DHL Global Forwarding",  type: "external", target: "https://www.dhl.com/global-en/home/our-divisions/global-forwarding.html" },
+        { label: "DHL Supply Chain",       type: "external", target: "https://www.dhl.com/global-en/home/our-divisions/supply-chain.html" },
+        { label: "DHL eCommerce",          type: "external", target: "https://www.dhl.com/global-en/home/our-divisions/parcel.html" },
+        { label: "Other global divisions", type: "external", target: "https://www.dhl.com/global-en/home/our-divisions.html" },
+      ],
     },
     {
       h: "Industry sectors",
       l: [
-        "Auto-Mobility",
-        "Energy",
-        "Engineering & Manufacturing",
-        "Life Sciences & Healthcare",
-        "Retail & Fashion",
-        "Technology",
+        { label: "Auto-Mobility",                type: "external", target: "https://www.dhl.com/global-en/home/industry-sectors/auto-mobility.html" },
+        { label: "Energy",                       type: "external", target: "https://www.dhl.com/global-en/home/industry-sectors/energy.html" },
+        { label: "Engineering & Manufacturing",  type: "external", target: "https://www.dhl.com/global-en/home/industry-sectors/engineering-and-manufacturing.html" },
+        { label: "Life Sciences & Healthcare",   type: "external", target: "https://www.dhl.com/global-en/home/industry-sectors/life-sciences-and-healthcare.html" },
+        { label: "Retail & Fashion",             type: "external", target: "https://www.dhl.com/global-en/home/industry-sectors/retail.html" },
+        { label: "Technology",                   type: "external", target: "https://www.dhl.com/global-en/home/industry-sectors/technology.html" },
       ],
     },
     {
       h: "Company information",
       l: [
-        "About DHL",
-        "Delivered Magazine",
-        "Careers",
-        "Press Center",
-        "Investors",
-        "Sustainability",
-        "Supplier Diversity",
-        "Innovation",
-        "Events",
-        "Brand Partnerships",
+        { label: "About DHL",            type: "external", target: "https://www.dhl.com/global-en/home/about-us.html" },
+        { label: "Delivered Magazine",   type: "external", target: "https://www.dhl.com/global-en/home/insights-and-innovation/insights/global-economy.html" },
+        { label: "Careers",              type: "external", target: "https://careers.dhl.com/global/en" },
+        { label: "Press Center",         type: "external", target: "https://www.dhl.com/global-en/home/press.html" },
+        { label: "Investors",            type: "external", target: "https://group.dhl.com/en/investors.html" },
+        { label: "Sustainability",       type: "external", target: "https://www.dhl.com/global-en/home/sustainability.html" },
+        { label: "Supplier Diversity",   type: "external", target: "https://www.dhl.com/global-en/home/about-us/supplier-diversity.html" },
+        { label: "Innovation",           type: "external", target: "https://www.dhl.com/global-en/home/insights-and-innovation/innovation-in-logistics.html" },
+        { label: "Events",               type: "external", target: "https://www.dhl.com/global-en/home/press/events.html" },
+        { label: "Brand Partnerships",   type: "external", target: "https://www.dhl.com/global-en/home/about-us/brand-partnerships.html" },
       ],
     },
   ];
 
   const legalLinks = [
-    "Fraud awareness",
-    "Legal notice",
-    "Terms of use",
-    "Privacy notice",
-    "Additional information",
-    "Cookie settings",
+    { label: "Fraud awareness",        href: "https://www.dhl.com/global-en/home/footer/fraud-awareness.html" },
+    { label: "Legal notice",           href: "https://www.dhl.com/global-en/home/footer/legal-notice.html" },
+    { label: "Terms of use",           href: "https://www.dhl.com/global-en/home/footer/terms-of-use.html" },
+    { label: "Privacy notice",         href: "https://www.dhl.com/global-en/home/footer/privacy-notice.html" },
+    { label: "Additional information", href: "https://www.dhl.com/global-en/home/footer/additional-information.html" },
+    { label: "Cookie settings",        href: "https://www.dhl.com/global-en/home/footer/cookie-settings.html" },
   ];
 
   const socials = [
-    { Icon: Youtube,   label: "YouTube"   },
-    { Icon: Facebook,  label: "Facebook"  },
-    { Icon: Linkedin,  label: "LinkedIn"  },
-    { Icon: Instagram, label: "Instagram" },
+    { Icon: Youtube,   label: "YouTube",   href: "https://www.youtube.com/user/DHL" },
+    { Icon: Facebook,  label: "Facebook",  href: "https://www.facebook.com/dhl" },
+    { Icon: Linkedin,  label: "LinkedIn",  href: "https://www.linkedin.com/company/dhl" },
+    { Icon: Instagram, label: "Instagram", href: "https://www.instagram.com/dhl_global" },
   ];
 
   return (
@@ -1353,13 +1364,18 @@ export const Footer = ({ showPromoCards = true }) => {
             <div key={c.h}>
               <h5 className="font-display font-bold text-dhl-red text-[14px] lg:text-[15px] mb-4">{c.h}</h5>
               <ul className="space-y-2.5">
-                {c.l.map((x) => (
-                  <li key={x}>
-                    <a href="#" className="text-[13px] lg:text-[14px] text-dhl-ink hover:underline hover:text-dhl-red transition-colors">
-                      {x}
-                    </a>
-                  </li>
-                ))}
+                {c.l.map((x) => {
+                  const cls = "text-[13px] lg:text-[14px] text-dhl-ink hover:underline hover:text-dhl-red transition-colors";
+                  return (
+                    <li key={x.label}>
+                      {x.type === "internal" ? (
+                        <Link to={x.target} className={cls}>{x.label}</Link>
+                      ) : (
+                        <a href={x.target} target="_blank" rel="noopener noreferrer" className={cls}>{x.label}</a>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}
@@ -1375,10 +1391,12 @@ export const Footer = ({ showPromoCards = true }) => {
             <div className="flex items-center gap-4">
               <span className="text-[12px] uppercase tracking-[0.2em] font-bold text-dhl-muted">Follow us</span>
               <div className="flex items-center gap-2">
-                {socials.map(({ Icon, label }) => (
+                {socials.map(({ Icon, label, href }) => (
                   <a
                     key={label}
-                    href="#"
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     aria-label={label}
                     data-testid={`footer-social-${label.toLowerCase()}`}
                     className="w-9 h-9 rounded-md bg-white border border-dhl-border flex items-center justify-center text-dhl-muted hover:text-dhl-red hover:border-dhl-red transition-colors"
@@ -1393,8 +1411,15 @@ export const Footer = ({ showPromoCards = true }) => {
           {/* Row B: legal links */}
           <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 py-5 text-[12px] text-dhl-muted">
             {legalLinks.map((x, i) => (
-              <li key={x} className="flex items-center gap-x-5">
-                <a href="#" className="hover:text-dhl-red transition-colors">{x}</a>
+              <li key={x.label} className="flex items-center gap-x-5">
+                <a
+                  href={x.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-dhl-red transition-colors"
+                >
+                  {x.label}
+                </a>
                 {i < legalLinks.length - 1 && <span className="text-dhl-border" aria-hidden="true">·</span>}
               </li>
             ))}
