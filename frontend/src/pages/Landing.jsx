@@ -1117,33 +1117,38 @@ const ChecklistMark = () => (
 );
 
 const InfoBand = () => (
-  <section data-testid="landing-info-band" className="bg-dhl-yellow">
-    <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] py-10 lg:py-14 grid lg:grid-cols-[5fr_7fr] gap-10 lg:gap-16 items-stretch">
-      <div data-testid="info-band-image" className="aspect-[4/5] lg:aspect-auto lg:-my-14 rounded-xl lg:rounded-none border border-black/10 lg:border-0 overflow-hidden bg-white">
-        <img
-          src="/assets/dhl/info-band-tariff.png"
-          alt="DHL freight forwarder reviewing customs documents"
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
-      </div>
-      <div>
-        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-4">Trade insights</div>
-        <h2 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-5 text-[28px] lg:text-[40px]">
-          Move forward with confidence in shifting trade flows.
-        </h2>
-        <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-6 max-w-3xl">
-          Global trade conditions evolve constantly. Our freight forwarding teams help shippers plan around tariff changes, capacity shifts, and route disruptions across every mode — air, ocean and road.
-        </p>
-        <a
-          href="https://www.dhl.com/global-en/home/insights-and-innovation/insights.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          data-testid="info-band-cta"
-          className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
-        >
-          Read the brief <ArrowRight className="w-4 h-4" />
-        </a>
+  /* Outer section is plain white with vertical breathing room so the yellow
+     band sits inside the responsive container — never full-bleed. Yellow
+     block carries its own internal padding + a soft rounded corner on lg+. */
+  <section data-testid="landing-info-band" className="bg-white py-12 lg:py-16">
+    <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px]">
+      <div className="bg-dhl-yellow rounded-xl lg:rounded-lg overflow-hidden px-6 lg:px-10 py-10 lg:py-14 grid lg:grid-cols-[5fr_7fr] gap-10 lg:gap-16 items-stretch">
+        <div data-testid="info-band-image" className="aspect-[4/5] lg:aspect-auto rounded-xl lg:rounded-md border border-black/10 lg:border-0 overflow-hidden bg-white">
+          <img
+            src="/assets/dhl/info-band-tariff.png"
+            alt="DHL freight forwarder reviewing customs documents"
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+        <div>
+          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-4">Trade insights</div>
+          <h2 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-5 text-[28px] lg:text-[40px]">
+            Move forward with confidence in shifting trade flows.
+          </h2>
+          <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-6 max-w-3xl">
+            Global trade conditions evolve constantly. Our freight forwarding teams help shippers plan around tariff changes, capacity shifts, and route disruptions across every mode — air, ocean and road.
+          </p>
+          <a
+            href="https://www.dhl.com/global-en/home/insights-and-innovation/insights.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="info-band-cta"
+            className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
+          >
+            Read the brief <ArrowRight className="w-4 h-4" />
+          </a>
+        </div>
       </div>
     </div>
   </section>
