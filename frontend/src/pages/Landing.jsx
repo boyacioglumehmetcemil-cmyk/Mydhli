@@ -1003,16 +1003,12 @@ const Hero = () => {
         className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-transparent"
         aria-hidden="true"
       />
-      {/* pb-* clears the FloatingCards section's `-mt-20 lg:-mt-24` overlap
-          so the helper text below the input card is never visually clipped. */}
-      <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 pt-12 lg:pt-20 pb-32 lg:pb-40 min-h-[50vh] flex flex-col justify-center">
+      {/* pb-* clears the FloatingCards section's `-mt-20 lg:-mt-24` overlap. */}
+      <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 pt-12 lg:pt-20 pb-24 lg:pb-32 min-h-[50vh] flex flex-col justify-center">
         <div className="w-full max-w-xl mx-auto">
-          <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-3 text-[22px] sm:text-[26px] lg:text-[32px] text-center [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
+          <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-6 text-[22px] sm:text-[26px] lg:text-[32px] text-center [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
             Track your shipment
           </h1>
-          <p className="text-white/90 mb-8 text-[13px] lg:text-[14px] text-center [text-shadow:0_1px_6px_rgba(0,0,0,0.4)]">
-            Air, ocean and road — one tracking surface for every freight reference.
-          </p>
           <form onSubmit={onSubmit} data-testid="hero-track-form"
             className="bg-white border border-dhl-border rounded-md shadow-lg p-1.5 flex flex-col sm:flex-row gap-1.5 w-full">
             <input
@@ -1029,16 +1025,6 @@ const Hero = () => {
               Track
             </button>
           </form>
-          {/* Helper microcopy — sits OUTSIDE the white input card as a sibling
-              <p>. Strong contrast (text-white/90 + drop shadow) keeps it
-              legible on the dark hero photo even at small screen sizes. */}
-          <p
-            data-testid="hero-track-helper"
-            className="mt-3 text-sm text-white/90 text-center"
-            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.45)" }}
-          >
-            AWB, HBL, container number or booking reference
-          </p>
         </div>
       </div>
     </section>
