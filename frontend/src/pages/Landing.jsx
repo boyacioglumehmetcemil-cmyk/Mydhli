@@ -1006,7 +1006,7 @@ const Hero = () => {
       {/* pb-* clears the FloatingCards section's `-mt-20 lg:-mt-24` overlap. */}
       <div className="relative max-w-[1100px] mx-auto px-6 lg:px-10 pt-12 lg:pt-20 pb-24 lg:pb-32 min-h-[50vh] flex flex-col justify-center">
         <div className="w-full max-w-xl mx-auto">
-          <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-6 text-[22px] sm:text-[26px] lg:text-[32px] text-center [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
+          <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-6 text-[22px] sm:text-[26px] lg:text-[32px] text-left [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
             Track your shipment
           </h1>
           <form onSubmit={onSubmit} data-testid="hero-track-form"
