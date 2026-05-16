@@ -1024,24 +1024,30 @@ const Hero = () => {
     navigate(`/track/${encodeURIComponent(v)}`);
   };
   return (
-    <section data-testid="landing-hero" className="relative isolate">
-      {/* Real DHL operational photo (image19 from PCT asset pack — outdoor delivery scene with mountain backdrop). Kept as a CSS background so we can keep the existing flow-layout that determines hero height. */}
-      <div
-        data-testid="hero-image"
-        className="absolute inset-0 bg-cover bg-no-repeat bg-[center_30%]"
-        style={{ backgroundImage: "url('/assets/dhl/hero-delivery.png')" }}
-        aria-hidden="true"
-      />
-      {/* Readability overlay — concentrated near the top where the headline + tracking widget sit. Keeps the lower half of the photo (DHL van, courier) visible. */}
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-transparent"
-        aria-hidden="true"
-      />
-      {/* pb-* clears the FloatingCards section's `-mt-20 lg:-mt-24` overlap. */}
-      {/* Container width aligned with every other Landing section (1280px) so
-          the hero's content block starts/ends at the same vertical x-coordinate
-          as Air/Ocean/Road/InfoBand/Sustainability/Footer. */}
-      <div className="relative mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] pt-12 lg:pt-20 pb-24 lg:pb-32 min-h-[50vh] flex flex-col justify-center">
+    /* Hero photo is now contained — outer is white so the photo reads as
+       a centered card with breathing room on both sides instead of edge-
+       to-edge. Mirrors the Utility Bar outer-container width pattern so
+       the two surfaces stay vertically aligned at the same x-coordinates. */
+    <section className="bg-white">
+      <div className="mx-auto w-full sm:max-w-[920px] md:max-w-[1140px] lg:max-w-[1380px] xl:max-w-[1560px] 2xl:max-w-[1840px]">
+        <div data-testid="landing-hero" className="relative isolate overflow-hidden">
+          {/* Real DHL operational photo (image19 from PCT asset pack — outdoor delivery scene with mountain backdrop). Kept as a CSS background so we can keep the existing flow-layout that determines hero height. */}
+          <div
+            data-testid="hero-image"
+            className="absolute inset-0 bg-cover bg-no-repeat bg-[center_30%]"
+            style={{ backgroundImage: "url('/assets/dhl/hero-delivery.png')" }}
+            aria-hidden="true"
+          />
+          {/* Readability overlay — concentrated near the top where the headline + tracking widget sit. Keeps the lower half of the photo (DHL van, courier) visible. */}
+          <div
+            className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-transparent"
+            aria-hidden="true"
+          />
+          {/* pb-* clears the FloatingCards section's `-mt-20 lg:-mt-24` overlap. */}
+          {/* Container width aligned with every other Landing section (1280px) so
+              the hero's content block starts/ends at the same vertical x-coordinate
+              as Air/Ocean/Road/InfoBand/Sustainability/Footer. */}
+          <div className="relative mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] pt-12 lg:pt-20 pb-24 lg:pb-32 min-h-[50vh] flex flex-col justify-center">
         <div className="w-full max-w-xl mx-auto">
           <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-6 text-[22px] sm:text-[26px] lg:text-[32px] text-left [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
             Track your shipment
@@ -1062,6 +1068,8 @@ const Hero = () => {
               Track
             </button>
           </form>
+        </div>
+      </div>
         </div>
       </div>
     </section>
