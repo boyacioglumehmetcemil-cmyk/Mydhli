@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   Search, ExternalLink, ChevronDown, ChevronRight, Menu, X,
   Plane, Ship, Truck, Calendar, Calculator, Building2, ArrowRight,
@@ -102,10 +102,15 @@ export const NavBar = ({ onMobileMenu }) => {
                     {it.label} <ChevronDown className="w-3.5 h-3.5" />
                   </button>
                 ) : (
-                  <Link to={it.to} data-testid={`nav-${it.label.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="px-4 py-2 text-sm font-semibold text-dhl-text hover:text-dhl-red border-b-2 border-transparent hover:border-dhl-yellow inline-block transition-colors">
+                  <NavLink to={it.to} data-testid={`nav-${it.label.toLowerCase().replace(/\s+/g, "-")}`}
+                    className={({ isActive }) =>
+                      "px-4 py-2 text-sm font-semibold text-dhl-text hover:text-dhl-red border-b-2 inline-block transition-colors " +
+                      (isActive
+                        ? "border-dhl-red text-dhl-red"
+                        : "border-transparent hover:border-dhl-yellow")
+                    }>
                     {it.label}
-                  </Link>
+                  </NavLink>
                 )}
                 {hasDropdown && openIdx === i && <NavDropdown items={it.items} open={true} onClose={() => setOpenIdx(null)} />}
               </div>

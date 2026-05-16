@@ -1,23 +1,67 @@
+/**
+ * Track — public tracking surface.
+ *
+ * Two modes:
+ *   - Index view (no :ref in URL)  → 4-section marketing-style layout:
+ *       Section 1: Track & Trace H1
+ *       Section 2: Gray input band
+ *       Section 3: FAQ accordion (4 questions)
+ *       Section 4: Careers callout strip (text left, placeholder right)
+ *   - Detail view (/track/:ref) → loading / not-found / network-error /
+ *       <TrackingDetail/> result, unchanged from the prior implementation.
+ *
+ * Both modes share the same chrome: utility bar + nav bar + mobile drawer +
+ * search modal + light-theme 4-tier footer, all imported as named exports
+ * from Landing.jsx.
+ */
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { Search, ArrowRight, ArrowLeft, PackageX, Loader2 } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowRight, Briefcase, Loader2, PackageX } from "lucide-react";
 import { toast } from "sonner";
-import LandingNavbar from "@/components/LandingNavbar";
-import Footer from "@/components/Footer";
-import TrackingDetail from "@/components/TrackingDetail";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Footer, MobileDrawer, NavBar, SearchModal, UtilityBar } from "@/pages/Landing";
+import TrackingDetail from "@/components/TrackingDetail";
 import api from "@/lib/api";
+import useTitle from "@/hooks/useTitle";
+
+const FAQ_ITEMS = [
+  {
+    q: "What is a tracking number and where do I find it?",
+    a: "A tracking number is the unique reference your shipper issues for a package or freight booking. For parcels it usually starts with a service prefix and arrives by email or appears on your shipping label. For freight references like AWB, HBL, MBL or a container number, look on the booking confirmation, the bill of lading, or the air waybill PDF.",
+  },
+  {
+    q: "When will tracking information appear?",
+    a: "Tracking events start once the shipment is picked up and scanned into the network. Allow up to a few hours after pickup for the first event to show. International movements may take longer at customs gateways.",
+  },
+  {
+    q: "Why is my tracking number not working?",
+    a: "Double-check the number for typos and stray spaces. If it was issued in the past hour the network may not have indexed it yet. If it is several months old it may have been archived. For freight references, make sure you are using the correct format (AWB, HBL, container, or booking).",
+  },
+  {
+    q: "What if I do not have a tracking number?",
+    a: "Sign in to myDHLi to see every booking made under your account, including drafts and shipments handed to DHL Global Forwarding. If you cannot sign in, contact your sales representative or the local Customer Service desk and they can look up the reference for you.",
+  },
+];
 
 const Track = () => {
+  useTitle("Track & Trace");
   const { awb: awbParam } = useParams();
   const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Detail-view state (only used when awbParam is set).
   const [input, setInput] = useState(awbParam || "");
   const [shipment, setShipment] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Auto-fetch when AWB is in the URL
   useEffect(() => {
     if (awbParam) {
       fetchShipment(awbParam);
@@ -49,162 +93,210 @@ const Track = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const trimmed = input.trim();
-    if (!trimmed) {
+    // Multi-ref support: split on commas / newlines, take the first.
+    // TODO: future — open multiple tabs / show stacked results when users
+    // paste a batch.
+    const first = input
+      .split(/[\s,\n]+/)
+      .map((s) => s.trim())
+      .filter(Boolean)[0];
+    if (!first) {
       toast.error("Please enter a tracking reference");
       return;
     }
-    navigate(`/track/${encodeURIComponent(trimmed.toUpperCase())}`);
+    navigate(`/track/${encodeURIComponent(first.toUpperCase())}`);
   };
 
-  return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <LandingNavbar />
+  const isDetail = !!awbParam;
 
-      {/* Hero / Search */}
-      <section className="bg-white border-b border-dhl-border">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 py-12 lg:py-16">
-          <div className="text-xs font-bold uppercase tracking-[0.2em] text-dhl-red mb-3">
-            Tracking
-          </div>
+  return (
+    <div className="min-h-screen bg-white flex flex-col" data-testid="track-page">
+      <header data-testid="track-header">
+        <UtilityBar onSearch={() => setSearchOpen(true)} />
+        <NavBar onMobileMenu={() => setDrawerOpen(true)} />
+        <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      </header>
+
+      {/* ─── Section 1: Page heading band ─── */}
+      <section className="bg-white">
+        <div className="max-w-[1280px] mx-auto px-6 lg:px-10 pt-12">
           <h1
             data-testid="track-headline"
-            className="font-display text-4xl lg:text-5xl font-bold text-dhl-text leading-tight tracking-tight mb-3"
+            className="font-display font-bold text-4xl lg:text-5xl text-dhl-ink"
           >
-            Track your shipment
+            Track &amp; Trace
           </h1>
-          <p className="text-base text-dhl-muted max-w-2xl mb-7">
-            Enter any freight reference — air waybill, bill of lading, container number or
-            booking reference — to see real-time status, milestones and ETA. No account needed.
-          </p>
+        </div>
+      </section>
 
+      {/* ─── Section 2: Tracking input band ─── */}
+      <section className="bg-stone-100 py-8 mt-8">
+        <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
           <form
             onSubmit={handleSubmit}
             data-testid="track-form"
-            className="bg-white border-2 border-dhl-ink p-1 flex flex-col sm:flex-row gap-1 max-w-2xl shadow-[6px_6px_0px_0px_#FFCC00] rounded-lg"
+            className="flex flex-col sm:flex-row gap-3"
           >
-            <Input
+            <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="AWB / HAWB / MAWB / HBL / MBL / Booking ref / Container no"
+              placeholder="Enter your tracking number(s)"
               data-testid="track-input"
-              className="flex-1 h-12 border-0 bg-transparent focus-visible:ring-0 text-base font-mono uppercase placeholder:text-dhl-muted placeholder:normal-case placeholder:text-sm rounded-lg"
+              className="h-14 flex-1 px-4 border border-stone-300 bg-white rounded-sm focus:border-dhl-red focus:ring-2 focus:ring-dhl-red/20 outline-none text-base"
+              aria-label="Tracking number"
             />
-            <Button
+            <button
               type="submit"
               disabled={loading}
               data-testid="track-submit"
-              className="h-12 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark font-bold px-6 rounded-lg text-sm"
+              className="h-14 px-10 bg-dhl-red text-white font-bold rounded-sm hover:bg-dhl-red-dark transition-colors disabled:opacity-70"
             >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  Track <ArrowRight className="ml-2 w-4 h-4" />
-                </>
-              )}
-            </Button>
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Track"}
+            </button>
           </form>
-
-          <div className="mt-4 text-xs text-dhl-muted">
-            Try the demo references:{" "}
-            <button
-              type="button"
-              data-testid="demo-awb-button"
-              onClick={() => {
-                setInput("DHL1234567890");
-                navigate("/track/DHL1234567890");
-              }}
-              className="font-mono font-bold text-dhl-red hover:underline"
-            >
-              DHL1234567890
-            </button>
-            <span className="mx-2 text-dhl-border">·</span>
-            <button
-              type="button"
-              data-testid="demo-booking-ref-button"
-              onClick={() => {
-                setInput("MYDH-2026-100005");
-                navigate("/track/MYDH-2026-100005");
-              }}
-              className="font-mono font-bold text-dhl-red hover:underline"
-            >
-              MYDH-2026-100005
-            </button>
-          </div>
         </div>
       </section>
 
-      {/* Result */}
-      <section className="flex-1 bg-dhl-panel py-10 lg:py-14">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10">
-          {loading && (
-            <div className="text-center py-24" data-testid="track-loading">
-              <Loader2 className="w-10 h-10 text-dhl-yellow mx-auto mb-4 animate-spin" />
-              <p className="text-sm text-dhl-muted font-medium">Looking up your shipment…</p>
-            </div>
-          )}
-
-          {!loading && error?.kind === "notfound" && (
-            <div
-              data-testid="track-notfound"
-              className="bg-white border border-dhl-border max-w-2xl mx-auto px-6 py-20 text-center"
-            >
-              <div className="w-20 h-20 mx-auto mb-6 border-2 border-dashed border-dhl-border flex items-center justify-center">
-                <PackageX className="w-10 h-10 text-dhl-muted" strokeWidth={1.5} />
+      {/* ─── Detail-view: results / loading / error ─── */}
+      {isDetail && (
+        <section className="flex-1 bg-stone-50 py-10 lg:py-14" data-testid="track-detail-section">
+          <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
+            {loading && (
+              <div className="text-center py-24" data-testid="track-loading">
+                <Loader2 className="w-10 h-10 text-dhl-yellow mx-auto mb-4 animate-spin" />
+                <p className="text-sm text-stone-500 font-medium">Looking up your shipment…</p>
               </div>
-              <h2 className="font-display text-2xl font-bold text-dhl-text mb-3">
-                No shipment found
-              </h2>
-              <p className="text-sm text-dhl-muted max-w-md mx-auto mb-6">
-                We couldn't find a shipment for reference{" "}
-                <span className="font-mono font-bold text-dhl-text">{error.awb}</span>.
-                Double-check the number and try again — we accept AWB, HAWB, MAWB, HBL, MBL,
-                booking reference or container number.
-              </p>
-              <Button
-                data-testid="track-retry"
-                onClick={() => navigate("/track")}
-                className="h-11 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark font-bold rounded-lg text-sm px-6 border-2 border-dhl-ink"
+            )}
+            {!loading && error?.kind === "notfound" && (
+              <div
+                data-testid="track-notfound"
+                className="bg-white border border-stone-200 max-w-2xl mx-auto px-6 py-20 text-center"
               >
-                Try another reference
-              </Button>
-            </div>
-          )}
-
-          {!loading && error?.kind === "network" && (
-            <div data-testid="track-network-error" className="bg-white border border-dhl-red max-w-2xl mx-auto px-6 py-14 text-center">
-              <h2 className="font-display text-2xl font-black text-dhl-red mb-3">
-                Tracking service unavailable
-              </h2>
-              <p className="text-sm text-dhl-muted mb-5">
-                Something went wrong reaching the tracking service. Please try again in a moment.
-              </p>
-              <Button
-                data-testid="track-network-retry"
-                onClick={() => fetchShipment(input || awbParam || "")}
-                className="h-11 bg-dhl-ink text-white hover:bg-dhl-red rounded-none uppercase tracking-wider text-xs font-bold px-6"
+                <div className="w-20 h-20 mx-auto mb-6 border-2 border-dashed border-stone-300 flex items-center justify-center">
+                  <PackageX className="w-10 h-10 text-stone-400" strokeWidth={1.5} />
+                </div>
+                <h2 className="font-display text-2xl font-bold text-dhl-ink mb-3">
+                  No shipment found
+                </h2>
+                <p className="text-sm text-stone-500 max-w-md mx-auto mb-6">
+                  We couldn't find a shipment for reference{" "}
+                  <span className="font-mono font-bold text-dhl-ink">{error.awb}</span>.
+                  Double-check the number and try again — we accept AWB, HAWB, MAWB, HBL, MBL,
+                  booking reference or container number.
+                </p>
+                <Button
+                  data-testid="track-retry"
+                  onClick={() => navigate("/track")}
+                  className="h-11 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark font-bold rounded-md text-sm px-6"
+                >
+                  Try another reference
+                </Button>
+              </div>
+            )}
+            {!loading && error?.kind === "network" && (
+              <div
+                data-testid="track-network-error"
+                className="bg-white border border-dhl-red max-w-2xl mx-auto px-6 py-14 text-center"
               >
-                Retry
-              </Button>
-            </div>
-          )}
+                <h2 className="font-display text-2xl font-black text-dhl-red mb-3">
+                  Tracking service unavailable
+                </h2>
+                <p className="text-sm text-stone-500 mb-5">
+                  Something went wrong reaching the tracking service. Please try again in a moment.
+                </p>
+                <Button
+                  data-testid="track-network-retry"
+                  onClick={() => fetchShipment(input || awbParam || "")}
+                  className="h-11 bg-dhl-ink text-white hover:bg-dhl-red rounded-md uppercase tracking-wider text-xs font-bold px-6"
+                >
+                  Retry
+                </Button>
+              </div>
+            )}
+            {!loading && shipment && <TrackingDetail shipment={shipment} mode="public" />}
+          </div>
+        </section>
+      )}
 
-          {!loading && shipment && (
-            <TrackingDetail shipment={shipment} mode="public" />
-          )}
+      {/* ─── Index-view extras (only when NO :ref in URL) ─── */}
+      {!isDetail && (
+        <>
+          {/* Section 3 — FAQ accordion */}
+          <section className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16" data-testid="track-faq-section">
+            <h2 className="font-display font-bold text-2xl lg:text-3xl text-dhl-ink mb-6">
+              Frequently asked questions
+            </h2>
+            <Accordion
+              type="single"
+              collapsible
+              className="border-t border-stone-200"
+              data-testid="track-faq"
+            >
+              {FAQ_ITEMS.map((item, idx) => (
+                <AccordionItem
+                  key={item.q}
+                  value={`faq-${idx}`}
+                  className="border-b border-stone-200"
+                  data-testid={`track-faq-row-${idx}`}
+                >
+                  <AccordionTrigger className="text-base text-dhl-ink hover:no-underline font-medium py-5">
+                    {item.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-stone-600 leading-relaxed pb-5 pr-8">
+                    {item.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </section>
 
-          {!loading && !shipment && !error && (
-            <div className="text-center py-16">
-              <Search className="w-10 h-10 text-dhl-muted mx-auto mb-3 opacity-40" />
-              <p className="text-sm text-dhl-muted">Enter an AWB above to see live tracking.</p>
+          {/* Section 4 — Careers callout strip */}
+          <section
+            className="max-w-[1280px] mx-auto px-6 lg:px-10 pb-20"
+            data-testid="track-careers-section"
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              <div className="lg:col-span-7">
+                <h2 className="font-display font-bold text-2xl lg:text-3xl text-dhl-ink mb-5">
+                  Move faster. Move smarter. Move with us.
+                </h2>
+                <p className="text-base text-stone-600 mb-3">
+                  Careers across logistics, technology, freight handling and customer operations.
+                </p>
+                <p className="text-base text-stone-600 mb-3">
+                  Clear growth paths, stable schedules, real impact on the world's supply chains.
+                </p>
+                <p className="text-base text-stone-600 mb-6">
+                  Find a role that fits the way you want to work.
+                </p>
+                <a
+                  href="https://careers.dhl.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-testid="track-careers-cta"
+                  className="inline-flex items-center gap-2 h-12 px-8 bg-dhl-red text-white font-bold rounded-sm hover:bg-dhl-red-dark transition-colors"
+                >
+                  See open roles <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+              <div className="lg:col-span-5">
+                {/* TODO: swap this placeholder for a real careers / team photo
+                    when the user provides one. */}
+                <div
+                  className="rounded-xl overflow-hidden aspect-[16/12] bg-dhl-yellow flex items-center justify-center"
+                  data-testid="track-careers-image"
+                >
+                  <Briefcase className="w-14 h-14 text-dhl-red/40" />
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-      </section>
+          </section>
+        </>
+      )}
 
       <Footer />
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 };
