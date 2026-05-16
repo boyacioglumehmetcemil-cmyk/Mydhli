@@ -1117,40 +1117,42 @@ const ChecklistMark = () => (
 );
 
 const InfoBand = () => (
-  /* DHL-style compact horizontal banner. Yellow background is full-bleed
-     across the viewport again; only the inner content (image + text) sits
-     inside CONTAINER_CLASS. Image takes ~25% of the row at 4:3 aspect so
-     the section reads as a banner — never dominates the viewport vertically.
-     items-center keeps the smaller image vertically centered next to the
-     taller text block. */
-  <section data-testid="landing-info-band" className="bg-dhl-yellow w-full py-10 lg:py-14">
-    <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px]">
-      <div className="grid lg:grid-cols-[3fr_9fr] gap-8 lg:gap-12 items-center">
-        <div data-testid="info-band-image" className="aspect-[4/3] rounded-md overflow-hidden bg-white">
-          <img
-            src="/assets/dhl/info-band-tariff.png"
-            alt="DHL freight forwarder reviewing customs documents"
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        </div>
-        <div>
-          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-4">Trade insights</div>
-          <h2 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-5 text-[28px] lg:text-[40px]">
-            Move forward with confidence in shifting trade flows.
-          </h2>
-          <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-6 max-w-2xl">
-            Global trade conditions evolve constantly. Our freight forwarding teams help shippers plan around tariff changes, capacity shifts, and route disruptions across every mode — air, ocean and road.
-          </p>
-          <a
-            href="https://www.dhl.com/global-en/home/insights-and-innovation/insights.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            data-testid="info-band-cta"
-            className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
-          >
-            Read the brief <ArrowRight className="w-4 h-4" />
-          </a>
+  /* DHL-style compact horizontal banner. Outer section is plain white so the
+     yellow card sits inside a slightly wider container (~120px wider than
+     the shared CONTAINER_CLASS) — never full-bleed. Inside the yellow card,
+     the layout stays compact: image is a small 4:3 block on the left
+     (~25% of the row) and the text owns the rest. items-center keeps the
+     smaller image vertically centered next to the taller text block. */
+  <section data-testid="landing-info-band" className="bg-white py-12 lg:py-16">
+    <div className="mx-auto w-full px-4 sm:max-w-[600px] md:max-w-[820px] lg:max-w-[1060px] xl:max-w-[1240px] 2xl:max-w-[1440px]">
+      <div className="bg-dhl-yellow rounded-xl lg:rounded-lg overflow-hidden px-6 lg:px-10 py-8 lg:py-10">
+        <div className="grid lg:grid-cols-[3fr_9fr] gap-8 lg:gap-12 items-center">
+          <div data-testid="info-band-image" className="aspect-[4/3] rounded-md overflow-hidden bg-white border border-black/10">
+            <img
+              src="/assets/dhl/info-band-tariff.png"
+              alt="DHL freight forwarder reviewing customs documents"
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-4">Trade insights</div>
+            <h2 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-5 text-[28px] lg:text-[40px]">
+              Move forward with confidence in shifting trade flows.
+            </h2>
+            <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-6 max-w-2xl">
+              Global trade conditions evolve constantly. Our freight forwarding teams help shippers plan around tariff changes, capacity shifts, and route disruptions across every mode — air, ocean and road.
+            </p>
+            <a
+              href="https://www.dhl.com/global-en/home/insights-and-innovation/insights.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="info-band-cta"
+              className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
+            >
+              Read the brief <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
         </div>
       </div>
     </div>
