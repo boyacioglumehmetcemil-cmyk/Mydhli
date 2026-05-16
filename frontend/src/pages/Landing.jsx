@@ -1032,23 +1032,23 @@ const Hero = () => {
       <div className="mx-auto w-full sm:max-w-[960px] md:max-w-[1180px] lg:max-w-[1420px] xl:max-w-[1600px] 2xl:max-w-[1880px]">
         <div data-testid="landing-hero" className="relative isolate overflow-hidden">
           {/* Real DHL operational photo (image19 from PCT asset pack — outdoor delivery scene with mountain backdrop). Kept as a CSS background so we can keep the existing flow-layout that determines hero height.
-              bg-position pulled to dead-centre vertically (50%) so the photo's mid-band is what reads inside the shorter banner — courier face is shifted lower in the frame, reading as "stepped back" rather than tightly cropped at the top. */}
+              Final tuning after iteration: fixed 640px tall + bg-position 30% places the courier and the fjord/mountain backdrop both fully in-frame — face natural (not cropped at the forehead) and not over-zoomed. */}
           <div
             data-testid="hero-image"
-            className="absolute inset-0 bg-cover bg-no-repeat bg-[center_50%]"
+            className="absolute inset-0 bg-cover bg-no-repeat bg-[center_30%]"
             style={{ backgroundImage: "url('/assets/dhl/hero-delivery.png')" }}
             aria-hidden="true"
           />
-          {/* Readability overlay — concentrated near the top where the headline + tracking widget sit. Keeps the lower half of the photo (DHL van, courier) visible. */}
+          {/* Readability overlay — softened (35→15→0) so the photo reads cleaner; just enough darkening on the headline band so white type stays legible. */}
           <div
-            className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-transparent"
+            className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-transparent"
             aria-hidden="true"
           />
           {/* pb-* clears the FloatingCards section's `-mt-20 lg:-mt-24` overlap. */}
           {/* Container width aligned with every other Landing section (1280px) so
               the hero's content block starts/ends at the same vertical x-coordinate
               as Air/Ocean/Road/InfoBand/Sustainability/Footer. */}
-          <div className="relative mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] pt-8 lg:pt-12 pb-16 lg:pb-24 min-h-[40vh] flex flex-col justify-center">
+          <div className="relative mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] pt-10 lg:pt-16 pb-20 lg:pb-28 h-[640px] flex flex-col justify-center">
         <div className="w-full max-w-xl mx-auto">
           <h1 className="font-display font-semibold text-white leading-tight tracking-tight mb-6 text-[22px] sm:text-[26px] lg:text-[32px] text-left [text-shadow:0_2px_12px_rgba(0,0,0,0.45)]">
             Track your shipment
