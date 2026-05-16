@@ -1124,10 +1124,10 @@ const InfoBand = () => (
      (~25% of the row) and the text owns the rest. items-center keeps the
      smaller image vertically centered next to the taller text block. */
   <section data-testid="landing-info-band" className="bg-white py-12 lg:py-16">
-    <div className="mx-auto w-full px-4 sm:max-w-[600px] md:max-w-[820px] lg:max-w-[1060px] xl:max-w-[1240px] 2xl:max-w-[1440px]">
+    <div className="mx-auto w-full px-4 sm:max-w-[640px] md:max-w-[860px] lg:max-w-[1100px] xl:max-w-[1280px] 2xl:max-w-[1480px]">
       <div className="bg-dhl-yellow rounded-xl lg:rounded-lg overflow-hidden px-6 lg:px-10 py-8 lg:py-10">
-        <div className="grid lg:grid-cols-[3fr_9fr] gap-8 lg:gap-12 items-center">
-          <div data-testid="info-band-image" className="aspect-[4/3] rounded-md overflow-hidden bg-white border border-black/10">
+        <div className="grid lg:grid-cols-[3fr_9fr] gap-8 lg:gap-12 items-stretch">
+          <div data-testid="info-band-image" className="aspect-[4/3] lg:aspect-auto lg:-my-8 xl:-my-10 rounded-md lg:rounded-none overflow-hidden bg-white border border-black/10 lg:border-0">
             <img
               src="/assets/dhl/info-band-tariff.png"
               alt="DHL freight forwarder reviewing customs documents"
@@ -1135,7 +1135,7 @@ const InfoBand = () => (
               loading="lazy"
             />
           </div>
-          <div>
+          <div className="flex flex-col justify-center">
             <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-4">Trade insights</div>
             <h2 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-5 text-[28px] lg:text-[40px]">
               Move forward with confidence in shifting trade flows.
