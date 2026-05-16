@@ -1,14 +1,25 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
-  Search, ExternalLink, ChevronDown, ChevronRight, Menu, X,
+  Search, ExternalLink, ChevronDown, ChevronRight, ChevronUp, Menu, X,
   Plane, Ship, Truck, Calendar, Calculator, Building2, ArrowRight,
-  Linkedin, Youtube, Twitter, Container, Boxes, Facebook, Instagram,
+  Linkedin, Youtube, Twitter, Container, Boxes, Facebook, Instagram, FileText, Package,
 } from "lucide-react";
 import { toast } from "sonner";
 import BrandWordmark from "@/components/BrandWordmark";
 import BrandImagePlaceholder from "@/components/BrandImagePlaceholder";
 import CountryPicker from "@/components/CountryPicker";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+} from "@/components/ui/dropdown-menu";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import useTitle from "@/hooks/useTitle";
 
 /* -------------------------------------------------------------------------- */
@@ -38,15 +49,12 @@ export const UtilityBar = ({ onSearch }) => {
 };
 
 const NAV_ITEMS = [
+  // Note: "Ship" is rendered separately by <ShipMegaMenu /> / <ShipMobileSection />
+  // because it needs a two-region mega-panel that NAV_ITEMS's flat shape
+  // can't express. The placeholder below tells the renderer where to slot
+  // the Ship trigger inline with the other items.
   { label: "Track", to: "/track" },
-  {
-    label: "Ship",
-    items: [
-      { label: "Air freight",   to: "/dashboard/ship?mode=AIR",   icon: Plane },
-      { label: "Ocean freight", to: "/dashboard/ship?mode=OCEAN", icon: Ship },
-      { label: "Road freight",  to: "/dashboard/ship?mode=ROAD",  icon: Truck },
-    ],
-  },
+  { _shipMega: true },
   {
     label: "Enterprise Logistics Services",
     items: [
@@ -79,6 +87,190 @@ const NavDropdown = ({ items, open, onClose }) => (
   </div>
 );
 
+/* ─── Ship mega-menu ────────────────────────────────────────────────────
+   Wide dropdown with two regions:
+     left  → "Start shipping" rail (2 primary action cards)
+     right → "Learn more about" header + 3 sub-cards
+   Click-trigger via shadcn DropdownMenu (more accessible than hover for
+   touch + keyboard users; spec allowed either). Mobile drawer renders
+   the same content via <ShipMobileSection /> below. */
+const ShipStartCard = ({ to, icon: Icon, label, testId, onSelect }) => (
+  <Link
+    to={to}
+    onClick={onSelect}
+    data-testid={testId}
+    className="flex items-center justify-between p-4 rounded-md border border-stone-200 bg-white hover:border-stone-400 transition group"
+  >
+    <span className="flex items-center gap-3">
+      <Icon className="w-6 h-6 text-dhl-red" />
+      <span className="text-sm font-bold text-dhl-ink">{label}</span>
+    </span>
+    <ChevronRight className="w-5 h-5 text-dhl-red group-hover:translate-x-0.5 transition-transform" />
+  </Link>
+);
+
+const ShipLearnRow = ({ label, to, external, onSelect, last }) =>
+  external ? (
+    <a
+      href={to}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={onSelect}
+      className={`flex justify-between items-center text-sm text-dhl-ink hover:text-dhl-red py-3 ${last ? "" : "border-b border-stone-100"}`}
+    >
+      <span className="inline-flex items-center gap-1.5">
+        {label} <ExternalLink className="w-3 h-3" />
+      </span>
+      <ChevronRight className="w-4 h-4 text-dhl-red" />
+    </a>
+  ) : (
+    <Link
+      to={to}
+      onClick={onSelect}
+      className={`flex justify-between items-center text-sm text-dhl-ink hover:text-dhl-red py-3 ${last ? "" : "border-b border-stone-100"}`}
+    >
+      <span>{label}</span>
+      <ChevronRight className="w-4 h-4 text-dhl-red" />
+    </Link>
+  );
+
+const ShipPanelBody = ({ onSelect }) => (
+  <div data-testid="nav-ship-panel" className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+    {/* LEFT: Start shipping */}
+    <div>
+      <h3 className="text-xs font-bold tracking-widest text-dhl-ink mb-4">START SHIPPING</h3>
+      <div className="space-y-3">
+        <ShipStartCard
+          to="/dashboard/quote"
+          icon={Calculator}
+          label="Get a quote"
+          testId="ship-card-quote"
+          onSelect={onSelect}
+        />
+        <ShipStartCard
+          to="/dashboard/ship"
+          icon={Package}
+          label="Ship now"
+          testId="ship-card-ship-now"
+          onSelect={onSelect}
+        />
+      </div>
+    </div>
+
+    {/* RIGHT: Learn more about */}
+    <div>
+      <h3 className="text-xs font-bold tracking-widest text-dhl-ink mb-4">Learn more about</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Sub-card A: Document and package */}
+        <div className="border border-stone-200 rounded-md p-5 bg-white">
+          <div className="flex items-center gap-2 mb-1">
+            <FileText className="w-5 h-5 text-dhl-red" />
+            <h4 className="text-sm font-bold text-dhl-ink">Document and package</h4>
+          </div>
+          <div className="mt-3">
+            <ShipLearnRow label="Document and parcel shipping" to="/dashboard/ship?intent=parcel" onSelect={onSelect} />
+            <ShipLearnRow label="Volume shipping (Business Only)" to="/dashboard/ship?intent=volume" onSelect={onSelect} />
+            <ShipLearnRow label="Direct mail for business" to="https://www.dhl.com/global-en/home/our-divisions/post-ecommerce.html" external onSelect={onSelect} last />
+          </div>
+        </div>
+
+        {/* Sub-card B: Pallets, containers and cargo (gray panel) */}
+        <div data-testid="ship-card-freight" className="bg-stone-50 border border-stone-200 rounded-md p-5 flex flex-col">
+          <div className="flex items-start gap-2 mb-1">
+            <Boxes className="w-5 h-5 text-dhl-red mt-0.5" />
+            <div>
+              <h4 className="text-sm font-bold text-dhl-ink">Pallets, containers and cargo</h4>
+              <p className="text-xs text-stone-500 mt-0.5">Business only</p>
+            </div>
+          </div>
+          <p className="text-sm text-stone-600 mt-3 flex-1">
+            Air, ocean, road and rail freight forwarding plus customs brokerage and end-to-end logistics services for medium and large shippers.
+          </p>
+          <Link
+            to="/global-forwarding"
+            onClick={onSelect}
+            data-testid="ship-card-freight-cta"
+            className="border border-dhl-red text-dhl-red text-sm font-bold rounded-md px-4 py-2 mt-4 inline-flex items-center justify-center hover:bg-dhl-red hover:text-white transition w-full"
+          >
+            Explore freight services
+          </Link>
+        </div>
+
+        {/* Sub-card C: DHL for Business */}
+        <div data-testid="ship-card-business" className="border border-stone-200 rounded-md p-5 bg-white flex flex-col">
+          <div className="flex items-start gap-2 mb-1">
+            <Building2 className="w-5 h-5 text-dhl-red mt-0.5" />
+            <div>
+              <h4 className="text-sm font-bold text-dhl-ink">DHL for Business</h4>
+              <p className="text-xs text-stone-500 mt-0.5">Frequent shippers</p>
+            </div>
+          </div>
+          <p className="text-sm text-stone-600 mt-3 flex-1">
+            If you ship often, open a business account to unlock account pricing, faster checkout, saved addresses and consolidated invoices.
+          </p>
+          <Link
+            to="/register?intent=business"
+            onClick={onSelect}
+            data-testid="ship-card-business-cta"
+            className="border border-dhl-red text-dhl-red text-sm font-bold rounded-md px-4 py-2 mt-4 inline-flex items-center justify-center hover:bg-dhl-red hover:text-white transition w-full"
+          >
+            Open a business account
+          </Link>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const ShipMegaMenu = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          data-testid="nav-ship-trigger"
+          className={
+            "px-4 py-2 text-sm font-semibold inline-flex items-center gap-1 border-b-2 transition-colors h-14 " +
+            (open
+              ? "border-dhl-red text-dhl-red"
+              : "border-transparent text-dhl-text hover:text-dhl-red hover:border-dhl-yellow")
+          }
+        >
+          Ship
+          {open ? (
+            <ChevronUp className="w-3.5 h-3.5 ml-1" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 ml-1" />
+          )}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        sideOffset={0}
+        // Wide mega-panel; rounded top corners removed so the panel reads
+        // as an extension of the sticky nav bar.
+        className="min-w-[920px] max-w-[1100px] rounded-t-none rounded-b-md border-t border-stone-200 shadow-lg p-8 bg-white"
+      >
+        <ShipPanelBody onSelect={() => setOpen(false)} />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+const ShipMobileSection = ({ onSelect }) => (
+  <Accordion type="single" collapsible data-testid="mobile-nav-ship-accordion">
+    <AccordionItem value="ship" className="border-0">
+      <AccordionTrigger className="px-5 py-3 text-sm font-semibold text-dhl-text hover:no-underline border-b border-dhl-border">
+        Ship
+      </AccordionTrigger>
+      <AccordionContent className="px-5 pb-4 pt-3 bg-stone-50 border-b border-dhl-border">
+        <ShipPanelBody onSelect={onSelect} />
+      </AccordionContent>
+    </AccordionItem>
+  </Accordion>
+);
+
 export const NavBar = ({ onMobileMenu }) => {
   const [openIdx, setOpenIdx] = useState(null);
   const [portalOpen, setPortalOpen] = useState(false);
@@ -93,6 +285,8 @@ export const NavBar = ({ onMobileMenu }) => {
       <div ref={navRef} className="max-w-[1440px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
         <nav className="hidden md:flex items-center gap-1">
           {NAV_ITEMS.map((it, i) => {
+            // Ship is rendered via its dedicated mega-menu component.
+            if (it._shipMega) return <ShipMegaMenu key="ship-mega" />;
             const hasDropdown = !!it.items;
             return (
               <div key={it.label} className="relative">
@@ -161,22 +355,29 @@ export const MobileDrawer = ({ open, onClose }) => (
           </button>
         </div>
         <nav className="flex-1 overflow-y-auto py-4">
-          {NAV_ITEMS.map(it => (
-            <div key={it.label}>
-              {it.items ? (
-                <>
-                  <div className="px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-dhl-muted">{it.label}</div>
-                  {it.items.map(sub => (
-                    <Link key={sub.label} to={sub.to} onClick={onClose}
-                      className="block px-7 py-2.5 text-sm text-dhl-text hover:bg-dhl-panel hover:text-dhl-red">{sub.label}</Link>
-                  ))}
-                </>
-              ) : (
-                <Link to={it.to} onClick={onClose}
-                  className="block px-5 py-3 text-sm font-semibold text-dhl-text hover:bg-dhl-panel hover:text-dhl-red border-b border-dhl-border">{it.label}</Link>
-              )}
-            </div>
-          ))}
+          {NAV_ITEMS.map(it => {
+            // Ship gets its dedicated mobile accordion so the mega-panel
+            // structure stays consistent with desktop.
+            if (it._shipMega) {
+              return <ShipMobileSection key="ship-mobile" onSelect={onClose} />;
+            }
+            return (
+              <div key={it.label}>
+                {it.items ? (
+                  <>
+                    <div className="px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-dhl-muted">{it.label}</div>
+                    {it.items.map(sub => (
+                      <Link key={sub.label} to={sub.to} onClick={onClose}
+                        className="block px-7 py-2.5 text-sm text-dhl-text hover:bg-dhl-panel hover:text-dhl-red">{sub.label}</Link>
+                    ))}
+                  </>
+                ) : (
+                  <Link to={it.to} onClick={onClose}
+                    className="block px-5 py-3 text-sm font-semibold text-dhl-text hover:bg-dhl-panel hover:text-dhl-red border-b border-dhl-border">{it.label}</Link>
+                )}
+              </div>
+            );
+          })}
           {/* Country & currency picker — exposed in the drawer so mobile
               users can pivot pricing just like desktop. Uses the same
               <CountryPicker /> component in row-trigger mode. */}
