@@ -1124,9 +1124,14 @@ const InfoBand = () => (
      (~25% of the row) and the text owns the rest. items-center keeps the
      smaller image vertically centered next to the taller text block. */
   <section data-testid="landing-info-band" className="bg-white py-12 lg:py-16">
-    <div className="mx-auto w-full px-4 sm:max-w-[680px] md:max-w-[900px] lg:max-w-[1140px] xl:max-w-[1320px] 2xl:max-w-[1520px]">
-      <div className="bg-dhl-yellow rounded-xl lg:rounded-lg overflow-hidden px-6 lg:px-10 py-8 lg:py-10">
-        <div className="grid lg:grid-cols-[3fr_9fr] gap-8 lg:gap-12 items-stretch">
+    <div className="mx-auto w-full px-4 sm:max-w-[720px] md:max-w-[940px] lg:max-w-[1180px] xl:max-w-[1360px] 2xl:max-w-[1600px]">
+      <div className="bg-dhl-yellow rounded-xl lg:rounded-lg overflow-hidden py-8 lg:py-10">
+        {/* Inner wrapper mirrors CONTAINER_CLASS so the image + text inside
+            the yellow card line up with the next section (Air Freight, etc.).
+            Yellow background overshoots the standard container on both sides
+            for visual weight; content stays on the same vertical line. */}
+        <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px]">
+          <div className="grid lg:grid-cols-[3fr_9fr] gap-8 lg:gap-12 items-stretch">
           <div data-testid="info-band-image" className="aspect-[4/3] lg:aspect-auto lg:-my-8 xl:-my-10 rounded-md lg:rounded-none overflow-hidden bg-white border border-black/10 lg:border-0">
             <img
               src="/assets/dhl/info-band-tariff.png"
@@ -1153,6 +1158,7 @@ const InfoBand = () => (
               Read the brief <ArrowRight className="w-4 h-4" />
             </a>
           </div>
+        </div>
         </div>
       </div>
     </div>
