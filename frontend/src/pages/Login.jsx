@@ -1,8 +1,18 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { AlertTriangle, Calculator, Check, Eye, EyeOff, FileText, Lock, MapPin, Package } from "lucide-react";
-import Logo from "@/components/Logo";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  Calculator,
+  Eye,
+  EyeOff,
+  FileText,
+  Lock,
+  MapPin,
+  Package,
+} from "lucide-react";
+import BrandWordmark from "@/components/BrandWordmark";
+import CountryPicker from "@/components/CountryPicker";
 import { useAuth } from "@/contexts/AuthContext";
 
 /**
@@ -10,11 +20,8 @@ import { useAuth } from "@/contexts/AuthContext";
  *
  * Accepts only same-origin RELATIVE paths starting with a single forward
  * slash. Anything that looks like a protocol-relative URL (`//evil.com`),
- * an absolute URL (`http://evil.com`, `https://...`), or a non-path
- * (`javascript:alert(1)`) is rejected to prevent open-redirect abuse.
- *
- * Whitelist regex: `^/(?!\/)` — must start with `/`, but the 2nd char
- * MUST NOT be another `/`.
+ * an absolute URL (`http://evil.com`), or a non-path (`javascript:...`) is
+ * rejected to prevent open-redirect abuse.
  */
 const SAFE_NEXT = /^\/(?!\/)/;
 const resolveNext = (raw) => {
@@ -30,16 +37,13 @@ const resolveNext = (raw) => {
   return decoded;
 };
 
-// Quick syntactic email check — enough to flip the green tick. Real
-// validation happens server-side.
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Quick syntactic email check kept for the inline error string. Form
+// validation itself happens server-side.
 
 /**
  * Map a sanitised post-login `next` path to a friendly contextual banner.
- *
- * Only `/dashboard/*` paths are surfaced to the visitor — anything else
- * (or a missing/equal-to-`/dashboard` value) returns null so we never leak
- * unexpected redirect targets via the UI.
+ * Only `/dashboard/*` paths surface to the visitor; anything else returns
+ * null so we never leak unexpected redirect targets via the UI.
  */
 const buildNextBanner = (safeNext) => {
   if (!safeNext) return null;
@@ -60,6 +64,66 @@ const buildNextBanner = (safeNext) => {
   return { Icon: Lock, message: "Sign in to continue." };
 };
 
+const CONTACT_URL = "https://www.dhl.com/global-en/home/footer/contact-us.html";
+const LEGAL_LINKS = [
+  { label: "Privacy Notice", href: "https://www.dhl.com/global-en/home/footer/privacy-notice.html" },
+  { label: "Terms of Use",   href: "https://www.dhl.com/global-en/home/footer/terms-of-use.html" },
+  { label: "Legal Notice",   href: "https://www.dhl.com/global-en/home/footer/legal-notice.html" },
+  { label: "Contact us",     href: CONTACT_URL },
+];
+
+/* ─────────────── Floating-label input ─────────────── */
+// Small inline component so email + password share identical chrome without
+// us spinning up a new file in /components. Renders a thin outlined input
+// with the label sitting at the top-left when focused or filled.
+const FloatingInput = ({
+  id,
+  label,
+  type = "text",
+  value,
+  onChange,
+  autoComplete,
+  testId,
+  rightSlot,
+}) => {
+  const hasValue = (value || "").length > 0;
+  return (
+    <div className="relative">
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={onChange}
+        autoComplete={autoComplete}
+        data-testid={testId}
+        placeholder=" "
+        required
+        className={
+          // The `peer` class enables placeholder-based label animation below.
+          "peer h-14 w-full bg-white border border-stone-400 rounded-sm px-3 pt-5 pb-1 " +
+          "text-base text-dhl-ink outline-none focus:border-dhl-ink transition-colors " +
+          (rightSlot ? "pr-12 " : "")
+        }
+      />
+      <label
+        htmlFor={id}
+        className={
+          "absolute left-3 pointer-events-none transition-all duration-150 ease-out " +
+          "text-stone-500 " +
+          (hasValue
+            ? "top-1.5 text-xs"
+            : "top-1/2 -translate-y-1/2 text-base peer-focus:top-1.5 peer-focus:-translate-y-0 peer-focus:text-xs")
+        }
+      >
+        {label}
+      </label>
+      {rightSlot && (
+        <div className="absolute right-1 top-1/2 -translate-y-1/2">{rightSlot}</div>
+      )}
+    </div>
+  );
+};
+
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -68,17 +132,11 @@ const Login = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(true);
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
-  // Inline error chip (replaces noisy toast on failed sign-in).
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Show the amber session-expired alert when ProtectedRoute (or any other
-  // caller) bounces the user here with `?expired=1`.
   const sessionExpired = searchParams.get("expired") === "1";
-
-  const emailValid = useMemo(() => EMAIL_RE.test(email), [email]);
 
   // Two redirect sources, in priority order:
   //   1) ?next= query param (set by ProtectedRoute on un-auth redirects;
@@ -88,9 +146,6 @@ const Login = () => {
   const stateFrom = location.state?.from?.pathname;
   const stateFromSafe = stateFrom && SAFE_NEXT.test(stateFrom) ? stateFrom : null;
   const redirectTo = safeNext || stateFromSafe || "/dashboard";
-
-  // Contextual banner for the `?next=` flow — surfaces what the user was
-  // about to do BEFORE they got bounced here.
   const nextBanner = buildNextBanner(safeNext);
 
   const handleSubmit = async (e) => {
@@ -113,167 +168,162 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-10" data-testid="login-page">
-      <div
-        className="w-full max-w-[520px] bg-white rounded-2xl shadow-xl p-8 lg:p-10"
-        data-testid="login-card"
+    <div className="min-h-screen flex flex-col bg-stone-100" data-testid="login-page">
+      {/* ─────────────── 1) TOP UTILITY BAR ─────────────── */}
+      <header className="bg-dhl-yellow h-16 px-6 lg:px-10 flex items-center justify-between shrink-0">
+        <BrandWordmark to="/" placement="header" data-testid="login-header-logo" />
+        <a
+          href={CONTACT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="login-header-contact"
+          className="text-sm font-bold text-dhl-red hover:text-dhl-red-dark inline-flex items-center gap-1"
+        >
+          Contact us <ArrowUpRight className="w-4 h-4" />
+        </a>
+      </header>
+
+      {/* ─────────────── 2) HERO + CENTERED CARD ─────────────── */}
+      {/* min-h calc keeps the photo filling the gap between utility bar and
+          footer at any viewport. The sustainability photo reused here matches
+          the reference (wind turbines / mountains). */}
+      <section
+        data-testid="login-hero"
+        className="flex-1 bg-cover bg-center flex items-center justify-center px-4 py-10 min-h-[calc(100vh-64px-160px)]"
+        style={{ backgroundImage: "url('/assets/dhl/sustainability-photo.png')" }}
       >
-        {/* Session-expired alert — only when ?expired=1. */}
-        {sessionExpired && (
-          <div
-            className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-8 flex items-start gap-3"
-            data-testid="session-expired-alert"
-            role="status"
-          >
-            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <span className="text-base font-semibold text-amber-900">Session expired</span>
-          </div>
-        )}
-
-        {/* Contextual ?next= banner — sits above H1, below expired alert.
-            Renders ONLY for /dashboard/* targets so we don't leak unknown
-            redirect destinations to the UI. */}
-        {nextBanner && (
-          <div
-            className="bg-dhl-yellow/20 border border-dhl-yellow/40 text-dhl-ink rounded-md text-sm px-4 py-3 mb-6 flex items-center gap-2"
-            data-testid="login-next-banner"
-            role="status"
-          >
-            <nextBanner.Icon className="w-4 h-4 shrink-0" />
-            <span>{nextBanner.message}</span>
-          </div>
-        )}
-
-        {/* Brand wordmark. <Logo /> defaults to placement="header" so it
-            renders the official PNG via BrandWordmark — never the legacy
-            CSS placeholder. */}
-        <div className="mb-6">
-          <Logo size="md" to="/" />
-        </div>
-
-        <h1 className="font-display font-bold text-4xl lg:text-5xl text-dhl-ink leading-tight mb-2">
-          Sign in to myDHLi
-        </h1>
-
-        <p className="text-sm text-stone-600 mb-8">
-          Don't have an account?{" "}
-          <Link
-            to="/register"
-            data-testid="login-register-link"
-            className="text-dhl-red font-bold underline underline-offset-4 hover:text-dhl-red-dark"
-          >
-            Create a login
-          </Link>
-        </p>
-
-        {/* Inline error chip — appears above the email field on bad creds.
-            Sits in the same vertical slot a noisy toast used to occupy. */}
-        {errorMsg && (
-          <div
-            className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-3 rounded-md mb-6"
-            data-testid="login-error"
-            role="alert"
-          >
-            {errorMsg}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} data-testid="login-form" noValidate>
-          {/* Email */}
-          <div className="mb-5">
-            <label
-              htmlFor="email"
-              className="block text-xs uppercase tracking-wider font-semibold text-stone-700 mb-1.5"
+        <div
+          className="w-full max-w-[480px] bg-white rounded-md shadow-2xl p-10 lg:p-12"
+          data-testid="login-card"
+        >
+          {/* Conditional banners — stay above H1 inside the card. */}
+          {sessionExpired && (
+            <div
+              className="bg-amber-50 border border-amber-200 rounded-sm p-3 mb-5 flex items-start gap-2"
+              data-testid="session-expired-alert"
+              role="status"
             >
-              Email address
-            </label>
-            <div className="relative">
-              <input
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <span className="text-sm font-semibold text-amber-900">Session expired</span>
+            </div>
+          )}
+          {nextBanner && (
+            <div
+              className="bg-dhl-yellow/20 border border-dhl-yellow/40 text-dhl-ink rounded-sm text-sm px-3 py-2.5 mb-5 flex items-center gap-2"
+              data-testid="login-next-banner"
+              role="status"
+            >
+              <nextBanner.Icon className="w-4 h-4 shrink-0" />
+              <span>{nextBanner.message}</span>
+            </div>
+          )}
+
+          <h1 className="font-display font-bold text-2xl lg:text-[28px] text-dhl-ink mb-8">
+            Welcome to myDHLi
+          </h1>
+
+          {/* Inline auth-failure chip */}
+          {errorMsg && (
+            <div
+              className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-3 rounded-sm mb-6"
+              data-testid="login-error"
+              role="alert"
+            >
+              {errorMsg}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} data-testid="login-form" noValidate>
+            <div className="mb-5">
+              <FloatingInput
                 id="email"
+                label="Email"
                 type="email"
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                data-testid="login-email-input"
-                className="w-full h-12 px-4 pr-11 rounded-md border border-stone-300 bg-stone-50 text-base focus:border-dhl-red focus:ring-2 focus:ring-dhl-red/20 outline-none transition"
-                required
+                testId="login-email-input"
               />
-              {emailValid && (
-                <Check
-                  data-testid="login-email-valid"
-                  className="w-5 h-5 text-emerald-600 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                />
-              )}
             </div>
-          </div>
 
-          {/* Password */}
-          <div className="mb-4">
-            <label
-              htmlFor="password"
-              className="block text-xs uppercase tracking-wider font-semibold text-stone-700 mb-1.5"
-            >
-              Password
-            </label>
-            <div className="relative">
-              <input
+            <div className="mb-6">
+              <FloatingInput
                 id="password"
+                label="Password"
                 type={showPwd ? "text" : "password"}
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                data-testid="login-password-input"
-                className="w-full h-12 px-4 pr-12 rounded-md border border-stone-300 bg-stone-50 text-base focus:border-dhl-red focus:ring-2 focus:ring-dhl-red/20 outline-none transition"
-                required
+                testId="login-password-input"
+                rightSlot={
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd((v) => !v)}
+                    data-testid="login-toggle-password"
+                    aria-label={showPwd ? "Hide password" : "Show password"}
+                    className="w-10 h-10 inline-flex items-center justify-center text-stone-500 hover:text-dhl-ink rounded-sm transition-colors"
+                  >
+                    {showPwd ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                }
               />
-              <button
-                type="button"
-                onClick={() => setShowPwd((v) => !v)}
-                data-testid="login-toggle-password"
-                aria-label={showPwd ? "Hide password" : "Show password"}
-                className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 inline-flex items-center justify-center rounded-md text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition"
-              >
-                {showPwd ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
             </div>
-          </div>
 
-          {/* Remember + Forgot row */}
-          <div className="flex items-center justify-between mb-8">
-            <label htmlFor="remember" className="flex items-center gap-2 cursor-pointer">
-              <Checkbox
-                id="remember"
-                checked={remember}
-                onCheckedChange={(v) => setRemember(!!v)}
-                data-testid="login-remember-checkbox"
-                className="border-stone-400 data-[state=checked]:bg-dhl-red data-[state=checked]:text-white data-[state=checked]:border-dhl-red"
-              />
-              <span className="text-sm text-stone-700">Remember me</span>
-            </label>
             <Link
               to="/forgot-password"
               data-testid="login-forgot-link"
-              className="text-sm text-dhl-red font-bold underline underline-offset-4 hover:text-dhl-red-dark"
+              className="text-sm text-dhl-ink underline underline-offset-4 hover:text-dhl-red mx-auto block text-center mb-10"
             >
-              Forgot / reset password
+              Forgot your password?
             </Link>
+
+            <button
+              type="submit"
+              disabled={loading}
+              data-testid="login-submit-button"
+              className="w-full h-14 bg-dhl-red text-white text-base font-bold rounded-sm hover:bg-dhl-red-dark transition disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {loading ? "Signing in..." : "Login"}
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* ─────────────── 3) BOTTOM FOOTER ─────────────── */}
+      <footer
+        className="bg-stone-100 py-6 px-6 lg:px-10 shrink-0"
+        data-testid="login-footer"
+      >
+        <div className="max-w-[1280px] mx-auto flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+          <div className="flex flex-col gap-2">
+            <BrandWordmark placement="footer" data-testid="login-footer-logo" />
+            <nav className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+              {LEGAL_LINKS.map((l, i) => (
+                <span key={l.label} className="inline-flex items-center gap-2">
+                  <a
+                    href={l.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid={`login-footer-link-${l.label.toLowerCase().replace(/\s+/g, "-")}`}
+                    className="text-stone-700 hover:text-dhl-red underline-offset-4 hover:underline"
+                  >
+                    {l.label}
+                  </a>
+                  {i < LEGAL_LINKS.length - 1 && (
+                    <span className="text-stone-400" aria-hidden="true">·</span>
+                  )}
+                </span>
+              ))}
+            </nav>
+            <p className="text-xs text-stone-500 mt-2">
+              © 2026 DHL Global Forwarding — Demo build · Not affiliated with Deutsche Post DHL Group · myDHLi placeholder
+            </p>
           </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            data-testid="login-submit-button"
-            className="w-full h-14 bg-dhl-red text-white text-base font-bold rounded-md hover:bg-dhl-red-dark transition disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {loading ? "Signing in..." : "Sign in"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-xs text-stone-500 text-center" data-testid="login-demo-footer">
-          Demo build · Not affiliated with Deutsche Post DHL Group
-        </p>
-      </div>
+          <div className="flex-shrink-0">
+            <CountryPicker />
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
