@@ -275,24 +275,22 @@ const ELSPanelBody = ({ onSelect, showImage = true }) => (
       <p className="text-sm lg:text-base text-stone-700 mb-3">
         Our Supply Chain division designs custom logistics solutions for enterprise-scale organisations across every industry.
       </p>
-      <p className="text-sm lg:text-base text-stone-700 mb-3">
+      <p className="text-sm lg:text-base text-stone-700 mb-4">
         See why DHL Supply Chain is trusted as a third-party logistics (3PL) partner for warehousing, distribution, transport management and value-added services.
       </p>
-      <div className="mt-2">
-        <Link
-          to="/solutions"
-          onClick={onSelect}
-          data-testid="els-cta-supply-chain"
-          className="h-12 px-7 bg-dhl-red text-white font-bold rounded-sm hover:bg-dhl-red-dark transition inline-flex items-center gap-2"
-        >
-          Explore DHL Supply Chain <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
+      <Link
+        to="/solutions"
+        onClick={onSelect}
+        data-testid="els-cta-supply-chain"
+        className="h-12 px-7 bg-dhl-red text-white font-bold rounded-sm hover:bg-dhl-red-dark transition inline-flex items-center gap-2 mt-2 self-start"
+      >
+        Explore DHL Supply Chain <ArrowRight className="w-4 h-4" />
+      </Link>
     </div>
     {showImage && (
       <div>
         <img
-          src="/assets/dhl/road-freight-photo.png"
+          src="/images/hero-warehouse.jpg"
           alt="Enterprise logistics services"
           loading="lazy"
           data-testid="els-hero-image"
