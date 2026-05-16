@@ -382,13 +382,15 @@ const AirFreightOverlappingSection = () => {
               </div>
             </div>
 
-            <Link
-              to="/dashboard/quote?mode=AIR"
+            <a
+              href="https://www.dhl.com/global-en/home/our-divisions/global-forwarding/air-freight.html"
+              target="_blank"
+              rel="noopener noreferrer"
               data-testid="mode-cta-air"
               className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
             >
               Explore air freight <ArrowRight className="w-4 h-4" />
-            </Link>
+            </a>
           </div>
 
           {/* PHOTO — right column. On lg+ negative left margin pulls it under the
@@ -474,13 +476,15 @@ const OceanFreightOverlappingSection = () => {
               ))}
             </div>
 
-            <Link
-              to="/dashboard/quote?mode=OCEAN"
+            <a
+              href="https://www.dhl.com/global-en/home/our-divisions/global-forwarding/ocean-freight.html"
+              target="_blank"
+              rel="noopener noreferrer"
               data-testid="mode-cta-ocean"
               className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
             >
               Explore ocean freight <ArrowRight className="w-4 h-4" />
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -534,13 +538,15 @@ const RoadFreightOverlappingSection = () => {
               </div>
             </div>
 
-            <Link
-              to="/dashboard/quote?mode=ROAD"
+            <a
+              href="https://www.dhl.com/global-en/home/our-divisions/global-forwarding/road-freight.html"
+              target="_blank"
+              rel="noopener noreferrer"
               data-testid="mode-cta-road"
               className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
             >
               Explore road freight <ArrowRight className="w-4 h-4" />
-            </Link>
+            </a>
           </div>
 
           {/* PHOTO — RIGHT, z-0, bleeds left into card + vertically beyond on lg+ */}
@@ -719,10 +725,15 @@ const InfoBand = () => (
         <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-6 max-w-3xl">
           Global trade conditions evolve constantly. Our freight forwarding teams help shippers plan around tariff changes, capacity shifts, and route disruptions across every mode — air, ocean and road.
         </p>
-        <Link to="/solutions" data-testid="info-band-cta"
-          className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors">
-          Explore solutions <ArrowRight className="w-4 h-4" />
-        </Link>
+        <a
+          href="https://www.dhl.com/global-en/home/insights-and-innovation/insights.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="info-band-cta"
+          className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
+        >
+          Read the brief <ArrowRight className="w-4 h-4" />
+        </a>
       </div>
     </div>
   </section>
@@ -757,10 +768,15 @@ const Sustainability = () => (
         <p className="text-dhl-muted text-[15px] lg:text-base leading-relaxed mb-6 max-w-xl">
           When you compare modes in our quote tool, you see emissions alongside cost and transit time. Choose what fits your impact targets — and report Scope 3 with one click.
         </p>
-        <Link to="/dashboard/quote" data-testid="sustainability-cta"
-          className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors">
-          See our quote comparison <ArrowRight className="w-4 h-4" />
-        </Link>
+        <a
+          href="https://www.dhl.com/global-en/home/sustainability.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="sustainability-cta"
+          className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
+        >
+          Explore sustainability <ArrowRight className="w-4 h-4" />
+        </a>
       </div>
       <div data-testid="sustainability-image" className="aspect-[3/2] rounded-xl overflow-hidden shadow-lg bg-white">
         <img
@@ -812,13 +828,15 @@ const SMBBusinessSection = () => (
           <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-8 max-w-prose">
             Scale your small and medium-sized business with door-to-door freight forwarding, customs brokerage and reliable transit. Our specialists adapt to your customers' changing needs.
           </p>
-          <Link
-            to="/solutions"
+          <a
+            href="https://www.dhl.com/global-en/home/our-divisions/dhl-for-business.html"
+            target="_blank"
+            rel="noopener noreferrer"
             data-testid="smb-business-cta"
             className="inline-flex items-center gap-2 h-12 px-7 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md shadow-md transition-colors"
           >
             Explore business solutions <ArrowRight className="w-4 h-4" />
-          </Link>
+          </a>
         </div>
       </div>
     </div>
@@ -829,10 +847,12 @@ const SMBBusinessSection = () => (
 /* Footer                                                                      */
 /* -------------------------------------------------------------------------- */
 const Footer = () => {
-  /* ---------- Tier 1: Service updates band ---------- */
+  /* ---------- Tier 1: Service updates band ----------
+     Each row deep-links to DHL Group's public service-alerts page so the
+     pitch demo can showcase real DHL operational comms. */
   const updates = [
-    "Operational update — Pacific region",
-    "Weekly fuel surcharge adjustment",
+    { label: "Operational update — Pacific region", href: "https://www.dhl.com/global-en/home/footer/service-alerts.html" },
+    { label: "Weekly fuel surcharge adjustment",    href: "https://www.dhl.com/global-en/home/footer/service-alerts.html" },
   ];
 
   /* ---------- Tier 2: Promo cards (no new asset for Innovation) ---------- */
@@ -842,18 +862,21 @@ const Footer = () => {
       body: "Lower-carbon supply chains start with the modes you choose. We surface emissions alongside cost and transit time so you can balance impact and delivery in the same view.",
       image: "/assets/dhl/sustainability-photo.png",
       alt: "DHL electric delivery van on a tree-lined street",
+      href: "https://www.dhl.com/global-en/home/sustainability.html",
     },
     {
       title: "Innovation",
       body: "Customer-centric tooling — from instant multi-mode quotes to AI-assisted customs prep. Every release we ship pulls another minute out of the booking flow for shippers.",
       image: null, // Yellow gradient placeholder — no dedicated asset yet
       alt: null,
+      href: "https://www.dhl.com/global-en/home/insights-and-innovation/innovation-in-logistics.html",
     },
     {
       title: "Global connectedness",
       body: "Our 2026 outlook tracks how trade lanes are reshaping across regions. See where capacity is shifting and how mode-switching is unlocking shorter, more resilient routes.",
       image: "/assets/dhl/ocean-freight-photo.png",
       alt: "Container port with cargo ship and STS cranes",
+      href: "https://www.dhl.com/global-en/home/insights-and-innovation/insights.html",
     },
   ];
 
@@ -935,13 +958,15 @@ const Footer = () => {
           </div>
           <ul className="divide-y divide-dhl-border border-t border-b border-dhl-border">
             {updates.map((u) => (
-              <li key={u}>
+              <li key={u.label}>
                 <a
-                  href="#"
+                  href={u.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   data-testid="footer-update-link"
                   className="flex items-center justify-between gap-4 py-4 group hover:bg-dhl-panel/40 transition-colors px-2"
                 >
-                  <span className="text-[14px] lg:text-[15px] text-dhl-ink group-hover:text-dhl-red transition-colors">{u}</span>
+                  <span className="text-[14px] lg:text-[15px] text-dhl-ink group-hover:text-dhl-red transition-colors">{u.label}</span>
                   <ChevronRight className="w-4 h-4 text-dhl-red flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
                 </a>
               </li>
@@ -956,7 +981,9 @@ const Footer = () => {
           {promoCards.map((c) => (
             <a
               key={c.title}
-              href="#"
+              href={c.href}
+              target="_blank"
+              rel="noopener noreferrer"
               data-testid={`footer-promo-${c.title.toLowerCase().replace(/\s+/g, "-")}`}
               className="group block bg-white rounded-2xl shadow-md border border-dhl-border/60 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200"
             >
