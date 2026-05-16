@@ -1124,7 +1124,7 @@ const InfoBand = () => (
      (~25% of the row) and the text owns the rest. items-center keeps the
      smaller image vertically centered next to the taller text block. */
   <section data-testid="landing-info-band" className="bg-white py-12 lg:py-16">
-    <div className="mx-auto w-full px-4 sm:max-w-[880px] md:max-w-[1100px] lg:max-w-[1340px] xl:max-w-[1520px] 2xl:max-w-[1840px]">
+    <div className="mx-auto w-full px-4 sm:max-w-[920px] md:max-w-[1140px] lg:max-w-[1380px] xl:max-w-[1560px] 2xl:max-w-[1920px]">
       <div className="bg-dhl-yellow rounded-xl lg:rounded-lg overflow-hidden py-8 lg:py-10">
         {/* Inner wrapper mirrors CONTAINER_CLASS so the image + text inside
             the yellow card line up with the next section (Air Freight, etc.).
