@@ -56,19 +56,27 @@ import useTitle from "@/hooks/useTitle";
 // chrome without JSX duplication. TODO: lift into /components/landing/.
 export const UtilityBar = ({ onSearch }) => {
   return (
-    <div className="bg-dhl-yellow border-b border-dhl-yellow-dark" data-testid="utility-bar">
-      <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] h-14 flex items-center justify-between gap-4">
-        <BrandWordmark to="/" placement="header-bug-only" data-testid="utility-bar-logo" />
-        <nav className="hidden md:flex items-center gap-4 text-[13px] text-dhl-ink/85">
-          <Link to="/locations" className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-find-location">
-            Find a service point <ExternalLink className="w-3 h-3" />
-          </Link>
-          <button type="button" onClick={onSearch} className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-search">
-            <Search className="w-3.5 h-3.5" /> Search
-          </button>
-          {/* Country & currency picker — drives global formatCurrency() via CountryContext. */}
-          <CountryPicker />
-        </nav>
+    /* Yellow band is now contained — outer is white so the yellow strip
+       reads as a centered card with breathing room on both sides instead
+       of edge-to-edge. Mirrors the InfoBand outer-container width pattern
+       (~+40px wider than the shared CONTAINER_CLASS). */
+    <div className="bg-white" data-testid="utility-bar-frame">
+      <div className="mx-auto w-full sm:max-w-[920px] md:max-w-[1140px] lg:max-w-[1380px] xl:max-w-[1560px] 2xl:max-w-[1840px]">
+        <div className="bg-dhl-yellow border-b border-dhl-yellow-dark" data-testid="utility-bar">
+          <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px] h-14 flex items-center justify-between gap-4">
+            <BrandWordmark to="/" placement="header-bug-only" data-testid="utility-bar-logo" />
+            <nav className="hidden md:flex items-center gap-4 text-[13px] text-dhl-ink/85">
+              <Link to="/locations" className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-find-location">
+                Find a service point <ExternalLink className="w-3 h-3" />
+              </Link>
+              <button type="button" onClick={onSearch} className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-search">
+                <Search className="w-3.5 h-3.5" /> Search
+              </button>
+              {/* Country & currency picker — drives global formatCurrency() via CountryContext. */}
+              <CountryPicker />
+            </nav>
+          </div>
+        </div>
       </div>
     </div>
   );
