@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
  *   • Header asset renders eagerly (above the fold); footer asset is lazy.
  */
 const HEADER_LOGO = "/assets/dhl/brand/dhl-logo-red-yellow.png";
+const HEADER_BUG_ONLY = "/assets/dhl/brand/dhl-bug-only.png";
 const FOOTER_LOGO = "/assets/dhl/brand/dhl-group-black.png";
 
 const sizeMap = { sm: "compact", md: "default", lg: "default", xl: "stack" };
@@ -54,6 +55,36 @@ const BrandWordmark = ({
             Global Forwarding
           </span>
         )}
+      </span>
+    );
+    if (!to) return lockup;
+    return (
+      <Link to={to} data-testid="brand-wordmark-link" className="inline-flex shrink-0">
+        {lockup}
+      </Link>
+    );
+  }
+
+  /* ---------- placement="header-bug-only" — DHL bug PNG, NO subline ----------
+     Used on the Landing utility bar where the user wants only the red-on-yellow
+     bug, with no "Global Forwarding" sub-text underneath. Subline is intentionally
+     omitted regardless of showSublabel. */
+  if (placement === "header-bug-only") {
+    const lockup = (
+      <span
+        data-testid="brand-wordmark"
+        className={`inline-flex items-center select-none ${className}`}
+        aria-label="DHL"
+      >
+        <img
+          src={HEADER_BUG_ONLY}
+          alt="DHL"
+          data-testid="landing-utility-logo"
+          className="h-7 sm:h-9 w-auto block"
+          width="338"
+          height="63"
+          decoding="async"
+        />
       </span>
     );
     if (!to) return lockup;

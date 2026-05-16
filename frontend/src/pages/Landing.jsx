@@ -32,7 +32,7 @@ export const UtilityBar = ({ onSearch }) => {
   return (
     <div className="bg-dhl-yellow border-b border-dhl-yellow-dark" data-testid="utility-bar">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between gap-4">
-        <BrandWordmark to="/" placement="header" data-testid="utility-bar-logo" />
+        <BrandWordmark to="/" placement="header-bug-only" data-testid="utility-bar-logo" />
         <nav className="hidden md:flex items-center gap-4 text-[13px] text-dhl-ink/85">
           <Link to="/locations" className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-find-location">
             Find a service point <ExternalLink className="w-3 h-3" />
@@ -1184,59 +1184,6 @@ const Sustainability = () => (
 );
 
 /* -------------------------------------------------------------------------- */
-/* SMBBusinessSection — yellow band aimed at small/medium-sized businesses.   */
-/* Photo on the left with a soft yellow gradient fade on its right edge so it */
-/* dissolves into the band background. Body copy is OUR original — no         */
-/* verbatim text from any DHL marketing source.                               */
-/* -------------------------------------------------------------------------- */
-const SMBBusinessSection = () => (
-  <section data-testid="smb-business" className="bg-dhl-yellow relative overflow-hidden">
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-10 lg:py-14">
-      <div className="grid lg:grid-cols-[5fr_7fr] gap-8 lg:gap-12 items-center">
-        {/* PHOTO + soft right-edge fade into yellow */}
-        <div className="relative">
-          <div className="relative overflow-hidden rounded-xl lg:rounded-2xl shadow-xl lg:-my-14">
-            <img
-              src="/assets/dhl/smb-business.png"
-              alt="Small business owner managing online orders and shipping"
-              className="w-full h-[260px] sm:h-[320px] lg:h-[420px] object-cover"
-              loading="lazy"
-            />
-            {/* Right-edge dissolve into the band's yellow (only on lg+) */}
-            <div
-              aria-hidden="true"
-              className="hidden lg:block absolute inset-y-0 right-0 w-28 pointer-events-none"
-              style={{ background: "linear-gradient(to right, rgba(255,204,0,0) 0%, rgba(255,204,0,0.85) 70%, #FFCC00 100%)" }}
-            />
-          </div>
-        </div>
-        {/* CONTENT */}
-        <div className="lg:pl-4">
-          <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-3">
-            Business shipping
-          </div>
-          <h2 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-5 text-[28px] lg:text-[40px]">
-            DHL for your business.
-          </h2>
-          <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-8 max-w-prose">
-            Scale your small and medium-sized business with door-to-door freight forwarding, customs brokerage and reliable transit. Our specialists adapt to your customers' changing needs.
-          </p>
-          <a
-            href="https://www.dhl.com/global-en/home/our-divisions/dhl-for-business.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            data-testid="smb-business-cta"
-            className="inline-flex items-center gap-2 h-12 px-7 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md shadow-md transition-colors"
-          >
-            Explore business solutions <ArrowRight className="w-4 h-4" />
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-);
-
-/* -------------------------------------------------------------------------- */
 /* Footer                                                                      */
 /* -------------------------------------------------------------------------- */
 export const Footer = ({ showPromoCards = true }) => {
@@ -1525,7 +1472,6 @@ const Landing = () => {
         <OceanFreightOverlappingSection />
         <RoadFreightOverlappingSection />
         <Sustainability />
-        <SMBBusinessSection />
       </main>
       <Footer />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />

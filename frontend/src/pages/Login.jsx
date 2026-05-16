@@ -171,7 +171,15 @@ const Login = () => {
     <div className="min-h-screen flex flex-col bg-stone-100" data-testid="login-page">
       {/* ─────────────── 1) TOP UTILITY BAR ─────────────── */}
       <header className="bg-dhl-yellow h-16 px-6 lg:px-10 flex items-center justify-between shrink-0">
-        <BrandWordmark to="/" placement="header" data-testid="login-header-logo" />
+        <Link to="/" className="inline-flex shrink-0">
+          <img
+            src="/assets/dhl/brand/dhl-gf-lockup-v2.png"
+            alt="DHL Global Forwarding"
+            className="h-12 lg:h-14 w-auto"
+            loading="eager"
+            data-testid="login-utility-logo"
+          />
+        </Link>
         <a
           href={CONTACT_URL}
           target="_blank"
