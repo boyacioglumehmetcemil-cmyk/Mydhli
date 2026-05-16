@@ -6,6 +6,7 @@ import { CountryProvider } from "@/contexts/CountryContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DemoBadge from "@/components/DemoBadge";
 import Landing from "@/pages/Landing";
+import GlobalForwarding from "@/pages/GlobalForwarding";
 import Solutions from "@/pages/Solutions";
 import Help from "@/pages/Help";
 import Login from "@/pages/Login";
@@ -35,6 +36,7 @@ function App() {
         <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/global-forwarding" element={<GlobalForwarding />} />
           <Route path="/solutions" element={<Solutions />} />
           <Route path="/help" element={<Help />} />
           <Route path="/login" element={<Login />} />

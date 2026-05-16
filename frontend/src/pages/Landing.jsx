@@ -14,7 +14,10 @@ import useTitle from "@/hooks/useTitle";
 /* -------------------------------------------------------------------------- */
 /* Header — utility bar + nav bar (2 rows, sticky)                             */
 /* -------------------------------------------------------------------------- */
-const UtilityBar = ({ onSearch }) => {
+// NOTE: shared header & footer pieces exported as named exports so other
+// public marketing pages (e.g. /global-forwarding) can render the same
+// chrome without JSX duplication. TODO: lift into /components/landing/.
+export const UtilityBar = ({ onSearch }) => {
   return (
     <div className="bg-dhl-yellow border-b border-dhl-yellow-dark" data-testid="utility-bar">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between gap-4">
@@ -36,6 +39,7 @@ const UtilityBar = ({ onSearch }) => {
 
 const NAV_ITEMS = [
   { label: "Track", to: "/track" },
+  { label: "Global forwarding", to: "/global-forwarding" },
   {
     label: "Ship",
     items: [
@@ -76,7 +80,7 @@ const NavDropdown = ({ items, open, onClose }) => (
   </div>
 );
 
-const NavBar = ({ onMobileMenu }) => {
+export const NavBar = ({ onMobileMenu }) => {
   const [openIdx, setOpenIdx] = useState(null);
   const [portalOpen, setPortalOpen] = useState(false);
   const navRef = useRef(null);
@@ -140,7 +144,7 @@ const NavBar = ({ onMobileMenu }) => {
   );
 };
 
-const MobileDrawer = ({ open, onClose }) => (
+export const MobileDrawer = ({ open, onClose }) => (
   open && (
     <div data-testid="mobile-drawer" className="fixed inset-0 z-[100] md:hidden" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40" />
@@ -846,7 +850,7 @@ const SMBBusinessSection = () => (
 /* -------------------------------------------------------------------------- */
 /* Footer                                                                      */
 /* -------------------------------------------------------------------------- */
-const Footer = () => {
+export const Footer = () => {
   /* ---------- Tier 1: Service updates band ----------
      Each row deep-links to DHL Group's public service-alerts page so the
      pitch demo can showcase real DHL operational comms. */
@@ -1088,7 +1092,7 @@ const Footer = () => {
 /* -------------------------------------------------------------------------- */
 /* Search modal (utility bar)                                                  */
 /* -------------------------------------------------------------------------- */
-const SearchModal = ({ open, onClose }) =>
+export const SearchModal = ({ open, onClose }) =>
   open && (
     <div data-testid="search-modal" className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-start justify-center pt-24" onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()} className="bg-white max-w-xl w-full mx-4 rounded-xl shadow-2xl p-6">
