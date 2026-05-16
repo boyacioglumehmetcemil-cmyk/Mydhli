@@ -65,7 +65,7 @@ const PORTAL_LOGINS = [
   { label: "DHL Business Customers Portal",   href: "https://www.dhl.com/global-en/home/our-divisions/parcel/business-customers.html",             slug: "dhl-business-customers-portal" },
   { label: "DHL ProView",                     href: "https://proview.dhl.com/",                                                                    slug: "dhl-proview" },
   { label: "DHL e-Billing",                   href: "https://ebilling.dhl.com/",                                                                   slug: "dhl-e-billing" },
-  { label: "myDHLi",                          href: "https://mydhli.com/",                                                                         slug: "mydhli" },
+  { label: "myDHLi",                          to:   "/login",                                                                                       internal: true, slug: "mydhli" },
   { label: "DHL Active Tracing",              href: "https://activetracing.dhl.com/",                                                              slug: "dhl-active-tracing" },
   { label: "MySupplyChain",                   href: "https://mysupplychain.dhl.com/",                                                              slug: "mysupplychain" },
   { label: "MyGTS",                           href: "https://mygts.dhl.com/",                                                                      slug: "mygts" },
@@ -366,20 +366,35 @@ const ELSMobileSection = ({ onSelect }) => (
    Same content is offered in the mobile drawer via <PortalsMobileSection />. */
 const PortalRows = ({ onSelect }) => (
   <div className="px-2 pb-2" data-testid="nav-portals-list">
-    {PORTAL_LOGINS.map((p) => (
-      <a
-        key={p.slug}
-        href={p.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={onSelect}
-        data-testid={`nav-portals-item-${p.slug}`}
-        className="flex justify-between items-center px-3 py-3 text-sm font-medium text-dhl-ink hover:bg-stone-100 rounded-sm border-b border-stone-100 last:border-b-0"
-      >
-        <span>{p.label}</span>
-        <ExternalLink className="w-4 h-4 text-dhl-red shrink-0 ml-3" />
-      </a>
-    ))}
+    {PORTAL_LOGINS.map((p) =>
+      p.internal ? (
+        // Internal portal — route via react-router so we keep the SPA state.
+        // No new tab, no rel attribute; show a chevron-right "go inside" cue.
+        <Link
+          key={p.slug}
+          to={p.to}
+          onClick={onSelect}
+          data-testid={`nav-portals-item-${p.slug}`}
+          className="flex justify-between items-center px-3 py-3 text-sm font-medium text-dhl-ink hover:bg-stone-100 rounded-sm border-b border-stone-100 last:border-b-0"
+        >
+          <span>{p.label}</span>
+          <ChevronRight className="w-4 h-4 text-dhl-red shrink-0 ml-3" />
+        </Link>
+      ) : (
+        <a
+          key={p.slug}
+          href={p.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onSelect}
+          data-testid={`nav-portals-item-${p.slug}`}
+          className="flex justify-between items-center px-3 py-3 text-sm font-medium text-dhl-ink hover:bg-stone-100 rounded-sm border-b border-stone-100 last:border-b-0"
+        >
+          <span>{p.label}</span>
+          <ExternalLink className="w-4 h-4 text-dhl-red shrink-0 ml-3" />
+        </a>
+      )
+    )}
   </div>
 );
 
