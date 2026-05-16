@@ -1124,7 +1124,7 @@ const InfoBand = () => (
      (~25% of the row) and the text owns the rest. items-center keeps the
      smaller image vertically centered next to the taller text block. */
   <section data-testid="landing-info-band" className="bg-white py-12 lg:py-16">
-    <div className="mx-auto w-full px-4 sm:max-w-[640px] md:max-w-[860px] lg:max-w-[1100px] xl:max-w-[1280px] 2xl:max-w-[1480px]">
+    <div className="mx-auto w-full px-4 sm:max-w-[680px] md:max-w-[900px] lg:max-w-[1140px] xl:max-w-[1320px] 2xl:max-w-[1520px]">
       <div className="bg-dhl-yellow rounded-xl lg:rounded-lg overflow-hidden px-6 lg:px-10 py-8 lg:py-10">
         <div className="grid lg:grid-cols-[3fr_9fr] gap-8 lg:gap-12 items-stretch">
           <div data-testid="info-band-image" className="aspect-[4/3] lg:aspect-auto lg:-my-8 xl:-my-10 rounded-md lg:rounded-none overflow-hidden bg-white border border-black/10 lg:border-0">
@@ -1148,7 +1148,7 @@ const InfoBand = () => (
               target="_blank"
               rel="noopener noreferrer"
               data-testid="info-band-cta"
-              className="inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
+              className="self-start w-fit inline-flex items-center gap-2 h-11 px-6 bg-dhl-red text-white hover:bg-dhl-red-dark font-semibold text-sm rounded-md transition-colors"
             >
               Read the brief <ArrowRight className="w-4 h-4" />
             </a>
