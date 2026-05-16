@@ -16,9 +16,9 @@ import { Link } from "react-router-dom";
  *   • Keep aspect ratio (`w-auto`).
  *   • Header asset renders eagerly (above the fold); footer asset is lazy.
  */
-const HEADER_LOGO = "/assets/dhl/brand/dhl-logo-red-yellow.png";
-const HEADER_BUG_ONLY = "/assets/dhl/brand/dhl-bug-only.png";
-const FOOTER_LOGO = "/assets/dhl/brand/dhl-group-black.png";
+const HEADER_LOGO = "/assets/dhl/brand/dhl-bug-only.svg";
+const HEADER_BUG_ONLY = "/assets/dhl/brand/dhl-bug-only.svg";
+const FOOTER_LOGO = "/assets/dhl/brand/dhl-group-black.svg";
 
 const sizeMap = { sm: "compact", md: "default", lg: "default", xl: "stack" };
 
@@ -80,9 +80,7 @@ const BrandWordmark = ({
           src={HEADER_BUG_ONLY}
           alt="DHL"
           data-testid="landing-utility-logo"
-          className="h-7 sm:h-9 w-auto block"
-          width="338"
-          height="63"
+          className="h-10 sm:h-12 w-auto block"
           decoding="async"
         />
       </span>
