@@ -1224,7 +1224,7 @@ const SMBBusinessSection = () => (
 /* -------------------------------------------------------------------------- */
 /* Footer                                                                      */
 /* -------------------------------------------------------------------------- */
-export const Footer = () => {
+export const Footer = ({ showPromoCards = true }) => {
   /* ---------- Tier 1: Service updates band ----------
      Each row deep-links to DHL Group's public service-alerts page so the
      pitch demo can showcase real DHL operational comms. */
@@ -1353,48 +1353,50 @@ export const Footer = () => {
         </div>
       </section>
 
-      {/* TIER 2 — Promo cards */}
-      <section data-testid="footer-promo-cards" className="bg-white">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-12 lg:py-16 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          {promoCards.map((c) => (
-            <a
-              key={c.title}
-              href={c.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-testid={`footer-promo-${c.title.toLowerCase().replace(/\s+/g, "-")}`}
-              className="group block bg-white rounded-2xl shadow-md border border-dhl-border/60 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200"
-            >
-              {/* Image OR yellow gradient fallback for Innovation */}
-              <div className="aspect-[16/9] bg-dhl-yellow relative overflow-hidden">
-                {c.image ? (
-                  <img src={c.image} alt={c.alt} className="w-full h-full object-cover" loading="lazy" />
-                ) : (
-                  <>
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0"
-                      style={{ background: "linear-gradient(135deg, #FFCC00 0%, #FFE066 60%, #FFF3B0 100%)" }}
-                    />
-                    <div className="absolute inset-0 flex items-end p-6">
-                      <span className="font-display font-bold text-dhl-ink/30 text-5xl lg:text-6xl leading-none uppercase tracking-tighter">
-                        {c.title}
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-              <div className="p-6 lg:p-7">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <h4 className="font-display font-bold text-dhl-ink text-[18px] lg:text-[20px] leading-tight">{c.title}</h4>
-                  <ChevronRight className="w-5 h-5 text-dhl-red flex-shrink-0 mt-0.5 group-hover:translate-x-0.5 transition-transform" />
+      {/* TIER 2 — Promo cards (hidden on Customer Service / `/help`) */}
+      {showPromoCards && (
+        <section data-testid="footer-promo-cards" className="bg-white">
+          <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-12 lg:py-16 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            {promoCards.map((c) => (
+              <a
+                key={c.title}
+                href={c.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid={`footer-promo-${c.title.toLowerCase().replace(/\s+/g, "-")}`}
+                className="group block bg-white rounded-2xl shadow-md border border-dhl-border/60 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200"
+              >
+                {/* Image OR yellow gradient fallback for Innovation */}
+                <div className="aspect-[16/9] bg-dhl-yellow relative overflow-hidden">
+                  {c.image ? (
+                    <img src={c.image} alt={c.alt} className="w-full h-full object-cover" loading="lazy" />
+                  ) : (
+                    <>
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0"
+                        style={{ background: "linear-gradient(135deg, #FFCC00 0%, #FFE066 60%, #FFF3B0 100%)" }}
+                      />
+                      <div className="absolute inset-0 flex items-end p-6">
+                        <span className="font-display font-bold text-dhl-ink/30 text-5xl lg:text-6xl leading-none uppercase tracking-tighter">
+                          {c.title}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <p className="text-dhl-muted text-[13px] lg:text-[14px] leading-relaxed">{c.body}</p>
-              </div>
-            </a>
-          ))}
-        </div>
-      </section>
+                <div className="p-6 lg:p-7">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <h4 className="font-display font-bold text-dhl-ink text-[18px] lg:text-[20px] leading-tight">{c.title}</h4>
+                    <ChevronRight className="w-5 h-5 text-dhl-red flex-shrink-0 mt-0.5 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <p className="text-dhl-muted text-[13px] lg:text-[14px] leading-relaxed">{c.body}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* TIER 3 — Four-column link footer */}
       <section data-testid="footer-columns" className="bg-neutral-50 border-t border-dhl-border">

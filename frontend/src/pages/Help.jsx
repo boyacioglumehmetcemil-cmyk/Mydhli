@@ -211,8 +211,8 @@ const Help = () => {
         </Accordion>
       </section>
 
-      {/* ─── 4) Shared footer ─── */}
-      <Footer />
+      {/* ─── 4) Shared footer (Tier 2 promo cards hidden on this page) ─── */}
+      <Footer showPromoCards={false} />
 
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
