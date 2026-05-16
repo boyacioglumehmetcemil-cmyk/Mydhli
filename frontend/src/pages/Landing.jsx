@@ -31,7 +31,7 @@ import useTitle from "@/hooks/useTitle";
 export const UtilityBar = ({ onSearch }) => {
   return (
     <div className="bg-dhl-yellow border-b border-dhl-yellow-dark" data-testid="utility-bar">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between gap-4">
+      <div className="max-w-[1280px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between gap-4">
         <BrandWordmark to="/" placement="header-bug-only" data-testid="utility-bar-logo" />
         <nav className="hidden md:flex items-center gap-4 text-[13px] text-dhl-ink/85">
           <Link to="/locations" className="inline-flex items-center gap-1.5 hover:text-dhl-red" data-testid="utility-find-location">
@@ -479,7 +479,7 @@ export const NavBar = ({ onMobileMenu }) => {
   }, []);
   return (
     <div className="bg-white border-b border-dhl-border sticky top-0 z-40 shadow-sm" data-testid="nav-bar">
-      <div ref={navRef} className="max-w-[1440px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
+      <div ref={navRef} className="max-w-[1280px] mx-auto px-6 lg:px-10 h-14 flex items-center justify-between">
         <nav className="hidden md:flex items-center gap-1">
           {NAV_ITEMS.map((it, i) => {
             // Ship + ELS render via their dedicated mega-menu components.
@@ -1164,8 +1164,8 @@ const Sustainability = () => (
       </div>
       <div data-testid="sustainability-image" className="aspect-[3/2] rounded-xl overflow-hidden shadow-lg bg-white">
         <img
-          src="/assets/dhl/sustainability-photo.png"
-          alt="DHL electric delivery van on a tree-lined street"
+          src="/assets/sustainability-electric-van.png"
+          alt="DHL courier with electric-powered yellow delivery van and green leaf graphic"
           className="w-full h-full object-cover"
           loading="lazy"
         />
