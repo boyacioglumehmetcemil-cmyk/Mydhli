@@ -1036,7 +1036,7 @@ const Hero = () => {
 /* -------------------------------------------------------------------------- */
 const ActionCard = ({ to, icon: Icon, title, sub, testId, highlight = false, extraClass = "" }) => (
   <Link to={to} data-testid={testId}
-    className={`group relative overflow-hidden bg-white rounded-xl shadow-lg p-8 lg:p-10 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col h-full text-left ${extraClass}`}>
+    className={`group relative overflow-hidden bg-white rounded-xl shadow-lg p-8 lg:p-10 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col text-left ${extraClass}`}>
     {/* Yellow folded-corner accent — Card 3 ("DHL for Business") only. The
         CSS triangle is positioned at the absolute top-right of the card so it
         reads as folded paper above the card's rounded-tr corner. */}
@@ -1060,7 +1060,7 @@ const FloatingCards = () => (
         one connected panel of three columns. Per-card rounded utilities
         flatten the inner-facing corners; thin border-r lines on cards 1 & 2
         provide the seam divider that's missing once the gap is gone. */}
-    <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-0">
+    <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-0 items-start">
       <ActionCard to="/dashboard/ship"            icon={CalendarCheck} title="Ship Now"         sub="Find the right service"                                                              testId="floatcard-ship"     extraClass="md:rounded-r-none md:border-r md:border-stone-200" />
       <ActionCard to="/dashboard/quote"           icon={FileCheck}     title="Get a Quote"      sub="Estimate cost to share and compare"                                                  testId="floatcard-quote"    extraClass="md:rounded-none md:border-r md:border-stone-200" />
       <ActionCard to="/register?intent=business"  icon={Building2}     title="DHL for Business" sub="Shipping regularly? Request a business account and profit from exclusive benefits." testId="floatcard-business" extraClass="md:rounded-l-none" highlight />
