@@ -1117,17 +1117,16 @@ const ChecklistMark = () => (
 );
 
 const InfoBand = () => (
-  /* Outer section is plain white with vertical breathing room so the yellow
-     band sits inside the responsive container — never full-bleed. Yellow
-     block carries its own internal padding + a soft rounded corner on lg+. */
-  <section data-testid="landing-info-band" className="bg-white py-12 lg:py-16">
-    {/* InfoBand uses a SLIGHTLY WIDER container than the shared CONTAINER_CLASS
-        (~120px wider at each breakpoint) so the yellow card reads more
-        prominent — still contained, never full-bleed, just more breathing
-        room than the other sections. */}
-    <div className="mx-auto w-full px-4 sm:max-w-[600px] md:max-w-[820px] lg:max-w-[1060px] xl:max-w-[1240px] 2xl:max-w-[1440px]">
-      <div className="bg-dhl-yellow rounded-xl lg:rounded-lg overflow-hidden px-6 lg:px-10 py-10 lg:py-14 grid lg:grid-cols-[5fr_7fr] gap-10 lg:gap-16 items-stretch">
-        <div data-testid="info-band-image" className="aspect-[4/5] lg:aspect-auto rounded-xl lg:rounded-md border border-black/10 lg:border-0 overflow-hidden bg-white">
+  /* DHL-style compact horizontal banner. Yellow background is full-bleed
+     across the viewport again; only the inner content (image + text) sits
+     inside CONTAINER_CLASS. Image takes ~25% of the row at 4:3 aspect so
+     the section reads as a banner — never dominates the viewport vertically.
+     items-center keeps the smaller image vertically centered next to the
+     taller text block. */
+  <section data-testid="landing-info-band" className="bg-dhl-yellow w-full py-10 lg:py-14">
+    <div className="mx-auto w-full px-4 sm:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px] 2xl:max-w-[1320px]">
+      <div className="grid lg:grid-cols-[3fr_9fr] gap-8 lg:gap-12 items-center">
+        <div data-testid="info-band-image" className="aspect-[4/3] rounded-md overflow-hidden bg-white">
           <img
             src="/assets/dhl/info-band-tariff.png"
             alt="DHL freight forwarder reviewing customs documents"
@@ -1140,7 +1139,7 @@ const InfoBand = () => (
           <h2 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-5 text-[28px] lg:text-[40px]">
             Move forward with confidence in shifting trade flows.
           </h2>
-          <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-6 max-w-3xl">
+          <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-6 max-w-2xl">
             Global trade conditions evolve constantly. Our freight forwarding teams help shippers plan around tariff changes, capacity shifts, and route disruptions across every mode — air, ocean and road.
           </p>
           <a
