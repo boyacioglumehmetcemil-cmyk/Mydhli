@@ -1135,12 +1135,12 @@ const InfoBand = () => (
               loading="lazy"
             />
           </div>
-          <div className="flex flex-col justify-center">
+          <div className="flex flex-col justify-center max-w-[640px]">
             <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-dhl-red mb-4">Trade insights</div>
             <h2 className="font-display font-bold text-dhl-ink leading-tight tracking-tight mb-5 text-[28px] lg:text-[40px]">
               Move forward with confidence in shifting trade flows.
             </h2>
-            <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-6 max-w-2xl">
+            <p className="text-dhl-ink/85 text-[15px] lg:text-base leading-relaxed mb-6">
               Global trade conditions evolve constantly. Our freight forwarding teams help shippers plan around tariff changes, capacity shifts, and route disruptions across every mode — air, ocean and road.
             </p>
             <a
