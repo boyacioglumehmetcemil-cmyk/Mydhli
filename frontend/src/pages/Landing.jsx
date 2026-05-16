@@ -39,7 +39,6 @@ export const UtilityBar = ({ onSearch }) => {
 
 const NAV_ITEMS = [
   { label: "Track", to: "/track" },
-  { label: "Global forwarding", to: "/global-forwarding" },
   {
     label: "Ship",
     items: [
