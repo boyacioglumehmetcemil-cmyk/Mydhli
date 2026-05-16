@@ -59,10 +59,21 @@ const NAV_ITEMS = [
   { label: "Customer Service", to: "/help" },
 ];
 
-const PORTAL_ITEMS = [
-  { label: "myDHLi (Global Forwarding)",  to: "/login", testId: "portal-mydhli" },
-  { label: "Other DHL portals",           to: "https://www.dhl.com", external: true, testId: "portal-other" },
+const PORTAL_LOGINS = [
+  { label: "MyDHL+",                          href: "https://mydhl.express.dhl/",                                                                  slug: "mydhl-plus" },
+  { label: "DHL Express Commerce Solution",   href: "https://www.dhl.com/global-en/home/our-divisions/express/business-customers.html",            slug: "dhl-express-commerce-solution" },
+  { label: "DHL Business Customers Portal",   href: "https://www.dhl.com/global-en/home/our-divisions/parcel/business-customers.html",             slug: "dhl-business-customers-portal" },
+  { label: "DHL ProView",                     href: "https://proview.dhl.com/",                                                                    slug: "dhl-proview" },
+  { label: "DHL e-Billing",                   href: "https://ebilling.dhl.com/",                                                                   slug: "dhl-e-billing" },
+  { label: "myDHLi",                          href: "https://mydhli.com/",                                                                         slug: "mydhli" },
+  { label: "DHL Active Tracing",              href: "https://activetracing.dhl.com/",                                                              slug: "dhl-active-tracing" },
+  { label: "MySupplyChain",                   href: "https://mysupplychain.dhl.com/",                                                              slug: "mysupplychain" },
+  { label: "MyGTS",                           href: "https://mygts.dhl.com/",                                                                      slug: "mygts" },
+  { label: "DHL SameDay",                     href: "https://www.dhl.com/global-en/home/our-divisions/sameday.html",                               slug: "dhl-sameday" },
+  { label: "LifeTrack",                       href: "https://lifesciences.dhl.com/lifetrack",                                                      slug: "lifetrack" },
 ];
+
+const PORTALS_LEARN_HREF = "https://www.dhl.com/global-en/home/our-divisions.html";
 
 const NavDropdown = ({ items, open, onClose }) => (
   <div data-testid="nav-dropdown" className="absolute left-0 top-full mt-0.5 bg-white border border-dhl-border rounded-md shadow-lg min-w-[240px] py-2 z-50">
@@ -349,6 +360,99 @@ const ELSMobileSection = ({ onSelect }) => (
   </Accordion>
 );
 
+/* ─── Customer portal logins dropdown ──────────────────────────────────
+   Right-aligned panel with a heading, 11 external portal links, and a
+   full-width red "Learn about portals" CTA pinned to the bottom.
+   Same content is offered in the mobile drawer via <PortalsMobileSection />. */
+const PortalRows = ({ onSelect }) => (
+  <div className="px-2 pb-2" data-testid="nav-portals-list">
+    {PORTAL_LOGINS.map((p) => (
+      <a
+        key={p.slug}
+        href={p.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onSelect}
+        data-testid={`nav-portals-item-${p.slug}`}
+        className="flex justify-between items-center px-3 py-3 text-sm font-medium text-dhl-ink hover:bg-stone-100 rounded-sm border-b border-stone-100 last:border-b-0"
+      >
+        <span>{p.label}</span>
+        <ExternalLink className="w-4 h-4 text-dhl-red shrink-0 ml-3" />
+      </a>
+    ))}
+  </div>
+);
+
+const PortalsLearnCTA = ({ onSelect, className = "" }) => (
+  <a
+    href={PORTALS_LEARN_HREF}
+    target="_blank"
+    rel="noopener noreferrer"
+    onClick={onSelect}
+    data-testid="nav-portals-learn-cta"
+    className={
+      "h-12 w-full inline-flex items-center justify-center bg-dhl-red text-white text-base font-bold rounded-none hover:bg-dhl-red-dark transition " +
+      className
+    }
+  >
+    Learn about portals
+  </a>
+);
+
+const PortalsDropdown = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          data-testid="nav-portals-trigger"
+          className={
+            "inline-flex items-center gap-2 h-10 px-5 text-dhl-ink border border-stone-300 font-semibold text-sm rounded-md transition-colors " +
+            (open ? "bg-stone-200" : "bg-stone-100 hover:bg-stone-200")
+          }
+        >
+          Customer portal logins
+          {open ? (
+            <ChevronUp className="w-3.5 h-3.5 ml-1" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 ml-1" />
+          )}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        sideOffset={4}
+        data-testid="nav-portals-panel"
+        className="bg-white shadow-lg rounded-md border border-stone-200 w-[340px] p-0 overflow-hidden"
+      >
+        <div className="p-5 pb-3">
+          <div className="text-base font-bold text-dhl-ink">Log in to</div>
+        </div>
+        <PortalRows onSelect={() => setOpen(false)} />
+        <PortalsLearnCTA onSelect={() => setOpen(false)} className="rounded-b-md" />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+const PortalsMobileSection = ({ onSelect }) => (
+  <Accordion type="single" collapsible data-testid="mobile-nav-portals-accordion">
+    <AccordionItem value="portals" className="border-0">
+      <AccordionTrigger className="px-5 py-3 text-sm font-semibold text-dhl-text hover:no-underline border-b border-dhl-border">
+        Customer portal logins
+      </AccordionTrigger>
+      <AccordionContent className="px-0 pb-0 pt-0 bg-stone-50 border-b border-dhl-border">
+        <div className="pt-3">
+          <div className="px-5 text-base font-bold text-dhl-ink mb-2">Log in to</div>
+          <PortalRows onSelect={onSelect} />
+          <PortalsLearnCTA onSelect={onSelect} />
+        </div>
+      </AccordionContent>
+    </AccordionItem>
+  </Accordion>
+);
+
 export const NavBar = ({ onMobileMenu }) => {
   const [openIdx, setOpenIdx] = useState(null);
   const [portalOpen, setPortalOpen] = useState(false);
@@ -393,28 +497,8 @@ export const NavBar = ({ onMobileMenu }) => {
         <button type="button" onClick={onMobileMenu} className="md:hidden p-2" data-testid="mobile-menu-toggle">
           <Menu className="w-6 h-6 text-dhl-ink" />
         </button>
-        <div className="relative hidden md:block">
-          <button type="button" onClick={() => setPortalOpen(!portalOpen)} data-testid="customer-portal-logins"
-            className="inline-flex items-center gap-2 h-10 px-5 bg-stone-100 text-dhl-ink border border-stone-300 hover:bg-stone-200 font-semibold text-sm rounded-md transition-colors">
-            Customer portal logins <ChevronDown className="w-3.5 h-3.5" />
-          </button>
-          {portalOpen && (
-            <div data-testid="portal-dropdown" className="absolute right-0 top-full mt-1 bg-white border border-dhl-border rounded-md shadow-lg min-w-[260px] py-2 z-50">
-              {PORTAL_ITEMS.map(p => (
-                p.external ? (
-                  <a key={p.label} href={p.to} target="_blank" rel="noopener noreferrer" data-testid={p.testId}
-                    className="flex items-center justify-between px-4 py-2.5 text-[13px] text-dhl-text hover:bg-dhl-panel hover:text-dhl-red">
-                    {p.label} <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                ) : (
-                  <Link key={p.label} to={p.to} onClick={() => setPortalOpen(false)} data-testid={p.testId}
-                    className="flex items-center justify-between px-4 py-2.5 text-[13px] text-dhl-text hover:bg-dhl-panel hover:text-dhl-red">
-                    {p.label} <ChevronRight className="w-3.5 h-3.5" />
-                  </Link>
-                )
-              ))}
-            </div>
-          )}
+        <div className="hidden md:block">
+          <PortalsDropdown />
         </div>
       </div>
     </div>
@@ -460,6 +544,9 @@ export const MobileDrawer = ({ open, onClose }) => (
               </div>
             );
           })}
+          {/* Customer portal logins — exposed in the drawer as an accordion
+              so mobile users get the same 11 portal links as desktop. */}
+          <PortalsMobileSection onSelect={onClose} />
           {/* Country & currency picker — exposed in the drawer so mobile
               users can pivot pricing just like desktop. Uses the same
               <CountryPicker /> component in row-trigger mode. */}
