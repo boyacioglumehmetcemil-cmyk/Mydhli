@@ -394,6 +394,11 @@ from documents_module import build_router as build_documents_router
 documents_router = build_documents_router(db, get_current_user)
 app.include_router(documents_router)
 
+# Mount Phase 1b forwarding doc generator (docxtpl + LibreOffice → PDF)
+from forwarding_doc_generator import build_forwarding_docgen_router
+forwarding_docgen_router = build_forwarding_docgen_router(db, get_current_user)
+app.include_router(forwarding_docgen_router)
+
 # CORS
 app.add_middleware(
     CORSMiddleware,

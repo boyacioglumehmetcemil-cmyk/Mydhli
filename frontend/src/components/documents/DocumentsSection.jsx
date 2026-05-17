@@ -7,7 +7,7 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   UploadCloud, Eye, Download, CheckCircle, XCircle, Trash2,
-  Loader2, FileText,
+  Loader2, FileText, Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 } from "@/lib/documentTypes";
 import DocumentStatusBadge from "./DocumentStatusBadge";
 import UploadDocumentModal from "./UploadDocumentModal";
+import DocumentsGenerateModal from "./DocumentsGenerateModal";
 
 const FILTER_CHIPS = [
   { key: "ALL",      label: "All" },
@@ -44,6 +45,7 @@ const DocumentsSection = ({ shipmentRef }) => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("ALL");
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
   const [actingId, setActingId] = useState(null);
 
   const load = useCallback(async () => {
@@ -131,14 +133,25 @@ const DocumentsSection = ({ shipmentRef }) => {
             <span data-testid="documents-count" className="font-bold text-dhl-text">{total}</span> attached to this shipment
           </p>
         </div>
-        <Button
-          data-testid="documents-upload-button"
-          onClick={() => setUploadOpen(true)}
-          className="h-11 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark rounded-md font-bold uppercase tracking-wider text-xs border-2 border-dhl-ink px-5 inline-flex items-center gap-2"
-        >
-          <UploadCloud className="w-4 h-4" />
-          Upload document
-        </Button>
+        <div className="flex gap-2 items-center">
+          <Button
+            data-testid="documents-generate-button"
+            onClick={() => setGenerateOpen(true)}
+            variant="outline"
+            className="h-11 border-2 border-dhl-ink text-dhl-ink hover:bg-dhl-ink hover:text-white rounded-md font-bold uppercase tracking-wider text-xs px-4 inline-flex items-center gap-2 bg-transparent"
+          >
+            <Sparkles className="w-4 h-4" />
+            Generate
+          </Button>
+          <Button
+            data-testid="documents-upload-button"
+            onClick={() => setUploadOpen(true)}
+            className="h-11 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark rounded-md font-bold uppercase tracking-wider text-xs border-2 border-dhl-ink px-5 inline-flex items-center gap-2"
+          >
+            <UploadCloud className="w-4 h-4" />
+            Upload document
+          </Button>
+        </div>
       </div>
 
       {/* Filter chips */}
@@ -296,6 +309,13 @@ const DocumentsSection = ({ shipmentRef }) => {
           onUploaded={() => load()}
         />
       )}
+
+      <DocumentsGenerateModal
+        open={generateOpen}
+        onOpenChange={setGenerateOpen}
+        shipmentRef={shipmentRef}
+        onGenerated={() => load()}
+      />
     </section>
   );
 };
