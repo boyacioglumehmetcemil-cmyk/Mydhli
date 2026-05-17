@@ -269,6 +269,49 @@ def build_router(db, get_current_user_dep):
         await db.documents.insert_one(record)
         return _serialize(record)
 
+    # ---------- GLOBAL LIST (across all shipments owned by caller) ----------
+    @router.get(
+        "/documents",
+        response_model=DocumentListResponse,
+        summary="List ALL documents (optionally filtered by type / status)",
+    )
+    async def list_documents_global(
+        type: Optional[str] = Query(default=None, alias="type"),
+        status: Optional[str] = Query(default=None),
+        page: int = Query(default=1, ge=1),
+        page_size: int = Query(default=200, ge=1, le=500),
+        current_user: dict = Depends(get_current_user_dep),
+    ):
+        """Global document list. `type` accepts a single enum value OR a comma-
+        separated list (e.g. ?type=HBL,MBL) so the Customs / global-docs pages
+        can pull a curated slice in one round trip.
+
+        TODO (role guard): right now any authenticated user sees every
+        document. Production-flavoured behaviour would scope by shipment
+        ownership. For the demo this is intentional — the seed has one
+        owner anyway."""
+        query: dict = {"is_deleted": False}
+        if type:
+            types = [t.strip() for t in type.split(",") if t.strip()]
+            invalid = [t for t in types if t not in DOCUMENT_TYPES]
+            if invalid:
+                raise HTTPException(400, detail=f"Unknown document_type(s): {invalid}. Allowed: {DOCUMENT_TYPES}")
+            query["document_type"] = {"$in": types} if len(types) > 1 else types[0]
+        if status:
+            if status not in DOCUMENT_STATUSES:
+                raise HTTPException(400, detail=f"Unknown status. Allowed: {DOCUMENT_STATUSES}")
+            query["status"] = status
+
+        total = await db.documents.count_documents(query)
+        cursor = (
+            db.documents.find(query, {"_id": 0, "file_path": 0, "is_deleted": 0})
+            .sort("uploaded_at", -1)
+            .skip((page - 1) * page_size)
+            .limit(page_size)
+        )
+        items = [doc async for doc in cursor]
+        return {"items": items, "total": total, "shipment_ref": "*"}
+
     # ---------- LIST BY SHIPMENT ----------
     @router.get(
         "/shipments/{shipment_ref}/documents",

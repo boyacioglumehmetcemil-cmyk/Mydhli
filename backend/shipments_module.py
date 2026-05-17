@@ -290,6 +290,9 @@ class ShipmentSummary(BaseModel):
     eta: Optional[datetime] = None
     originPort: Optional[str] = None
     destinationPort: Optional[str] = None
+    actualDelivery: Optional[datetime] = None
+    # Phase 8.3 — operational metadata needed by Invoices / Dashboard widgets
+    oceanSpecifics: Optional[dict] = None
 
 
 class ShipmentListResponse(BaseModel):
@@ -416,6 +419,8 @@ def _to_summary(doc: dict) -> ShipmentSummary:
         eta=doc.get("eta"),
         originPort=doc.get("originPort"),
         destinationPort=doc.get("destinationPort"),
+        actualDelivery=doc.get("actualDelivery"),
+        oceanSpecifics=doc.get("oceanSpecifics"),
     )
 
 

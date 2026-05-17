@@ -94,8 +94,58 @@ const ShipmentDetail = () => {
       )}
 
       {!loading && shipment && <TrackingDetail shipment={shipment} mode="auth" />}
+      {!loading && shipment?.oceanSpecifics?.buyerPickupDeadline && shipment.status === "AT_DEPOT" && (
+        <BuyerPickupBanner shipment={shipment} />
+      )}
       {!loading && shipment && <DocumentsSection shipmentRef={awb} />}
     </div>
+  );
+};
+
+// ── Buyer pickup deadline alert ────────────────────────────────────────────
+// Surfaces the 5-business-day collection rule for AT_DEPOT shipments. Reads
+// pre-computed values populated by /app/backend (see depot-deadline migrator).
+const BuyerPickupBanner = ({ shipment }) => {
+  const spec = shipment.oceanSpecifics || {};
+  const overdue = spec.pickupOverdue;
+  const daysAbs = Math.abs(spec.pickupDaysRemaining ?? 0);
+  const deadline = spec.buyerPickupDeadline ? new Date(spec.buyerPickupDeadline) : null;
+  const since = spec.atDepotSince ? new Date(spec.atDepotSince) : null;
+  const fmt = (d) => d ? d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" }) : "—";
+
+  return (
+    <section
+      data-testid="buyer-pickup-banner"
+      className={`mt-6 rounded-lg border-2 ${
+        overdue ? "border-dhl-red bg-red-50" : "border-amber-500 bg-amber-50"
+      } px-5 py-4`}
+    >
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md ${
+              overdue ? "bg-dhl-red text-white" : "bg-amber-500 text-amber-950"
+            }`}>
+              {overdue ? "Pickup overdue" : "Awaiting buyer collection"}
+            </span>
+            <span className="text-[11px] text-dhl-muted">Final depot operational rule · +5 business days</span>
+          </div>
+          <p className="text-sm text-dhl-text">
+            Cargo at <span className="font-bold">{spec.depotStatus?.location || shipment.destination?.city}</span> since{" "}
+            <span className="font-mono font-bold">{fmt(since)}</span>. Buyer pickup window closed{" "}
+            <span className="font-mono font-bold">{fmt(deadline)}</span>.
+          </p>
+        </div>
+        <div className="text-right shrink-0">
+          <div className={`font-display text-3xl font-black ${overdue ? "text-dhl-red" : "text-amber-700"}`}>
+            {daysAbs.toLocaleString()}
+          </div>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-dhl-muted">
+            {overdue ? "days overdue" : "days remaining"}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };
 

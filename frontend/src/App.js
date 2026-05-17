@@ -23,6 +23,7 @@ import Pickups from "@/pages/Pickups";
 import Invoices from "@/pages/Invoices";
 import Reports from "@/pages/Reports";
 import Customs from "@/pages/Customs";
+import DocumentsGlobal from "@/pages/DocumentsGlobal";
 import Settings from "@/pages/Settings";
 import DashboardComingSoon from "@/pages/DashboardComingSoon";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -63,6 +64,7 @@ function App() {
             <Route path="shipments/:awb" element={<ShipmentDetail />} />
             <Route path="addresses" element={<Addresses />} />
             <Route path="invoices" element={<Invoices />} />
+            <Route path="documents" element={<DocumentsGlobal />} />
             <Route path="reports" element={<Reports />} />
             <Route path="customs" element={<Customs />} />
             <Route path="orders" element={<DashboardComingSoon />} />

@@ -490,6 +490,22 @@ const Dashboard = () => {
     [recent]
   );
 
+  // Shipments where the buyer pickup window has lapsed — the most actionable
+  // queue in the demo. We fetch AT_DEPOT directly so depot-bound shipments
+  // never drop off the "recent 10" radar.
+  const [awaitingPickup, setAwaitingPickup] = useState([]);
+  useEffect(() => {
+    api.get("/shipments", { params: { status: "AT_DEPOT", page: 1, pageSize: 10 } })
+      .then((r) => {
+        const items = (r.data.items || [])
+          .filter((s) => s.oceanSpecifics?.pickupOverdue)
+          .sort((a, b) => (a.oceanSpecifics?.pickupDaysRemaining ?? 0) - (b.oceanSpecifics?.pickupDaysRemaining ?? 0))
+          .slice(0, 5);
+        setAwaitingPickup(items);
+      })
+      .catch(() => setAwaitingPickup([]));
+  }, []);
+
   return (
     <div data-testid="dashboard-page" className="-mx-4 -my-4 sm:-mx-6 sm:-my-6 lg:-mx-8 lg:-my-8">
       {/* Service alert — escapes <main>'s padding via negative margins above so
@@ -518,13 +534,43 @@ const Dashboard = () => {
 
             <div className="mt-10">
               <div className="mb-2">
-                <h2 className="text-xl font-bold text-dhl-ink">Shipments requiring action</h2>
+                <h2 className="text-xl font-bold text-dhl-ink">Awaiting buyer collection</h2>
                 <p className="text-sm text-stone-500">
-                  Bookings drafted but not yet handed off to DHL Global Forwarding.
+                  Cargo cleared and resting in the final depot — buyer pickup window has already lapsed.
                 </p>
               </div>
-              <FolderListCard folderLabel="My drafts" testId="dashboard-drafts-card">
-                <EmptyState icon={Inbox} text="No drafts waiting on you." />
+              <FolderListCard folderLabel="Past pickup deadline" testId="dashboard-pickup-overdue-card">
+                {recentLoading ? (
+                  <div className="py-10 text-center text-sm text-stone-500">Loading shipments…</div>
+                ) : awaitingPickup.length === 0 ? (
+                  <EmptyState icon={Inbox} text="All shipments collected — nothing requires action." />
+                ) : (
+                  <div className="divide-y divide-stone-100">
+                    {awaitingPickup.map((s) => {
+                      const overdueDays = Math.abs(s.oceanSpecifics?.pickupDaysRemaining ?? 0);
+                      const depotLocation = s.oceanSpecifics?.depotStatus?.location || `${s.destination?.city}`;
+                      return (
+                        <Link
+                          key={s.awb}
+                          to={`/dashboard/shipments/${s.awb}`}
+                          data-testid={`pickup-overdue-row-${s.awb}`}
+                          className="grid grid-cols-12 gap-3 items-center px-4 py-3 hover:bg-amber-50 transition-colors"
+                        >
+                          <div className="col-span-3 font-mono text-xs font-bold text-dhl-red">{s.awb}</div>
+                          <div className="col-span-5 text-xs text-stone-600 truncate">{depotLocation}</div>
+                          <div className="col-span-3 text-right">
+                            <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-red-100 text-dhl-red">
+                              {overdueDays.toLocaleString()} days overdue
+                            </span>
+                          </div>
+                          <div className="col-span-1 text-right text-stone-400">
+                            <ChevronRight className="w-4 h-4 inline" />
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </FolderListCard>
 
               <div className="mb-2">
