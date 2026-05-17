@@ -1,0 +1,58 @@
+swb_no,product,container,seller,buyer,etd_singapore,transit_port,port_arrival,customs_clearance,final_destination,status,goods_value_eur,freight_cost_usd,transit_days_etd_to_arrival,dwell_days_arrival_to_customs
+DHL-SWB-001,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2021-12-18,Port Moresby,2022-01-08,2022-01-18,Australia,Teslim,170000,3650,21,10
+DHL-SWB-002,Bomag BW 154,40ft FR,BOMAG GmbH,Pacific Heavy,2021-12-12,Port of Suva,2022-01-16,2022-01-27,Australia,Teslim,127000,8050,35,11
+DHL-SWB-003,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2021-12-28,Port Moresby,2022-01-18,2022-01-30,Australia,Teslim,170000,3650,21,12
+DHL-SWB-004,Bomag BW 174,40ft FR,BOMAG GmbH,Pacific Heavy,2022-01-02,Port of Suva,2022-02-09,2022-02-20,Australia,Teslim,160000,8050,38,11
+DHL-SWB-005,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2022-02-04,Port Moresby,2022-02-24,2022-03-07,Australia,Teslim,170000,3650,20,11
+DHL-SWB-006,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2022-02-14,Port Moresby,2022-03-06,2022-03-16,Australia,Teslim,170000,3650,20,10
+DHL-SWB-007,Cyl Head,20ft FCL,MAN Energy,Marine Power,2022-02-05,Port of Suva,2022-03-17,2022-03-28,Australia,Teslim,260000,4320,40,11
+DHL-SWB-008,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2022-02-28,Port Moresby,2022-03-19,2022-03-30,Australia,Teslim,170000,3650,19,11
+DHL-SWB-009,Excavator Bucket,20ft FCL,BOMAG GmbH,Pacific Heavy,2022-03-01,Port of Suva,2022-04-09,2022-04-19,Australia,Teslim,13000,4320,39,10
+DHL-SWB-010,Bomag BW 154,40ft FR,BOMAG GmbH,Pacific Heavy,2022-03-15,Port of Suva,2022-04-23,2022-05-04,Australia,Teslim,127000,8050,39,11
+DHL-SWB-011,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2022-04-04,Port Moresby,2022-04-25,2022-05-06,Australia,Teslim,170000,3650,21,11
+DHL-SWB-012,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2022-05-22,Port Moresby,2022-06-13,2022-06-24,Australia,Teslim,170000,3650,22,11
+DHL-SWB-013,Cyl Head,20ft FCL,MAN Energy,Marine Power,2022-05-25,Port of Suva,2022-07-03,2022-07-15,Australia,Teslim,260000,4320,39,12
+DHL-SWB-014,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2022-06-30,Port Moresby,2022-07-22,2022-08-02,Australia,Teslim,170000,3650,22,11
+DHL-SWB-015,Bomag BW 174,40ft FR,BOMAG GmbH,Pacific Heavy,2022-07-28,Port of Suva,2022-09-07,2022-09-17,New Zealand,Teslim,160000,8050,41,10
+DHL-SWB-016,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2022-08-28,Port Moresby,2022-09-17,2022-09-28,Korea (Direct),Teslim,170000,3650,20,11
+DHL-SWB-017,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2022-09-18,Port Moresby,2022-10-08,2022-10-20,Korea (Direct),Teslim,170000,3650,20,12
+DHL-SWB-018,Excavator Bucket,20ft FCL,BOMAG GmbH,Pacific Heavy,2022-09-10,Port of Suva,2022-10-21,2022-10-31,New Zealand,Teslim,13000,4320,41,10
+DHL-SWB-019,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2022-10-06,Port Moresby,2022-10-26,2022-11-06,Korea (Transit),Teslim,170000,3650,20,11
+DHL-SWB-020,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2023-01-15,Port Moresby,2023-02-03,2023-02-13,Korea (Transit),Teslim,170000,3650,19,10
+DHL-SWB-021,Cyl Head,20ft FCL,MAN Energy,Marine Power,2023-01-01,Port of Suva,2023-02-09,2023-02-20,New Zealand,Teslim,260000,4320,39,11
+DHL-SWB-022,Bomag BW 154,40ft FR,BOMAG GmbH,Pacific Heavy,2023-04-05,Port of Suva,2023-05-21,2023-06-02,New Zealand,Teslim,127000,8050,46,12
+DHL-SWB-023,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2023-06-19,Port Moresby,2023-07-09,2023-07-21,Korea (Direct),Teslim,170000,3650,20,12
+DHL-SWB-024,Excavator Bucket,20ft FCL,BOMAG GmbH,Pacific Heavy,2023-08-01,Port of Suva,2023-09-11,2023-09-22,New Zealand,Teslim,13000,4320,41,11
+DHL-SWB-025,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2023-08-22,Port Moresby,2023-09-11,2023-09-22,Korea (Transit),Teslim,170000,3650,20,11
+DHL-SWB-026,Cyl Head,20ft FCL,MAN Energy,Marine Power,2023-10-15,Port of Suva,2023-11-25,2023-12-06,New Zealand,Teslim,260000,4320,41,11
+DHL-SWB-027,Bomag BW 174,40ft FR,BOMAG GmbH,Pacific Heavy,2023-12-20,Port of Suva,2024-02-17,2024-02-28,New Zealand,Teslim,160000,8050,59,11
+DHL-SWB-028,Excavator Bucket,20ft FCL,BOMAG GmbH,Pacific Heavy,2024-01-10,Port of Suva,2024-03-08,2024-03-20,New Zealand,Teslim,13000,4320,58,12
+DHL-SWB-029,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2024-02-14,Port Moresby,2024-03-07,2024-03-18,PNG Depot Area,Depoda,170000,3650,22,11
+DHL-SWB-030,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2024-04-19,Port Moresby,2024-05-09,2024-05-20,PNG Depot Area,Depoda,170000,3650,20,11
+DHL-SWB-031,Cyl Head,20ft FCL,MAN Energy,Marine Power,2024-04-01,Port of Suva,2024-05-14,2024-05-24,New Zealand,Teslim,260000,4320,43,10
+DHL-SWB-032,Bomag BW 154,40ft FR,BOMAG GmbH,Pacific Heavy,2024-04-28,Port of Suva,2024-06-10,2024-06-20,New Zealand,Teslim,127000,8050,43,10
+DHL-SWB-033,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2024-05-22,Port Moresby,2024-06-11,2024-06-22,PNG Depot Area,Depoda,170000,3650,20,11
+DHL-SWB-034,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2024-09-11,Port Moresby,2024-10-01,2024-10-12,PNG Depot Area,Depoda,170000,3650,20,11
+DHL-SWB-035,Excavator Bucket,20ft FCL,BOMAG GmbH,Pacific Heavy,2024-08-25,Port of Suva,2024-10-05,2024-10-15,New Zealand,Teslim,13000,4320,41,10
+DHL-SWB-036,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2025-01-25,Port Moresby,2025-02-15,2025-02-25,PNG Depot Area,Depoda,170000,3650,21,10
+DHL-SWB-037,Cyl Head,20ft FCL,MAN Energy,Marine Power,2025-01-02,Port of Suva,2025-02-16,2025-02-26,Fiji Depot Area,Depoda,260000,4320,45,10
+DHL-SWB-038,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2025-02-20,Port Moresby,2025-03-11,2025-03-22,PNG Depot Area,Depoda,170000,3650,19,11
+DHL-SWB-039,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2025-03-29,Port Moresby,2025-04-18,2025-04-29,PNG Depot Area,Depoda,170000,3650,20,11
+DHL-SWB-040,Bomag BW 174,40ft FR,BOMAG GmbH,Pacific Heavy,2025-03-10,Port of Suva,2025-04-23,2025-05-04,Fiji Depot Area,Depoda,160000,8050,44,11
+DHL-SWB-041,Excavator Bucket,20ft FCL,BOMAG GmbH,Pacific Heavy,2025-03-25,Port of Suva,2025-05-03,2025-05-13,Fiji Depot Area,Depoda,13000,4320,39,10
+DHL-SWB-042,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2025-05-02,Port Moresby,2025-05-22,2025-06-02,PNG Depot Area,Depoda,170000,3650,20,11
+DHL-SWB-043,Cyl Head,20ft FCL,MAN Energy,Marine Power,2025-04-18,Port of Suva,2025-05-27,2025-06-06,Fiji Depot Area,Depoda,260000,4320,39,10
+DHL-SWB-044,Bomag BW 154,40ft FR,BOMAG GmbH,Pacific Heavy,2025-05-20,Port of Suva,2025-07-03,2025-07-14,Fiji Depot Area,Depoda,127000,8050,44,11
+DHL-SWB-045,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2025-06-12,Port Moresby,2025-07-03,2025-07-14,PNG Depot Area,Depoda,170000,3650,21,11
+DHL-SWB-046,Excavator Bucket,20ft FCL,BOMAG GmbH,Pacific Heavy,2025-06-01,Port of Suva,2025-07-18,2025-07-29,Fiji Depot Area,Depoda,13000,4320,47,11
+DHL-SWB-047,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2025-07-15,Port Moresby,2025-08-04,2025-08-15,PNG Depot Area,Depoda,170000,3650,20,11
+DHL-SWB-048,Cyl Head,20ft FCL,MAN Energy,Marine Power,2025-06-20,Port of Suva,2025-08-04,2025-08-14,Fiji Depot Area,Depoda,260000,4320,45,10
+DHL-SWB-049,Bomag BW 174,40ft FR,BOMAG GmbH,Pacific Heavy,2025-06-25,Port of Suva,2025-08-12,2025-08-22,Fiji Depot Area,Depoda,160000,8050,48,10
+DHL-SWB-050,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2025-12-15,Port Moresby,2026-01-04,2026-01-14,PNG Depot Area,Depoda,170000,3650,20,10
+DHL-SWB-051,Excavator Bucket,20ft FCL,BOMAG GmbH,Pacific Heavy,2025-11-20,Port of Suva,2026-01-04,2026-01-15,Fiji Depot Area,Depoda,13000,4320,45,11
+DHL-SWB-052,Cyl Head,20ft FCL,MAN Energy,Marine Power,2025-11-25,Port of Suva,2026-01-18,2026-01-29,Fiji Depot Area,Depoda,260000,4320,54,11
+DHL-SWB-053,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2026-01-07,Port Moresby,2026-01-27,2026-02-06,PNG Depot Area,Depoda,170000,3650,20,10
+DHL-SWB-054,Bomag BW 154,40ft FR,BOMAG GmbH,Pacific Heavy,2025-12-28,Port of Suva,2026-02-15,2026-02-26,Fiji Depot Area,Depoda,127000,8050,49,11
+DHL-SWB-055,Cyl Liner,20ft FCL,MAN Energy,Marine Power,2026-02-03,Port Moresby,2026-02-23,2026-03-05,PNG Depot Area,Depoda,170000,3650,20,10
+DHL-SWB-056,Excavator Bucket,20ft FCL,BOMAG GmbH,Pacific Heavy,2026-01-05,Port of Suva,2026-02-23,2026-03-06,Fiji Depot Area,Depoda,13000,4320,49,11
+DHL-SWB-057,Cyl Head,20ft FCL,MAN Energy,Marine Power,2026-02-01,Port of Suva,2026-03-19,2026-03-30,Fiji Depot Area,Depoda,260000,4320,46,11
