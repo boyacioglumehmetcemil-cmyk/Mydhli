@@ -9,7 +9,7 @@ DHL'in Papua New Guinea operasyonu için gerçekçi, pixel-perfect myDHLi Forwar
 
 ## Mevcut Durum (Web — TAMAM)
 - **Stack:** `/app/frontend` React CRA + Tailwind + shadcn/ui; `/app/backend` FastAPI + Motor / MongoDB
-- **Web preview:** https://dhl-logistics-pg.preview.emergentagent.com
+- **Web preview:** https://merhaba-app-446.preview.emergentagent.com
 - **Auth:** JWT (HS256, 7 gün)
 - **Demo:** `demo@dhlpng.com` / `Demo@2026`
 - **Shipper:** `shipper@dhlpng.com` / `Shipper@2026`
