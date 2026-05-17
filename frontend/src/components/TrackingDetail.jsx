@@ -309,8 +309,9 @@ const TrackingDetail = ({ shipment, mode = "public" }) => {
         </div>
       )}
 
-      {/* Shipment Documents (auth only) — 6 auto-populated PDFs */}
-      {isAuth && <ShipmentDocuments awb={shipment.awb} />}
+      {/* Phase 8.1 mock PDF tile grid intentionally hidden in auth mode —
+          the real anonymised Documents pack (Phase 8.3b) is rendered by
+          DocumentsSection in ShipmentDetail.jsx, just below this component. */}
     </div>
   );
 };

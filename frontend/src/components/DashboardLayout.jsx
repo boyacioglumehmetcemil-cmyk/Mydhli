@@ -50,7 +50,7 @@ const navItems = [
   { to: "/dashboard/addresses", label: "Address Book", icon: BookUser },
   { to: "/dashboard/invoices", label: "Invoices", icon: Receipt },
   { to: "/dashboard/reports", label: "Analytics", icon: BarChart3 },
-  { to: "/dashboard/customs", label: "Documents", icon: FileText },
+  { to: "/dashboard/customs", label: "Customs", icon: FileText },
   { to: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
