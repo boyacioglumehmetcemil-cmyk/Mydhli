@@ -5,7 +5,7 @@
 export const CUSTOMER_SERVICE_FAQ = [
   {
     q: "What is a tracking number and where do I find it?",
-    a: "A tracking number is the unique reference your shipper issues for a package or freight booking. For parcels it usually starts with a service prefix and arrives by email or appears on your shipping label. For freight references like AWB, HBL, MBL or a container number, look on the booking confirmation, the bill of lading, or the air waybill PDF.",
+    a: "A tracking number is the unique reference your forwarder issues for every booking. For freight references like AWB, HAWB, MAWB, HBL, MBL or a container number, look on the booking confirmation, the bill of lading, the air waybill PDF or the arrival notice we share with you by email.",
   },
   {
     q: "When will tracking information appear?",

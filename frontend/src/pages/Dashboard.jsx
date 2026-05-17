@@ -38,7 +38,7 @@ import useTitle from "@/hooks/useTitle";
 import api from "@/lib/api";
 import { formatDate } from "@/lib/shipmentUtils";
 
-const IN_TRANSIT_STATUSES = ["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY"];
+const IN_TRANSIT_STATUSES = ["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY", "AT_DEPOT", "DELIVERED"];
 
 /* ─── Section 1: Service alert band ────────────────────────────────────── */
 const ServiceAlertBand = () => {
@@ -344,7 +344,7 @@ const ActionTabs = () => (
         <PlaceholderTab
           icon={CalendarClock}
           title="Schedule a pickup"
-          body="Book a courier for an upcoming collection window — confirmation lands in your inbox."
+          body="Schedule a pickup for the next pre-carriage leg — confirmation lands in your inbox."
           ctaLabel="Schedule pickup"
           ctaTo="/dashboard/pickup"
           ctaTestId="action-pickup-cta"
@@ -528,16 +528,16 @@ const Dashboard = () => {
               </FolderListCard>
 
               <div className="mb-2">
-                <h2 className="text-xl font-bold text-dhl-ink">In transit</h2>
+                <h2 className="text-xl font-bold text-dhl-ink">Recent shipments</h2>
                 <p className="text-sm text-stone-500">
-                  Bookings handed to DHL Global Forwarding and moving through the network.
+                  Your latest bookings with DHL Global Forwarding — pre-carriage, on-water, at depot or delivered.
                 </p>
               </div>
               <FolderListCard folderLabel="Open shipments" testId="dashboard-intransit-card">
                 {recentLoading ? (
                   <div className="py-10 text-center text-sm text-stone-500">Loading shipments…</div>
                 ) : inTransit.length === 0 ? (
-                  <EmptyState icon={Truck} text="No shipments in transit right now." />
+                  <EmptyState icon={Truck} text="No shipments on file yet." />
                 ) : (
                   <div className="divide-y divide-stone-100">
                     {inTransit.map((s) => (

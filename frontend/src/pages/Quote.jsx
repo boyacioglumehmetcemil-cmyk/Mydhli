@@ -234,11 +234,11 @@ const Quote = () => {
             </div>
           )}
 
-          {/* Legacy parcel options (kept) */}
+          {/* Legacy air-freight service-level options (kept) */}
           {result?.options && result.options.length > 0 && (
             <>
               <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-dhl-muted pt-3">
-                Service-level (air parcel)
+                Service-level (air freight)
               </div>
               {result.options.map(opt => (
                 <div key={opt.service} data-testid={`quote-card-${opt.service}`} className="bg-white border border-dhl-border p-5 rounded-lg hover:border-dhl-yellow transition-colors">

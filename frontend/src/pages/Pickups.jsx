@@ -35,7 +35,7 @@ const Pickups = () => {
       <div className="flex items-start justify-between mb-7 flex-wrap gap-3">
         <div>
           <h1 className="font-display text-3xl lg:text-4xl font-black text-dhl-text leading-tight tracking-tighter">My Pickups</h1>
-          <p className="text-sm text-dhl-muted mt-2">Scheduled courier collections.</p>
+          <p className="text-sm text-dhl-muted mt-2">Scheduled pre-carriage pickups.</p>
         </div>
         <Button onClick={() => navigate("/dashboard/pickup")} data-testid="schedule-pickup-btn" className="h-11 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark rounded-none font-bold uppercase tracking-wider text-xs px-6 border-2 border-dhl-ink">
           <Plus className="mr-2 w-4 h-4" /> Schedule Pickup
@@ -49,7 +49,7 @@ const Pickups = () => {
           <div className="py-20 text-center" data-testid="pickups-empty">
             <CalendarClock className="w-12 h-12 mx-auto text-dhl-muted mb-4" />
             <h3 className="font-display text-xl font-bold text-dhl-text mb-2">No pickups scheduled</h3>
-            <p className="text-sm text-dhl-muted mb-5">Book a courier to collect your first shipment.</p>
+            <p className="text-sm text-dhl-muted mb-5">Schedule a pickup for your first shipment.</p>
             <Button onClick={() => navigate("/dashboard/pickup")} className="bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark rounded-none font-bold uppercase tracking-wider text-xs border-2 border-dhl-ink">
               Schedule Now
             </Button>

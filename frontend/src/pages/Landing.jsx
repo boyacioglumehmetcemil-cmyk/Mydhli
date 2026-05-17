@@ -197,20 +197,7 @@ const ShipPanelBody = ({ onSelect }) => (
     {/* RIGHT: Learn more about */}
     <div>
       <h3 className="text-xs font-bold tracking-widest text-dhl-ink mb-4">Learn more about</h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Sub-card A: Document and package */}
-        <div className="border border-stone-200 rounded-md p-5 bg-white">
-          <div className="flex items-center gap-2 mb-1">
-            <FileText className="w-5 h-5 text-dhl-red" />
-            <h4 className="text-sm font-bold text-dhl-ink">Document and package</h4>
-          </div>
-          <div className="mt-3">
-            <ShipLearnRow label="Document and parcel shipping" to="/dashboard/ship?intent=parcel" onSelect={onSelect} />
-            <ShipLearnRow label="Volume shipping (Business Only)" to="/dashboard/ship?intent=volume" onSelect={onSelect} />
-            <ShipLearnRow label="Direct mail for business" to="https://www.dhl.com/global-en/home/our-divisions/post-ecommerce.html" external onSelect={onSelect} last />
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Sub-card B: Pallets, containers and cargo (gray panel) */}
         <div data-testid="ship-card-freight" className="bg-stone-50 border border-stone-200 rounded-md p-5 flex flex-col">
           <div className="flex items-start gap-2 mb-1">

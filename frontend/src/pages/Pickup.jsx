@@ -96,7 +96,7 @@ const Pickup = () => {
       <h1 className="font-display text-3xl lg:text-4xl font-black text-dhl-text leading-tight tracking-tighter mb-2">
         Schedule Pickup
       </h1>
-      <p className="text-sm text-dhl-muted mb-7">Book a courier to collect your shipments.</p>
+      <p className="text-sm text-dhl-muted mb-7">Schedule a pickup for your shipments.</p>
 
       <div className="bg-white border border-dhl-border p-6 lg:p-8 space-y-7">
         <div>
