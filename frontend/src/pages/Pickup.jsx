@@ -94,9 +94,9 @@ const Pickup = () => {
   return (
     <div className="max-w-3xl mx-auto" data-testid="pickup-page">
       <h1 className="font-display text-3xl lg:text-4xl font-black text-dhl-text leading-tight tracking-tighter mb-2">
-        Schedule Pickup
+        Schedule Pre-carriage
       </h1>
-      <p className="text-sm text-dhl-muted mb-7">Schedule a pickup for your shipments.</p>
+      <p className="text-sm text-dhl-muted mb-7">Request a pre-carriage pickup from your warehouse for the next shipment leg.</p>
 
       <div className="bg-white border border-dhl-border p-6 lg:p-8 space-y-7">
         <div>
@@ -146,7 +146,7 @@ const Pickup = () => {
 
         <div className="flex justify-end pt-5 border-t border-dhl-border">
           <Button onClick={submit} disabled={creating || !selectedAddr} data-testid="pickup-submit" className="h-11 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark rounded-none font-bold uppercase tracking-wider text-sm px-7 border-2 border-dhl-ink disabled:opacity-50">
-            {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Confirm Pickup <ArrowRight className="ml-2 w-4 h-4" /></>}
+            {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Confirm Pre-carriage <ArrowRight className="ml-2 w-4 h-4" /></>}
           </Button>
         </div>
       </div>

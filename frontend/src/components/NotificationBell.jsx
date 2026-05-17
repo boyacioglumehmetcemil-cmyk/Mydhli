@@ -204,7 +204,7 @@ const NotificationBell = () => {
             <button
               type="button"
               data-testid="notification-view-all"
-              onClick={() => { setOpen(false); toast.info("Full inbox coming soon"); }}
+              onClick={() => { setOpen(false); navigate("/dashboard/notifications"); }}
               className="text-[11px] font-semibold text-[#0EA5B7] hover:text-[#0B8C9C] transition-colors"
             >
               View all notifications →

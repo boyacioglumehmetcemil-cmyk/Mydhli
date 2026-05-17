@@ -4,7 +4,7 @@ const Footer = () => {
   const columns = [
     {
       title: "Freight Services",
-      links: ["Track Shipment", "Ship Now", "Get a Quote", "Schedule Pickup"],
+      links: ["Track Shipment", "Book a Shipment", "Get a Quote", "Pre-carriage Pickup"],
     },
     {
       title: "Business",

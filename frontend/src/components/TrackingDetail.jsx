@@ -277,33 +277,38 @@ const TrackingDetail = ({ shipment, mode = "public" }) => {
                   className="h-10 bg-dhl-ink text-white hover:bg-dhl-red rounded-none uppercase tracking-wider text-xs font-bold px-5"
                 >
                   <FileText className="w-4 h-4 mr-2" />
-                  Download Label (PDF)
+                  Download Booking Sheet
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>A6 shipping label with AWB barcode + tracking QR</TooltipContent>
+              <TooltipContent>A4 booking sheet with HBL / MBL reference + barcode</TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  data-testid="action-schedule-pickup"
-                  onClick={() => comingSoon("Schedule Pickup")}
-                  variant="outline"
-                  className="h-10 border-2 border-dhl-ink text-dhl-ink hover:bg-dhl-ink hover:text-white rounded-none uppercase tracking-wider text-xs font-bold px-5 bg-transparent"
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Schedule Pickup
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Available in Phase 3</TooltipContent>
-            </Tooltip>
+            {/* Pre-carriage pickup request only makes sense before the cargo
+                has left the shipper's premises. Hide it once the shipment is
+                in transit, at depot or delivered. */}
+            {["PENDING", "BOOKED", "DRAFT"].includes(shipment.status) && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    data-testid="action-schedule-pickup"
+                    onClick={() => comingSoon("Request pre-carriage")}
+                    variant="outline"
+                    className="h-10 border-2 border-dhl-ink text-dhl-ink hover:bg-dhl-ink hover:text-white rounded-none uppercase tracking-wider text-xs font-bold px-5 bg-transparent"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Request Pre-carriage
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Available in Phase 3</TooltipContent>
+              </Tooltip>
+            )}
             <Button
               data-testid="action-get-help"
-              onClick={() => toast.info("Support coming soon", { description: "24/7 support module is in the roadmap." })}
+              onClick={() => toast.info("Support coming soon", { description: "24/7 forwarder support module is in the roadmap." })}
               variant="ghost"
               className="h-10 text-dhl-text hover:bg-dhl-panel rounded-none uppercase tracking-wider text-xs font-bold px-5"
             >
               <User className="w-4 h-4 mr-2" />
-              Get Help
+              Contact Forwarder
             </Button>
           </TooltipProvider>
         </div>

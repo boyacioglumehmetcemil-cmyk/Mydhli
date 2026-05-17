@@ -343,9 +343,9 @@ const ActionTabs = () => (
       <TabsContent value="pickup" className="mt-0">
         <PlaceholderTab
           icon={CalendarClock}
-          title="Schedule a pickup"
-          body="Schedule a pickup for the next pre-carriage leg — confirmation lands in your inbox."
-          ctaLabel="Schedule pickup"
+          title="Pre-carriage pickup"
+          body="Schedule a pre-carriage pickup from the shipper's premises — confirmation lands in your inbox."
+          ctaLabel="Schedule pre-carriage"
           ctaTo="/dashboard/pickup"
           ctaTestId="action-pickup-cta"
         />

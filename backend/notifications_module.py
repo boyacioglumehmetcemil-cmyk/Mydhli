@@ -19,13 +19,49 @@ logger = logging.getLogger(__name__)
 class NotificationOut(BaseModel):
     id: str
     type: str        # SHIPMENT_DELIVERED, OUT_FOR_DELIVERY, INVOICE_PAID,
-                     # PICKUP_CONFIRMED, SERVICE_UPDATE
+                     # PICKUP_CONFIRMED, SERVICE_UPDATE, ALERT, STATUS
     title: str
     subtitle: str
     awb: Optional[str] = None
     invoiceNumber: Optional[str] = None
     createdAt: str
     readAt: Optional[str] = None
+    link: Optional[str] = None
+
+
+# Map free-form `kind` strings emitted by the AT_DEPOT / status seed to the
+# canonical `type` codes used by the older NotificationBell icon switch.
+KIND_TO_TYPE = {
+    "alert":  "SERVICE_UPDATE",
+    "status": "SHIPMENT_DELIVERED",
+    "info":   "SERVICE_UPDATE",
+}
+
+
+def _to_iso(v):
+    if isinstance(v, datetime):
+        return v.isoformat()
+    return v
+
+
+def _normalize(item: dict) -> dict:
+    """Bridge legacy notification fields (type/subtitle/createdAt-str) and the
+    newer AT_DEPOT seed fields (kind/body/createdAt-datetime) into a single
+    response shape that satisfies NotificationOut and the frontend bell.
+    """
+    out = dict(item)  # shallow copy, original dict from mongo
+    out.pop("userId", None)
+    # type ← kind fallback
+    if "type" not in out or out.get("type") is None:
+        kind = out.get("kind") or "info"
+        out["type"] = KIND_TO_TYPE.get(kind, "SERVICE_UPDATE")
+    # subtitle ← body fallback
+    if "subtitle" not in out or out.get("subtitle") is None:
+        out["subtitle"] = out.get("body") or ""
+    # createdAt → iso string
+    out["createdAt"] = _to_iso(out.get("createdAt")) or ""
+    out["readAt"] = _to_iso(out.get("readAt"))
+    return out
 
 
 class NotificationListResponse(BaseModel):
@@ -55,7 +91,7 @@ def build_notifications_router(db, get_current_user_dep):
         cursor = (db.notifications.find(q, {"_id": 0})
                   .sort("createdAt", -1).skip(skip).limit(pageSize))
         items = await cursor.to_list(length=pageSize)
-        return {"items": items, "total": total, "unread": unread}
+        return {"items": [_normalize(i) for i in items], "total": total, "unread": unread}
 
     @router.get("/notifications/unread-count")
     async def unread_count(user: dict = Depends(get_current_user_dep)):

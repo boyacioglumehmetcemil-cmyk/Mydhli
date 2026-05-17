@@ -37,7 +37,9 @@ DEFAULT_REPLACEMENTS: list[Tuple[str, str]] = [
     ("Ms. Andrea Schäfer",                               "International Logistics Coordinator"),
     ("Mr. Wei Liang Tan",                                "Procurement Director"),
     ("Mr. Marcus Lee",                                   "Procurement Manager"),
-    ("Mehmet Cemil BOYACIOGLU",                          "DHL PNG Forwarder Operations"),
+    # Note: the project owner's personal name has been redacted from this
+    # mapping. Only present in 00_MASTER/EMERGENT_HANDOVER.md (now anonymised
+    # to "DHL PNG Forwarder Operations"); 0 occurrences in shipment PDFs.
     # ── Personal-handle emails → role mailboxes ──────────────────────────
     ("wl.tan@marinepower.sg",                            "procurement@marinepower.sg"),
     ("m.lee@pacificheavy.sg",                            "procurement@pacificheavy.sg"),
