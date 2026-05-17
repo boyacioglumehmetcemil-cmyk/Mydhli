@@ -245,3 +245,49 @@ Forwarding screens.
 - `backend/address_seed.py` (rewritten — v2 schema + auto-migrate)
 - `backend/shipments_module.py` (legacy seeder guards tightened)
 - `memory/test_credentials.md` (updated seeded-data line)
+
+
+## Phase 8.4c — Synthetic Document Generation — REVERTED — 2026-05-17
+
+> User rejected the synthetic PDF pipeline: "BU OLMAMIS COK BOKTAN DURUYOR".
+> Pitch demo must show ONLY authentic anonymised operational paperwork.
+
+### What was removed
+- **Backend endpoint `POST /api/shipments/{ref}/generate-documents`** → 404
+- **Backend endpoint `GET /api/document-templates`** → 404
+- `backend/forwarding_doc_generator.py` (docxtpl + LibreOffice renderer) — file **deleted**
+- `backend/templates/forwarding/*.docx` (9 generic master templates) — **deleted**
+- `backend/scripts/apply_logo_to_sample_shipments.py` (PyMuPDF logo overlay) — **deleted**
+- `backend/scripts/generate_master_templates.py` (template producer) — **deleted**
+- `frontend/src/components/documents/DocumentsGenerateModal.jsx` — **deleted**
+- DocumentsSection "Generate" button + `generateOpen` state + Sparkles import — **removed**
+- Python deps `docxtpl`, `python-docx` — removed from `requirements.txt` + pip uninstalled
+- Logo asset `/app/uploads/dhl_brand_assets/` — directory **deleted**
+- DB cleanup: 4 leftover `tags: auto_generated` DRAFT documents purged with their files
+
+### How the 43 overlaid PDFs were restored
+For the 5 pitch-priority shipments (SWB-001, 007, 029, 047, 055) the existing
+`document_filler.anonymize_pdf()` pipeline was re-run against the original
+source PDFs in `/app/uploads/dhl_57_shipments/{ref}_{Status}/`. The DB
+`document_id` and `file_path` values were preserved; only the file contents
+were rewritten back to the byte-for-byte equivalent of the Phase 8.3b anonymised
+output. The `DHL-PNG-Relogo-1` producer-metadata stamp is gone from every file.
+Verification: md5+size logged for all 43 PDFs in `backend/scripts/revert_logo_overlay.py`.
+
+### PII audit (post-revert)
+Full repo grep for `Mehmet | Cemil | BOYACIOGLU` returns **0 matches**.
+`EMERGENT_HANDOVER.md`, `anonymization_map.json`, `document_filler.py` all clean.
+
+### Handover bundle for new job
+Repo-clean state is documented in:
+- `/app/memory/HANDOVER.md` — required reading for the next agent
+- `/app/RESTORE_UPLOADS.md` — how to rebuild `/app/uploads/*` after git clone
+- `/app/backend/.env.example`, `/app/frontend/.env.example` — env templates
+- `.gitignore` — now ignores `.env`, large source PDFs, screenshots, test_reports
+
+### DO NOT (until DHL ships official templates)
+- Re-add `/api/shipments/{ref}/generate-documents`
+- Re-add the "Generate" button to DocumentsSection
+- Render synthetic PDFs from generic Jinja2 templates
+- Bake a homemade DHL logo into existing PDFs
+

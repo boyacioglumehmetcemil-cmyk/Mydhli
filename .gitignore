@@ -31,9 +31,36 @@ dist/
 dist
 
 # Environment files (comprehensive coverage)
+# CRITICAL: .env contains JWT_SECRET, real DB creds — must never be committed.
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+# But DO commit the example/template:
+!.env.example
+!**/.env.example
 
 *token.json*
 *credentials.json*
+
+# Pitch demo uploads — large PDF archives. The 482 anonymised
+# /app/uploads/shipment_documents/ tree IS committed (≈28 MB) because the
+# DB rows point at those exact paths. Everything else under /app/uploads/
+# is raw source material that can be re-fetched from the user — see
+# /app/RESTORE_UPLOADS.md.
+uploads/dhl_57_shipments/
+uploads/dhl_pct_assets/
+uploads/dhl_pct_extracted/
+uploads/dhl_pct_pack.docx
+uploads/dhl_operasyon_evraklari/
+
+# Screenshots taken during agent runs — never useful in the repo.
+screenshots/
+/app/screenshots/
+
+# Test reports / iteration artefacts
+test_reports/
 
 # Logs and debug files
 npm-debug.log*
@@ -132,3 +159,4 @@ frontend/node_modules/.cache/default-development/58.pack
 frontend/node_modules/.cache/default-development/59.pack
 frontend/node_modules/.cache/default-development/61.pack
 frontend/node_modules/.cache/default-development/63.pack
+frontend/node_modules/.cache/default-development/65.pack
