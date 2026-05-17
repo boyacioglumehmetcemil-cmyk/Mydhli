@@ -178,3 +178,70 @@ Two bugs caught by tester, both resolved.
 - `frontend/src/pages/Landing.jsx` (1-line cta prop addition)
 - `frontend/src/components/ProtectedRoute.jsx` (Navigate target rewritten)
 - `frontend/src/pages/Login.jsx` (added `resolveNext` helper + searchParams read)
+
+
+## Phase 8.4 — Address Book Rebrand + Internal Track + P2 Polish — 2026-05-17
+
+Final B2B polish pass turning the leftover B2C surfaces into proper Global
+Forwarding screens.
+
+### Address Book → Parties (`/dashboard/addresses`)
+- **`pages/Addresses.jsx`** rewritten as a table-style **Parties** directory:
+  - Title: "Parties" · Subhead: "Your shipper, consignee and notify-party directory — autofill any booking or HBL in a single click."
+  - Tabs with counts: All / Shippers / Consignees / Notify Parties
+  - Each row shows: role tag (yellow=Shipper, ink=Consignee, gray=Notify),
+    company / contact, address, country flag + code, phone, edit/delete actions.
+  - Free-text search across company, city, country.
+  - Create / Edit modal now exposes a **Role** dropdown (SHIPPER / CONSIGNEE / NOTIFY)
+    that gets persisted both as an explicit `role` field and as legacy
+    `isDefaultSender` / `isDefaultReceiver` flags for backward-compat.
+
+### Address seed v2 (`backend/address_seed.py`)
+- Replaced unversioned legacy records with structured v2 entries that carry
+  an explicit `role` field (SHIPPER / CONSIGNEE / NOTIFY) — 6 records per user.
+- New `SEED_VERSION` stamp drives automatic clear-and-reseed when the schema
+  changes; idempotent once the user has v2 records.
+- Demo user now seeded with 2 Shippers (PNG Logistics HQ + Lae warehouse),
+  2 Consignees (AU Sydney + NZ Auckland), 2 Notify Parties (AU Brisbane + SG).
+
+### Settings — strict 4-tab layout (`pages/Settings.jsx`)
+- Tabs reduced from 5 to exactly: **Profile · Notifications · Account Security · Billing**
+- Profile pane now also hosts the Company subsection (name + display
+  currency), removing the redundant "Business" tab.
+- New **Billing** placeholder pane (Coming Q2 2026) explaining the upcoming
+  self-service portal — payment methods, statements, billing contacts.
+- "API Access" pane removed — collapsed into a future enterprise track.
+
+### Internal Track page (`pages/DashboardTrack.jsx`)
+- New `/dashboard/track` and `/dashboard/track/:awb` routes inside the
+  authenticated dashboard chrome (sidebar + topbar preserved).
+- Accepts `?ref=` query param so dashboard search and notification links can
+  deep-link straight to a result.
+- Three states: empty placeholder ("Start tracking"), result (TrackingDetail
+  with `mode="dashboard"`), and not-found / network-error.
+- The public `/track` page remains untouched for marketing visitors.
+- `App.js`: replaced `<Navigate to="/track" />` with `<Route element={<DashboardTrack/>} />`.
+- Unused `Navigate` import removed.
+
+### P2 Safety — legacy demo seeders (`shipments_module.py`)
+- `seed_shipments`: guard tightened from `existing >= 25` to `existing >= 1`
+  so the legacy 25-shipment mock set can never overwrite the 57 real
+  ocean-freight records produced by `seed/seed_57_shipments.py`.
+- `seed_shipper_shipments`: same `>= 1` guard applied to the 6-record set.
+- Startup log lines now clearly state "legacy seeder will not overwrite. Skipping."
+
+### Verification
+- Address re-seed log: `Cleared 4 legacy address records for demo@dhlpng.com to re-seed at v2.` → `Inserted 6 address records for demo@dhlpng.com (v2).`
+- Public `/track` page: HTTP 200 (no regression).
+- Backend `/api/track/DHL-SWB-029`: 200 OK with full timeline.
+- `/api/track/DHL-NONEXISTENT-999`: 404 (expected → renders not-found state).
+- Lint clean: `frontend/src/pages` + `backend/address_seed.py`.
+
+### Files changed (this pass)
+- `frontend/src/pages/Addresses.jsx` (rewritten — table layout, role tags)
+- `frontend/src/pages/Settings.jsx` (rewritten — 4 strict tabs)
+- `frontend/src/pages/DashboardTrack.jsx` (NEW)
+- `frontend/src/App.js` (route swap + Navigate import removal)
+- `backend/address_seed.py` (rewritten — v2 schema + auto-migrate)
+- `backend/shipments_module.py` (legacy seeder guards tightened)
+- `memory/test_credentials.md` (updated seeded-data line)

@@ -36,14 +36,14 @@ import { toast } from "sonner";
 
 const navItems = [
   { to: "/dashboard",            label: "Dashboard",         icon: LayoutDashboard, end: true },
-  { to: "/track",                label: "Track",             icon: Search,          external: true },
+  { to: "/dashboard/track",      label: "Track",             icon: Search },
   { to: "/dashboard/quote",      label: "Quote & Compare",   icon: Calculator },
   { to: "/dashboard/ship",       label: "Book a Shipment",   icon: Package },
   { to: "/dashboard/shipments",  label: "My Bookings",       icon: Truck },
   { to: "/dashboard/documents",  label: "Documents",         icon: FileText },
   { to: "/dashboard/invoices",   label: "Invoices",          icon: Receipt },
   { to: "/dashboard/customs",    label: "Customs",           icon: Stamp },
-  { to: "/dashboard/addresses",  label: "Address Book",      icon: BookUser },
+  { to: "/dashboard/addresses",  label: "Parties",           icon: BookUser },
   { to: "/dashboard/settings",   label: "Settings",          icon: Settings },
 ];
 

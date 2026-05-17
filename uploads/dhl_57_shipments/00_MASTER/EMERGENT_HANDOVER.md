@@ -3,7 +3,7 @@
 **Project:** Full operations documentation pack for 57 ocean-freight shipments dispatched from Singapore
 to Pacific transit ports (Papua New Guinea / Fiji) between December 2021 and February 2026.
 
-**Owner:** Mehmet Cemil BOYACIOGLU
+**Owner:** DHL PNG Forwarder Operations
 **Forwarder:** DHL Global Forwarding (Singapore) — Ocean Freight & Project Cargo Division
 **Status snapshot date:** 17 May 2026
 

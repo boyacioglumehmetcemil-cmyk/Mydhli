@@ -1213,8 +1213,11 @@ async def seed_shipments(db, demo_user_id: str):
         await db.shipments.delete_many({"userId": demo_user_id})
         existing = 0
 
-    if existing >= 25:
-        logger.info(f"[SEED] Shipments already seeded ({existing} for demo user). Skipping.")
+    if existing >= 1:
+        # P2 safety: once any shipments exist (including the 57 real ocean-freight
+        # records seeded by seed/seed_57_shipments.py), never re-pollute with the
+        # legacy 25-shipment mock set.
+        logger.info(f"[SEED] Demo user already has {existing} shipments — legacy seeder will not overwrite. Skipping.")
         return
 
     if existing > 0:
@@ -1414,8 +1417,9 @@ async def seed_shipper_shipments(db, shipper_user_id: str):
         logger.info(f"[SEED] Shipper Phase 8.0 records ({existing}, no mode). Re-seeding.")
         await db.shipments.delete_many({"userId": shipper_user_id})
         existing = 0
-    if existing >= 6:
-        logger.info(f"[SEED] Shipper shipments already seeded ({existing}). Skipping.")
+    if existing >= 1:
+        # P2 safety: never re-seed once any shipper records exist.
+        logger.info(f"[SEED] Shipper already has {existing} shipments. Skipping.")
         return
     if existing > 0:
         await db.shipments.delete_many({"userId": shipper_user_id})

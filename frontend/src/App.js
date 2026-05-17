@@ -1,5 +1,5 @@
 import "@/App.css";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CountryProvider } from "@/contexts/CountryContext";
@@ -24,10 +24,12 @@ import Invoices from "@/pages/Invoices";
 import Reports from "@/pages/Reports";
 import Customs from "@/pages/Customs";
 import DocumentsGlobal from "@/pages/DocumentsGlobal";
+import Notifications from "@/pages/Notifications";
 import Settings from "@/pages/Settings";
 import DashboardComingSoon from "@/pages/DashboardComingSoon";
 import DashboardLayout from "@/components/DashboardLayout";
 import Dashboard from "@/pages/Dashboard";
+import DashboardTrack from "@/pages/DashboardTrack";
 import NotFound from "@/pages/NotFound";
 
 function App() {
@@ -54,17 +56,19 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Dashboard />} />
-            <Route path="track" element={<Navigate to="/track" replace />} />
-            <Route path="ship" element={<ShipNow />} />
-            <Route path="quote" element={<Quote />} />
-            <Route path="pickup" element={<Pickup />} />
-            <Route path="pickups" element={<Pickups />} />
-            <Route path="shipments" element={<Shipments />} />
-            <Route path="shipments/:awb" element={<ShipmentDetail />} />
+          <Route index element={<Dashboard />} />
+          <Route path="track" element={<DashboardTrack />} />
+          <Route path="track/:awb" element={<DashboardTrack />} />
+          <Route path="ship" element={<ShipNow />} />
+          <Route path="quote" element={<Quote />} />
+          <Route path="pickup" element={<Pickup />} />
+          <Route path="pickups" element={<Pickups />} />
+          <Route path="shipments" element={<Shipments />} />
+          <Route path="shipments/:awb" element={<ShipmentDetail />} />
             <Route path="addresses" element={<Addresses />} />
             <Route path="invoices" element={<Invoices />} />
             <Route path="documents" element={<DocumentsGlobal />} />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="reports" element={<Reports />} />
             <Route path="customs" element={<Customs />} />
             <Route path="orders" element={<DashboardComingSoon />} />
