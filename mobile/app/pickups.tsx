@@ -54,7 +54,7 @@ export default function Pickups() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View testID="pickups-page" style={styles.titleSection}>
           <Text style={styles.pageTitle}>My Pickups</Text>
-          <Text style={styles.pageSub}>Scheduled courier collections.</Text>
+          <Text style={styles.pageSub}>Scheduled freight pickups.</Text>
         </View>
 
         {loading ? (
@@ -63,7 +63,7 @@ export default function Pickups() {
           <View testID="pickups-empty" style={styles.emptyCard}>
             <Ionicons name="calendar-outline" size={48} color={Colors.dhlMuted} />
             <Text style={styles.emptyTitle}>No pickups scheduled</Text>
-            <Text style={styles.emptyText}>Book a courier to collect your first shipment.</Text>
+            <Text style={styles.emptyText}>Schedule a pickup to collect your first shipment.</Text>
             <TouchableOpacity style={styles.primaryBtn} onPress={() => router.push('/schedule-pickup')}>
               <Text style={styles.primaryBtnText}>SCHEDULE NOW</Text>
             </TouchableOpacity>

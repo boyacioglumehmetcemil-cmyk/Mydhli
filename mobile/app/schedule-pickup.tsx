@@ -100,7 +100,7 @@ export default function SchedulePickup() {
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View testID="pickup-page" style={styles.titleSection}>
             <Text style={styles.pageTitle}>Schedule Pickup</Text>
-            <Text style={styles.pageSub}>Book a courier to collect your shipments.</Text>
+            <Text style={styles.pageSub}>Schedule a pickup to collect your shipments.</Text>
           </View>
 
           <View style={styles.formCard}>

@@ -119,7 +119,7 @@ export default function Dashboard() {
             { icon: 'send' as const, label: 'Ship Now', sub: 'Create a new shipment', route: '/(tabs)/ship', testId: 'quick-ship-now' },
             { icon: 'search' as const, label: 'Track', sub: 'Look up any AWB', route: '/track', testId: 'quick-track' },
             { icon: 'calculator' as const, label: 'Get Quote', sub: 'Estimate rates instantly', route: '/quote', testId: 'quick-quote' },
-            { icon: 'calendar' as const, label: 'Pickup', sub: 'Book a courier visit', route: '/schedule-pickup', testId: 'quick-pickup' },
+            { icon: 'calendar' as const, label: 'Pickup', sub: 'Arrange a freight pickup', route: '/schedule-pickup', testId: 'quick-pickup' },
           ].map((a, i) => (
             <TouchableOpacity key={i} testID={a.testId} style={styles.actionCard} onPress={() => router.push(a.route as any)}>
               <View style={styles.actionIconBox}>
