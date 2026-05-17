@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Loader2, PackageX, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import TrackingDetail from "@/components/TrackingDetail";
+import DocumentsSection from "@/components/documents/DocumentsSection";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 
@@ -93,6 +94,7 @@ const ShipmentDetail = () => {
       )}
 
       {!loading && shipment && <TrackingDetail shipment={shipment} mode="auth" />}
+      {!loading && shipment && <DocumentsSection shipmentRef={awb} />}
     </div>
   );
 };

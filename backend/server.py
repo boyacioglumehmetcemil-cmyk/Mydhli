@@ -389,6 +389,11 @@ from notifications_module import build_notifications_router, seed_notifications_
 notifications_router = build_notifications_router(db, get_current_user)
 app.include_router(notifications_router)
 
+# Mount documents router (Phase 8.3a — uploads, metadata, approve/reject, soft delete)
+from documents_module import build_router as build_documents_router
+documents_router = build_documents_router(db, get_current_user)
+app.include_router(documents_router)
+
 # CORS
 app.add_middleware(
     CORSMiddleware,
