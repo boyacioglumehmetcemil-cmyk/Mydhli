@@ -35,6 +35,9 @@ export const DOCUMENT_TYPES = [
   { value: "ARRIVAL_NOTICE",        label: "Arrival Notice",              group: "Operational", Icon: FileText },
   { value: "PRE_ALERT",             label: "Pre-Alert",                   group: "Operational", Icon: FileText },
   { value: "BOOKING_CONFIRMATION",  label: "Booking Confirmation",        group: "Operational", Icon: FileText },
+  { value: "DHL_SHIPPING_FORM",     label: "DHL Shipping Form",           group: "Operational", Icon: FileText },
+  { value: "WAREHOUSE_RECEIPT",     label: "Warehouse Receipt",           group: "Operational", Icon: Package },
+  { value: "PENDING_ACTION_NOTE",   label: "Pending Action Note",         group: "Operational", Icon: AlertTriangle },
 
   // Special / optional — E
   { value: "INSURANCE_CERTIFICATE", label: "Insurance Certificate",       group: "Special",    Icon: ShieldCheck },

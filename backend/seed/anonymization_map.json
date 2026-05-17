@@ -1,0 +1,94 @@
+{
+  "_version": "1.0",
+  "_description": "Audit trail for PII anonymization applied to the 57-shipment seed pack (ZIP 2). Every occurrence found by the scan in /app/uploads/dhl_57_shipments/**.pdf was replaced with the value in 'replace_with' before the file was copied into /app/uploads/shipment_documents/{ref}/. The original ZIP 2 archive on disk is NOT modified — only the seeded copies are.",
+  "_scan_summary": {
+    "pdfs_scanned": 483,
+    "persons_identified": 5,
+    "emails_redacted": 3,
+    "emails_kept_as_is": 4
+  },
+  "persons": [
+    {
+      "original": "Mr. Rajiv Menon",
+      "occurrences": 425,
+      "role": "DHL Singapore Ocean Operations",
+      "replace_with": "DHL Ocean Operations"
+    },
+    {
+      "original": "Mr. Jürgen Hoffmann, Export Operations Manager",
+      "occurrences": 74,
+      "role": "MAN Energy Export Operations Manager",
+      "replace_with": "Export Operations Manager"
+    },
+    {
+      "original": "Mr. Jürgen Hoffmann",
+      "occurrences": 388,
+      "role": "MAN Energy Export Operations Manager (short form)",
+      "replace_with": "Export Operations Manager"
+    },
+    {
+      "original": "Ms. Andrea Schäfer",
+      "occurrences": 208,
+      "role": "BOMAG International Logistics Coordinator",
+      "replace_with": "International Logistics Coordinator"
+    },
+    {
+      "original": "Mr. Wei Liang Tan, Procurement Director",
+      "occurrences": 30,
+      "role": "Marine Power Procurement Director",
+      "replace_with": "Procurement Director"
+    },
+    {
+      "original": "Mr. Wei Liang Tan, Procurement",
+      "occurrences": 30,
+      "role": "Marine Power Procurement (partial extraction)",
+      "replace_with": "Procurement Director"
+    },
+    {
+      "original": "Mr. Wei Liang Tan",
+      "occurrences": 14,
+      "role": "Marine Power Procurement Director (short form)",
+      "replace_with": "Procurement Director"
+    },
+    {
+      "original": "Mr. Marcus Lee",
+      "occurrences": 40,
+      "role": "Pacific Heavy Machinery Procurement Manager",
+      "replace_with": "Procurement Manager"
+    },
+    {
+      "original": "Mehmet Cemil BOYACIOGLU",
+      "occurrences": 0,
+      "role": "Project owner (HANDOVER docs only — not in PDFs)",
+      "replace_with": "DHL PNG Forwarder Operations",
+      "note": "Found 0 occurrences in shipment PDFs. Only present in 00_MASTER/EMERGENT_HANDOVER.md."
+    }
+  ],
+  "emails_redacted": [
+    {
+      "original": "wl.tan@marinepower.sg",
+      "occurrences": 74,
+      "replace_with": "procurement@marinepower.sg",
+      "rationale": "personal handle → role mailbox"
+    },
+    {
+      "original": "m.lee@pacificheavy.sg",
+      "occurrences": 40,
+      "replace_with": "procurement@pacificheavy.sg",
+      "rationale": "personal handle → role mailbox"
+    }
+  ],
+  "emails_kept_as_is": [
+    {"address": "export.ops@man-es.com",         "occurrences": 74, "rationale": "already a role mailbox"},
+    {"address": "international.logistics@bomag.com", "occurrences": 40, "rationale": "already a role mailbox"},
+    {"address": "ops@spcargo.com.fj",            "occurrences": 30, "rationale": "Fiji notify party — role mailbox"},
+    {"address": "ops@pacificcargolog.com.pg",    "occurrences": 27, "rationale": "PNG notify party — role mailbox"},
+    {"address": "ocean.ops.sg@dhl.com",          "occurrences": 26, "rationale": "DHL role mailbox"}
+  ],
+  "kept_as_is_intentionally": [
+    {"item": "Company names (BOMAG GmbH, MAN Energy Solutions SE, Pacific Heavy Machinery Pte Ltd, Marine Power Solutions Singapore Pte Ltd, Pacific Cargo Logistics PNG Ltd, SP Cargo Fiji)", "rationale": "Legal entity names — needed for pitch realism"},
+    {"item": "Tax IDs / UEN (DE128492611, UEN 201538291M, ...)", "rationale": "Look generic — no PII risk"},
+    {"item": "Phone numbers (+49 821 322-0, +65 6863 7720, ...)", "rationale": "Main switchboard / role-level numbers — no personal handles"},
+    {"item": "Addresses (Stadtbachstraße 1, 50 Tuas Crescent, ...)", "rationale": "Corporate addresses, publicly listed"}
+  ]
+}

@@ -7,6 +7,7 @@ export const STATUS_LABELS = {
   DELIVERED: "Delivered",
   ON_HOLD: "On Hold",
   EXCEPTION: "Exception",
+  AT_DEPOT: "At Depot",
 };
 
 export const STATUS_TONES = {
@@ -66,6 +67,14 @@ export const STATUS_TONES = {
     banner: "bg-dhl-red",
     bannerText: "text-white",
   },
+  AT_DEPOT: {
+    bg: "bg-amber-50",
+    text: "text-amber-900",
+    border: "border-amber-500",
+    dot: "bg-amber-500",
+    banner: "bg-amber-500",
+    bannerText: "text-amber-950",
+  },
 };
 
 export const SERVICE_LABELS = {
@@ -104,6 +113,7 @@ export const STATUS_PROGRESS = {
   DELIVERED: 100,
   ON_HOLD: 40,
   EXCEPTION: 40,
+  AT_DEPOT: 70,
 };
 
 export const formatDate = (iso, opts = {}) => {

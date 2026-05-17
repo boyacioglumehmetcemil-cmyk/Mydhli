@@ -1,0 +1,401 @@
+{
+  "DHL-SWB-001": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2021-08901",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-002": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2021-08902",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-003": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2021-08903",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-004": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08904",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-005": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08905",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-006": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08906",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-007": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08907",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-008": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08908",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-009": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08909",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-010": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08910",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-011": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08911",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-012": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08912",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-013": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08913",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-014": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08914",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-015": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08915",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-016": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08916",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-017": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08917",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-018": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08918",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-019": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2022-08919",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-020": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2023-08920",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-021": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2023-08921",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-022": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2023-08922",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-023": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2023-08923",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-024": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2023-08924",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-025": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2023-08925",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-026": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2023-08926",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-027": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2023-08927",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-028": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2024-08928",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-029": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2024-08929",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-030": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2024-08930",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-031": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2024-08931",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-032": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2024-08932",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-033": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2024-08933",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-034": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2024-08934",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-035": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2024-08935",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-036": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08936",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-037": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08937",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-038": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08938",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-039": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08939",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-040": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08940",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-041": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08941",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-042": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08942",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-043": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08943",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-044": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08944",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-045": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08945",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-046": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08946",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-047": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08947",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-048": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08948",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-049": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08949",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-050": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08950",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-051": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08951",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-052": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08952",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-053": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2026-08953",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-054": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2025-08954",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-055": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2026-08955",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-056": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2026-08956",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  },
+  "DHL-SWB-057": {
+    "vessel_voyage": null,
+    "booking_ref": "BKG-SIN-2026-08957",
+    "pol_full": null,
+    "pod_full": null,
+    "freight_term": null
+  }
+}
