@@ -662,3 +662,79 @@ Kullanıcı Emergent dashboard'dan **Redeploy** yapması gerekiyor. Sonrası:
 `https://merhaba-app-446.emergent.host` → myDHLi login açacak,
 Add-to-Home-Screen PWA olarak mobile native-style yüklenecek.
 
+
+### Faz 7.9 — HOTFIX: Web at root + mobile at /m/ — 2026-05-18
+- **Bug introduced in Faz 7.8:** mobile bundle overwrote the entire
+  `/app/frontend/build/`. PC users lost the web app and the PWA install pulled
+  the wrong icon (showed "E" + hostname instead of myDHLi).
+- **Correct structure now in place:**
+  - `https://merhaba-app-446.emergent.host/` → CRA web frontend (PC)
+  - `https://merhaba-app-446.emergent.host/m/` → Expo Web myDHLi PWA (mobile install)
+- Web frontend source (`/app/frontend/src/`) was never touched in 7.8 or 7.9 —
+  only the build artifact placement changed.
+
+#### Steps
+1. **Rebuild web frontend at root**
+   - `rm -rf /app/frontend/build && cd /app/frontend && yarn build:web-legacy`
+     (CRA build, 18s). Produces original DHL.com pixel-perfect site.
+2. **Configure mobile for `/m/` baseUrl**
+   - `mobile/app.json` → `expo.experiments.baseUrl: "/m"`,
+     `expo.web.scope: "/m/"`, `expo.web.startUrl: "/m/"`,
+     `expo.web.name: "myDHLi"`.
+3. **Update mobile PWA tags** to reference `/m/` paths
+   - `mobile/app/+html.tsx`: `<link rel="manifest" href="/m/manifest.json">`,
+     icon hrefs `/m/icon-192.png`, `/m/icon-512.png`, `/m/apple-touch-icon.png`,
+     `/m/favicon.png`. Title shortened to `myDHLi · DHL Global Forwarding`.
+   - `mobile/public/manifest.json`: name "myDHLi", short_name "myDHLi",
+     start_url "/m/", scope "/m/", icons at `/m/icon-192.png` (any maskable)
+     and `/m/icon-512.png` (any maskable).
+4. **Re-export mobile to subpath**
+   - `cd /app/mobile && yarn expo export --platform web --output-dir /app/frontend/build/m`
+   - All script/CSS asset srcs now correctly prefixed `/m/_expo/static/...`.
+5. **`frontend/package.json` build script** updated to a 2-stage build:
+   ```
+   "build": "yarn build:web-root && yarn build:mobile-subpath"
+   "build:web-root": "craco build"
+   "build:mobile-subpath": "if [ -d ../mobile/node_modules ]; then
+       cd ../mobile && yarn expo export --platform web --output-dir ../frontend/build/m;
+     else echo 'Mobile node_modules absent; using prebuilt /m/ artifact'; fi"
+   ```
+   On redeploy: CRA builds web root → Expo exports myDHLi into `./build/m`.
+   If mobile deps absent, falls back to prebuilt static artifact (no failure).
+6. **Backend URL resolution unaffected**
+   - `window.location.origin` returns just `https://host` (no path segment), so
+     `${origin}/api` still resolves correctly from any URL — root or `/m/`.
+
+#### Verification
+- `/app/frontend/build/index.html` → DHL.com `<title>myDHLi — Track, ship and
+  document freight</title>` (CRA build, `main.b6a008eb.js`, custom DHL icons).
+- `/app/frontend/build/m/index.html` → `<title>myDHLi · DHL Global Forwarding</title>`,
+  script `src="/m/_expo/static/js/web/entry-*.js"`, manifest `/m/manifest.json`,
+  icons all `/m/...` paths, color-scheme guard, theme #FFCC00.
+- `/app/frontend/build/m/manifest.json` → `name: "myDHLi"`, `short_name: "myDHLi"`,
+  `start_url: "/m/"`, `scope: "/m/"`, icons at `/m/icon-192.png` and
+  `/m/icon-512.png` with purpose `any maskable`.
+- All 4 PWA assets present and >5KB in `/m/` directory.
+- `[Gg]enerate` grep = 0.
+
+#### Files changed
+- `frontend/package.json` (split into `build:web-root` + `build:mobile-subpath`)
+- `mobile/app.json` (`baseUrl: /m`, `web.scope /m/`, `web.startUrl /m/`)
+- `mobile/app/+html.tsx` (all asset paths now `/m/`-prefixed; title shortened)
+- `mobile/public/manifest.json` (rewrite with `/m/` scope + icon paths)
+- `frontend/build/*` (CRA build → root)
+- `frontend/build/m/*` (Expo Web export → subpath)
+
+#### Kullanıcıya talimat — Redeploy gerekli
+1. **Emergent dashboard → "Deploy" / "Redeploy"** butonuna bas.
+2. Build pipeline `yarn build` çalıştıracak → önce CRA root web build, sonra
+   mobile Expo `/m/` export.
+3. Production'da test:
+   - **PC tarayıcısında** `https://merhaba-app-446.emergent.host/` → DHL.com
+     pixel-perfect web app açılacak.
+   - **Telefon tarayıcısında** `https://merhaba-app-446.emergent.host/m/` →
+     myDHLi pixel-perfect mobile (yellow top bar + login + 5-tab dashboard).
+   - **Telefon Add to Home Screen** (Chrome/Safari) `/m/` URL'sinden →
+     ikonda **myDHLi** sarı zemin + kırmızı DHL logo görünecek (artık "E +
+     hostname" görünmeyecek).
+

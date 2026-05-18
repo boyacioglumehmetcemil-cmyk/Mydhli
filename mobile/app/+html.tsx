@@ -13,7 +13,7 @@ export default function Root({ children }: PropsWithChildren) {
           content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
         />
         {/* PWA / installability */}
-        <title>myDHLi PNG · DHL Global Forwarding</title>
+        <title>myDHLi · DHL Global Forwarding</title>
         <meta name="description" content="DHL Global Forwarding · Papua New Guinea — ship, track and manage your account." />
         <meta name="theme-color" content="#FFCC00" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -23,11 +23,11 @@ export default function Root({ children }: PropsWithChildren) {
         {/* Force light color-scheme — block Chrome/Samsung dark-mode auto-invert */}
         <meta name="color-scheme" content="light only" />
         <meta name="supported-color-schemes" content="light" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="shortcut icon" href="/favicon.png" />
+        <link rel="manifest" href="/m/manifest.json" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/m/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/m/icon-512.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/m/apple-touch-icon.png" />
+        <link rel="shortcut icon" href="/m/favicon.png" />
         <ScrollViewStyleReset />
         <style
           dangerouslySetInnerHTML={{

@@ -26,11 +26,11 @@
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/favicon.png",
-      "name": "myDHLi PNG",
+      "name": "myDHLi",
       "shortName": "myDHLi",
       "lang": "en",
-      "scope": "/",
-      "startUrl": "/",
+      "scope": "/m/",
+      "startUrl": "/m/",
       "themeColor": "#FFCC00",
       "backgroundColor": "#FFCC00",
       "display": "standalone",
@@ -50,7 +50,8 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "baseUrl": "/m"
     }
   }
 }

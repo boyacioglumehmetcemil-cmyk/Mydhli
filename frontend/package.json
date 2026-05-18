@@ -57,7 +57,9 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "if [ -d ../mobile/node_modules ]; then cd ../mobile && yarn expo export --platform web --output-dir ../frontend/build; else echo 'Using prebuilt mobile-as-web bundle in ./build/ (mobile/node_modules absent)'; fi",
+    "build": "yarn build:web-root && yarn build:mobile-subpath",
+    "build:web-root": "craco build",
+    "build:mobile-subpath": "if [ -d ../mobile/node_modules ]; then cd ../mobile && yarn expo export --platform web --output-dir ../frontend/build/m; else echo 'Mobile node_modules absent; using prebuilt /m/ artifact'; fi",
     "build:web-legacy": "craco build",
     "test": "craco test"
   },
