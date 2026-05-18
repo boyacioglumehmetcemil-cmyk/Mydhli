@@ -13,7 +13,7 @@ export default function TabLayout() {
     if (!loading && !isAuthenticated) {
       router.replace('/login');
     }
-  }, [loading, isAuthenticated]);
+  }, [loading, isAuthenticated, router]);
 
   if (loading) {
     return (
@@ -29,13 +29,14 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        // DHL palette — active red, inactive muted grey.
         tabBarActiveTintColor: Colors.dhlRed,
         tabBarInactiveTintColor: Colors.dhlMuted,
         tabBarStyle: {
           backgroundColor: Colors.white,
           borderTopColor: Colors.dhlBorder,
           borderTopWidth: 1,
-          height: 60,
+          height: 64,
           paddingBottom: 8,
           paddingTop: 8,
         },
@@ -46,6 +47,7 @@ export default function TabLayout() {
         },
       }}
     >
+      {/* 1) Home */}
       <Tabs.Screen
         name="index"
         options={{
@@ -53,25 +55,43 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="grid" size={size} color={color} />,
         }}
       />
+      {/* 2) Shipments */}
       <Tabs.Screen
         name="shipments"
         options={{
-          title: 'Bookings',
+          title: 'Shipments',
           tabBarIcon: ({ color, size }) => <Ionicons name="cube" size={size} color={color} />,
         }}
       />
+      {/* 3) Track */}
       <Tabs.Screen
-        name="ship"
+        name="track"
         options={{
-          title: 'Ship',
-          tabBarIcon: ({ color, size }) => <Ionicons name="send" size={size} color={color} />,
+          title: 'Track',
+          tabBarIcon: ({ color, size }) => <Ionicons name="search" size={size} color={color} />,
         }}
       />
+      {/* 4) Documents (placeholder in Phase 2 — real list & PDF preview ship in Phase 3) */}
+      <Tabs.Screen
+        name="documents"
+        options={{
+          title: 'Documents',
+          tabBarIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} />,
+        }}
+      />
+      {/* 5) More */}
       <Tabs.Screen
         name="more"
         options={{
           title: 'More',
           tabBarIcon: ({ color, size }) => <Ionicons name="menu" size={size} color={color} />,
+        }}
+      />
+      {/* Hidden — Ship Now is still reachable via /(tabs)/ship but no longer a tab. */}
+      <Tabs.Screen
+        name="ship"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

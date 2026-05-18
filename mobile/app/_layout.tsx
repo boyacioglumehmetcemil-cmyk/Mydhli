@@ -14,7 +14,6 @@ export default function RootLayout() {
           <Stack.Screen name="login" />
           <Stack.Screen name="register" />
           <Stack.Screen name="forgot-password" />
-          <Stack.Screen name="track" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="shipment/[awb]" options={{ presentation: 'card' }} />
           <Stack.Screen name="quote" />

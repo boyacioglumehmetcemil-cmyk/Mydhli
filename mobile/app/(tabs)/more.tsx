@@ -7,10 +7,11 @@ import { Colors } from '../../src/constants/colors';
 import { useAuth } from '../../src/contexts/AuthContext';
 
 const menuItems = [
+  { icon: 'send' as const, label: 'Ship Now', sub: 'Book a new shipment', route: '/ship' },
   { icon: 'calculator' as const, label: 'Get a Quote', sub: 'Instant rate estimates', route: '/quote' },
   { icon: 'calendar' as const, label: 'Schedule Pickup', sub: 'Arrange a freight pickup', route: '/schedule-pickup' },
   { icon: 'time' as const, label: 'My Pickups', sub: 'Scheduled collections', route: '/pickups' },
-  { icon: 'book' as const, label: 'Address Book', sub: 'Saved senders & receivers', route: '/addresses' },
+  { icon: 'book' as const, label: 'Parties', sub: 'Shipper, consignee & notify directory', route: '/addresses' },
   { icon: 'receipt' as const, label: 'Invoices', sub: 'Billing history & payments', route: '/invoices' },
   { icon: 'bar-chart' as const, label: 'Reports', sub: 'Account analytics', route: '/reports' },
   { icon: 'document-text' as const, label: 'Customs', sub: 'Customs documents', route: '/customs' },
