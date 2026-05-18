@@ -57,7 +57,8 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "yarn build:mobile-to-public && craco build",
+    "build": "craco build",
+    "build:full": "yarn build:mobile-to-public && craco build",
     "build:mobile-to-public": "cd ../mobile && (test -d node_modules || yarn install --ignore-scripts --network-timeout 600000 --non-interactive) && yarn expo export --platform web --output-dir ../frontend/public/m",
     "build:web-root": "craco build",
     "build:mobile-subpath": "yarn build:mobile-to-public && craco build",
