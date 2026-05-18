@@ -291,3 +291,53 @@ Repo-clean state is documented in:
 - Render synthetic PDFs from generic Jinja2 templates
 - Bake a homemade DHL logo into existing PDFs
 
+
+
+## Mobile (Expo) — Faz 6.1 + Faz 7 — 2026-05-18
+
+### Faz 6.1 — Notifications link in More tab
+- `app/(tabs)/more.tsx`: added 10th menu item between Parties and Invoices.
+  - `icon: notifications-outline`, `label: Notifications`, `sub: View alerts & inbox`,
+    `route: /notifications`, `testID: more-link-notifications`.
+  - Made testID prop optional via `item.testID || \`more-menu-...\``.
+- HeaderBell on tab header retained (not removed).
+- Verified: 10 menu rows render; tapping routes to `/notifications` inbox.
+
+### Faz 7 — Direct-to-login mobile entry + redesigned myDHLi login
+- **`app/index.tsx`** rewritten as auth gate only:
+  - Shows splash (`BrandWordmark` + spinner on yellow bg) while `loading`.
+  - `<Redirect href="/(tabs)">` when authenticated; `<Redirect href="/login">` otherwise.
+  - Removed: "Move freight worldwide" hero, stats strip, Freight forwarding PNG cards,
+    Open Account / Track Shipment CTAs. No public marketing surface on mobile.
+- **`app/login.tsx`** redesigned to match myDHLi reference layout:
+  - Top yellow bar (`#FFCC00`, height 64): BrandWordmark left, "Contact us ↗" right (red).
+  - Body: `ImageBackground` (Unsplash container-ship CDN) + `rgba(0,0,0,0.25)` overlay.
+  - White login card (max 400px, radius 8, shadow): "Welcome to myDHLi" heading,
+    email + password (with eye toggle), "Forgot your password?" link (red underline),
+    full-width red Login button, "New to myDHLi? Open an account" link, DEMO hint.
+  - Bottom footer bar (white): brand mark + "Privacy Notice · Terms of Use · Legal
+    Notice · Contact us" + 🌐 PG locale pill.
+  - testIDs renamed per spec: `login-email`, `login-password`, `login-password-toggle`,
+    `login-submit`, `login-forgot`, `login-contact-us`, `login-footer-privacy/terms/legal`.
+- Contact / policy links open `mailto:support@dhlpng.com` via `Linking.openURL`.
+- No new runtime deps; backend untouched; web frontend untouched.
+
+### Verification (Faz 7)
+- ✅ `GET /` unauthenticated → redirects to `/login` (verified via screenshot tool).
+- ✅ `GET /` with stored JWT in `localStorage.dhl_auth_token` → renders tabs dashboard.
+- ✅ Login form (`demo@dhlpng.com` / `Demo@2026`) submits → tabs Home renders.
+- ✅ ImageBackground (Unsplash container-ship URL) loads in the body.
+- ✅ All 12 spec testIDs present in DOM.
+- ✅ `grep -ri "[Gg]enerate" /app/mobile/app /app/mobile/src` = 0.
+- ✅ `yarn tsc --noEmit`: 20 errors (baseline, pre-existing in `ship.tsx`/`settings.tsx`),
+  0 new errors introduced by `index.tsx` or `login.tsx`.
+- ✅ Bundle: Metro restart picks up changes; preview tunnel `HTTP/2 200`.
+
+### Files changed (Faz 7)
+- `app/index.tsx` (rewritten — redirect gate)
+- `app/login.tsx` (rewritten — myDHLi layout)
+
+### Removed from mobile surface
+- "Move freight worldwide" landing hero, stats strip, Freight Forwarding cards
+  (entire prior `app/index.tsx` body). Not re-archived — git history is the
+  reference if ever needed.

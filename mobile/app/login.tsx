@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,
-  KeyboardAvoidingView, Platform, ScrollView, Alert,
+  KeyboardAvoidingView, Platform, ScrollView, Alert, ImageBackground, Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
 import { useAuth } from '../src/contexts/AuthContext';
+import BrandWordmark from '../src/components/BrandWordmark';
+
+const BG_IMAGE =
+  'https://images.unsplash.com/photo-1670121180530-cfcba4438038?crop=entropy&cs=srgb&fm=jpg&w=1600&q=70';
+
+const SUPPORT_EMAIL = 'support@dhlpng.com';
 
 export default function Login() {
   const router = useRouter();
@@ -19,168 +25,289 @@ export default function Login() {
 
   const handleSubmit = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Email and password are required');
+      Alert.alert('Sign in', 'Email and password are required.');
       return;
     }
     setLoading(true);
     try {
-      const user = await login(email, password);
-      Alert.alert('Welcome', `Welcome back, ${user.firstName}`);
+      await login(email, password);
       router.replace('/(tabs)');
     } catch (err: any) {
       const msg = err?.response?.data?.detail || 'Sign-in failed';
-      Alert.alert('Error', msg);
+      Alert.alert('Sign in failed', msg);
     } finally {
       setLoading(false);
     }
   };
 
+  const openMail = () => {
+    Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=myDHLi%20-%20PNG%20support`).catch(() => {});
+  };
+
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.flex}
+    <View style={styles.root}>
+      {/* TOP YELLOW BAR */}
+      <SafeAreaView edges={['top']} style={styles.topBarSafe}>
+        <View style={styles.topBar} testID="login-topbar">
+          <BrandWordmark size="md" />
+          <TouchableOpacity
+            testID="login-contact-us"
+            onPress={openMail}
+            style={styles.contactRow}
+          >
+            <Text style={styles.contactText}>Contact us</Text>
+            <Ionicons name="open-outline" size={14} color={Colors.dhlRed} style={styles.contactIcon} />
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+
+      {/* BODY — IMAGE BACKGROUND */}
+      <ImageBackground
+        source={{ uri: BG_IMAGE }}
+        style={styles.bg}
+        resizeMode="cover"
+        testID="login-bg-image"
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity testID="login-back-home" onPress={() => router.back()}>
-              <View style={styles.logoPill}>
-                <Text style={styles.logoText}>DHL</Text>
-                <Text style={styles.logoAccent}> Forwarding</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.bgOverlay} />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.flex}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.cardWrap}>
+              <View style={styles.card} testID="login-card">
+                <Text style={styles.cardTitle}>Welcome to myDHLi</Text>
 
-          <View style={styles.formContainer}>
-            <Text style={styles.label}>myDHLi</Text>
-            <Text style={styles.title}>Welcome back.</Text>
-            <Text style={styles.subtitle}>Sign in to ship, track and manage your PNG account.</Text>
+                <Text style={styles.fieldLabel}>EMAIL</Text>
+                <TextInput
+                  testID="login-email"
+                  style={styles.input}
+                  placeholder="Email"
+                  placeholderTextColor={Colors.dhlMuted}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                />
 
-            {/* Email */}
-            <Text style={styles.inputLabel}>EMAIL</Text>
-            <TextInput
-              testID="login-email-input"
-              style={styles.input}
-              placeholder="you@company.com.pg"
-              placeholderTextColor={Colors.dhlMuted}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-            />
-
-            {/* Password */}
-            <Text style={styles.inputLabel}>PASSWORD</Text>
-            <View style={styles.passwordRow}>
-              <TextInput
-                testID="login-password-input"
-                style={[styles.input, styles.passwordInput]}
-                placeholder="Your password"
-                placeholderTextColor={Colors.dhlMuted}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPwd}
-                autoComplete="password"
-              />
-              <TouchableOpacity
-                testID="login-toggle-password"
-                style={styles.eyeBtn}
-                onPress={() => setShowPwd(!showPwd)}
-              >
-                <Ionicons name={showPwd ? 'eye-off' : 'eye'} size={18} color={Colors.dhlMuted} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Forgot Password */}
-            <TouchableOpacity
-              testID="login-forgot-link"
-              onPress={() => router.push('/forgot-password')}
-              style={styles.forgotRow}
-            >
-              <Text style={styles.forgotText}>Forgot password?</Text>
-            </TouchableOpacity>
-
-            {/* Submit */}
-            <TouchableOpacity
-              testID="login-submit-button"
-              style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
-              onPress={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color={Colors.dhlInk} />
-              ) : (
-                <View style={styles.submitRow}>
-                  <Text style={styles.submitText}>SIGN IN</Text>
-                  <Ionicons name="arrow-forward" size={16} color={Colors.dhlInk} />
+                <Text style={styles.fieldLabel}>PASSWORD</Text>
+                <View style={styles.passwordRow}>
+                  <TextInput
+                    testID="login-password"
+                    style={[styles.input, styles.passwordInput]}
+                    placeholder="Password"
+                    placeholderTextColor={Colors.dhlMuted}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPwd}
+                    autoComplete="password"
+                  />
+                  <TouchableOpacity
+                    testID="login-password-toggle"
+                    style={styles.eyeBtn}
+                    onPress={() => setShowPwd(!showPwd)}
+                  >
+                    <Ionicons name={showPwd ? 'eye-off' : 'eye'} size={18} color={Colors.dhlMuted} />
+                  </TouchableOpacity>
                 </View>
-              )}
-            </TouchableOpacity>
 
-            {/* Register Link */}
-            <View style={styles.registerRow}>
-              <Text style={styles.registerText}>Don't have an account? </Text>
-              <TouchableOpacity testID="login-register-link" onPress={() => router.push('/register')}>
-                <Text style={styles.registerLink}>Open Account →</Text>
+                <TouchableOpacity
+                  testID="login-forgot"
+                  onPress={() => router.push('/forgot-password')}
+                  style={styles.forgotRow}
+                >
+                  <Text style={styles.forgotText}>Forgot your password?</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  testID="login-submit"
+                  style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
+                  onPress={handleSubmit}
+                  disabled={loading}
+                  activeOpacity={0.85}
+                >
+                  {loading ? (
+                    <ActivityIndicator color={Colors.white} />
+                  ) : (
+                    <Text style={styles.submitText}>Login</Text>
+                  )}
+                </TouchableOpacity>
+
+                <View style={styles.openAccountRow}>
+                  <Text style={styles.openAccountText}>New to myDHLi? </Text>
+                  <TouchableOpacity
+                    testID="login-open-account"
+                    onPress={() => router.push('/register')}
+                  >
+                    <Text style={styles.openAccountLink}>Open an account</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.demoHint} testID="login-demo-hint">
+                  <Text style={styles.demoHintLabel}>DEMO</Text>
+                  <Text style={styles.demoHintText}>demo@dhlpng.com  /  Demo@2026</Text>
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </ImageBackground>
+
+      {/* BOTTOM FOOTER BAR */}
+      <SafeAreaView edges={['bottom']} style={styles.footerSafe}>
+        <View style={styles.footerBar} testID="login-footer">
+          <View style={styles.footerLeft}>
+            <BrandWordmark size="sm" showSub={false} />
+            <View style={styles.footerLinks}>
+              <TouchableOpacity testID="login-footer-privacy" onPress={openMail}>
+                <Text style={styles.footerLink}>Privacy Notice</Text>
+              </TouchableOpacity>
+              <Text style={styles.footerDot}>·</Text>
+              <TouchableOpacity testID="login-footer-terms" onPress={openMail}>
+                <Text style={styles.footerLink}>Terms of Use</Text>
+              </TouchableOpacity>
+              <Text style={styles.footerDot}>·</Text>
+              <TouchableOpacity testID="login-footer-legal" onPress={openMail}>
+                <Text style={styles.footerLink}>Legal Notice</Text>
+              </TouchableOpacity>
+              <Text style={styles.footerDot}>·</Text>
+              <TouchableOpacity testID="login-footer-contact" onPress={openMail}>
+                <Text style={styles.footerLink}>Contact us</Text>
               </TouchableOpacity>
             </View>
-
-            {/* Demo Credentials */}
-            <View style={styles.demoBanner}>
-              <Text style={styles.demoLabel}>DEMO CREDENTIALS</Text>
-              <Text style={styles.demoText}>demo@dhlpng.com / Demo@2026</Text>
-            </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          <View style={styles.localePill} testID="login-locale-picker">
+            <Ionicons name="globe-outline" size={14} color={Colors.dhlInk} />
+            <Text style={styles.localeText}>PG</Text>
+            <Ionicons name="chevron-down" size={12} color={Colors.dhlInk} />
+          </View>
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.white },
+  root: { flex: 1, backgroundColor: Colors.dhlYellow },
   flex: { flex: 1 },
-  scrollContent: { flexGrow: 1 },
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: Colors.dhlBorder,
+
+  // top bar
+  topBarSafe: { backgroundColor: Colors.dhlYellow },
+  topBar: {
+    height: 64,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.dhlYellow,
   },
-  logoPill: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: Colors.dhlYellow, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
+  contactRow: { flexDirection: 'row', alignItems: 'center' },
+  contactText: { color: Colors.dhlRed, fontSize: 13, fontWeight: '700' },
+  contactIcon: { marginLeft: 4 },
+
+  // image background body
+  bg: { flex: 1, width: '100%' },
+  bgOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.25)',
   },
-  logoText: { fontSize: 16, fontWeight: '900', color: Colors.dhlInk },
-  logoAccent: { fontSize: 16, fontWeight: '900', color: Colors.dhlRed },
-  formContainer: { flex: 1, padding: 24, justifyContent: 'center' },
-  label: { fontSize: 10, fontWeight: '800', letterSpacing: 2, color: Colors.dhlRed, marginBottom: 8 },
-  title: { fontSize: 32, fontWeight: '900', color: Colors.dhlText, letterSpacing: -0.5, marginBottom: 6 },
-  subtitle: { fontSize: 14, color: Colors.dhlMuted, marginBottom: 28 },
-  inputLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, color: Colors.dhlText, marginBottom: 8, marginTop: 16 },
+  scrollContent: { flexGrow: 1, justifyContent: 'center', paddingVertical: 32 },
+  cardWrap: { alignItems: 'center', paddingHorizontal: 20 },
+  card: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: Colors.white,
+    paddingHorizontal: 28,
+    paddingVertical: 32,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
+  },
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: Colors.dhlText,
+    marginBottom: 24,
+    letterSpacing: -0.3,
+  },
+  fieldLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.5,
+    color: Colors.dhlMuted,
+    marginTop: 12,
+    marginBottom: 6,
+  },
   input: {
-    height: 48, backgroundColor: Colors.dhlPanel, borderWidth: 2, borderColor: Colors.dhlBorder,
-    paddingHorizontal: 16, fontSize: 15, color: Colors.dhlText,
+    height: 46,
+    borderWidth: 1.5,
+    borderColor: Colors.dhlBorder,
+    paddingHorizontal: 14,
+    fontSize: 15,
+    color: Colors.dhlText,
+    backgroundColor: Colors.white,
+    borderRadius: 4,
   },
   passwordRow: { position: 'relative' },
-  passwordInput: { paddingRight: 48 },
-  eyeBtn: { position: 'absolute', right: 14, top: 14 },
-  forgotRow: { alignSelf: 'flex-end', marginTop: 12, marginBottom: 24 },
-  forgotText: { fontSize: 13, fontWeight: '700', color: Colors.dhlRed },
+  passwordInput: { paddingRight: 44 },
+  eyeBtn: { position: 'absolute', right: 12, top: 13 },
+  forgotRow: { alignSelf: 'flex-end', marginTop: 12, marginBottom: 20 },
+  forgotText: { fontSize: 13, fontWeight: '700', color: Colors.dhlRed, textDecorationLine: 'underline' },
   submitBtn: {
-    height: 48, backgroundColor: Colors.dhlYellow, justifyContent: 'center', alignItems: 'center',
-    borderWidth: 2, borderColor: Colors.dhlInk,
+    height: 48,
+    backgroundColor: Colors.dhlRed,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 4,
   },
-  submitBtnDisabled: { opacity: 0.6 },
-  submitRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  submitText: { fontSize: 13, fontWeight: '800', color: Colors.dhlInk, letterSpacing: 1.5 },
-  registerRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 24, paddingTop: 20, borderTopWidth: 1, borderTopColor: Colors.dhlBorder },
-  registerText: { fontSize: 13, color: Colors.dhlMuted },
-  registerLink: { fontSize: 13, fontWeight: '800', color: Colors.dhlText },
-  demoBanner: {
-    marginTop: 24, padding: 12, backgroundColor: Colors.dhlPanel,
-    borderLeftWidth: 3, borderLeftColor: Colors.dhlYellow,
+  submitBtnDisabled: { opacity: 0.7 },
+  submitText: { color: Colors.white, fontSize: 14, fontWeight: '800', letterSpacing: 1.2, textTransform: 'uppercase' },
+  openAccountRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 18 },
+  openAccountText: { fontSize: 12, color: Colors.dhlMuted },
+  openAccountLink: { fontSize: 12, fontWeight: '700', color: Colors.dhlRed, textDecorationLine: 'underline' },
+  demoHint: {
+    marginTop: 22,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: Colors.dhlBorder,
+    alignItems: 'center',
   },
-  demoLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 2, color: Colors.dhlMuted, marginBottom: 4 },
-  demoText: { fontSize: 12, fontFamily: 'monospace', color: Colors.dhlText },
+  demoHintLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 2, color: Colors.dhlMuted },
+  demoHintText: { fontSize: 11, color: Colors.dhlText, marginTop: 4, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
+
+  // footer
+  footerSafe: { backgroundColor: Colors.white },
+  footerBar: {
+    minHeight: 72,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: Colors.dhlBorder,
+    backgroundColor: Colors.white,
+  },
+  footerLeft: { flex: 1, paddingRight: 12 },
+  footerLinks: { flexDirection: 'row', alignItems: 'center', marginTop: 6, flexWrap: 'wrap' },
+  footerLink: { fontSize: 10, color: Colors.dhlMuted, fontWeight: '600' },
+  footerDot: { fontSize: 10, color: Colors.dhlMuted, marginHorizontal: 6 },
+  localePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderWidth: 1,
+    borderColor: Colors.dhlBorder,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  localeText: { fontSize: 11, fontWeight: '700', color: Colors.dhlInk, marginHorizontal: 4 },
 });
