@@ -420,6 +420,76 @@ logger = logging.getLogger(__name__)
 
 
 # ============ STARTUP / SHUTDOWN ============
+async def _seed_demo_customs(db, user: dict):
+    """Idempotent customs seed for the demo user — 6 declarations referencing
+    the first 6 ocean-freight shipments. Skipped when the user already has
+    any customs document on file.
+    """
+    user_id = user["id"]
+    existing = await db.customs_documents.count_documents({"userId": user_id})
+    if existing > 0:
+        logger.info(f"[SEED] Demo customs already at {existing} entries. Skipping.")
+        return
+
+    ships = await db.shipments.find({"userId": user_id}, {"_id": 0}).limit(6).to_list(length=6)
+    if not ships:
+        return
+    types = ["COMMERCIAL_INVOICE", "PACKING_LIST", "EXPORT_DECLARATION",
+             "COMMERCIAL_INVOICE", "PACKING_LIST", "EXPORT_DECLARATION"]
+    descs = ["Heavy machinery spare parts", "Hydraulic seal kit",
+             "Excavator filter set", "Steel cable assembly",
+             "Marine diesel pump"]
+    hs_codes = ["8413.91", "8484.10", "8421.39", "7312.10", "8413.50"]
+    origins = ["DE", "JP", "US", "CN"]
+
+    docs = []
+    now = datetime.now(timezone.utc)
+    for i, s in enumerate(ships):
+        sender = s.get("sender", {}) or {}
+        receiver = s.get("receiver", {}) or {}
+        ocean = s.get("oceanSpecifics") or {}
+        usd_value = float(ocean.get("goodsValueEur") or 100000)
+        item_count = 3 + (i % 3)
+        items = [{
+            "description": descs[j % len(descs)],
+            "hsCode": hs_codes[j % len(hs_codes)],
+            "quantity": 5 + j * 3,
+            "unitValue": 250 + j * 180,
+            "weightKg": 45 + j * 20,
+            "countryOfOrigin": origins[j % len(origins)],
+        } for j in range(item_count)]
+        docs.append({
+            "id": str(uuid.uuid4()),
+            "userId": user_id,
+            "shipmentAwb": s["awb"],
+            "docType": types[i],
+            "exporter": {
+                "name": sender.get("company") or "Marine Power Solutions Singapore Pte Ltd",
+                "company": sender.get("company") or "Marine Power Solutions Singapore Pte Ltd",
+                "address": sender.get("address") or "Tuas Bay Industrial Park",
+                "city": sender.get("city") or "Singapore",
+                "country": sender.get("country") or "SG",
+                "postalCode": sender.get("postalCode") or "637641",
+            },
+            "importer": {
+                "name": receiver.get("company") or "PNG Logistics Co",
+                "company": receiver.get("company") or "PNG Logistics Co",
+                "address": receiver.get("address") or "Defens Haus, Champion Parade",
+                "city": receiver.get("city") or "Port Moresby",
+                "country": receiver.get("country") or "PG",
+                "postalCode": receiver.get("postalCode") or "121",
+            },
+            "items": items,
+            "currency": "USD",
+            "totalValueUSD": usd_value,
+            "signedBy": "Demo User",
+            "signatureDate": now.isoformat(),
+            "createdAt": now.isoformat(),
+        })
+    await db.customs_documents.insert_many(docs)
+    logger.info(f"[SEED] Inserted {len(docs)} demo customs documents for {user['email']}")
+
+
 @app.on_event("startup")
 async def startup_seed():
     # Ensure unique index on email
@@ -467,6 +537,19 @@ async def startup_seed():
             await seed_shipments(db, demo_user["id"])
         except Exception as e:
             logger.error(f"[SEED] Shipment seeding failed: {e}")
+
+        # Seed USD invoice ledger (~USD 269,180) for demo user — idempotent.
+        try:
+            await seed_invoices(db, demo_user)
+        except Exception as e:
+            logger.error(f"[SEED] Demo invoice seeding failed: {e}")
+
+        # Seed demo customs declarations (6 entries referencing shipments) —
+        # idempotent: skipped if any customs document already exists for user.
+        try:
+            await _seed_demo_customs(db, demo_user)
+        except Exception as e:
+            logger.error(f"[SEED] Demo customs seeding failed: {e}")
 
     # ===== Seed secondary "shipper" user (Daniel Kavu) =====
     shipper_email = "shipper@dhlpng.com"
