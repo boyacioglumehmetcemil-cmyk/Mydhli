@@ -4,10 +4,12 @@
     "slug": "mydhli-png",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icon.png",
     "scheme": "mydhli",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "description": "DHL Global Forwarding · Papua New Guinea",
+    "primaryColor": "#FFCC00",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dhlpng.gf.preview"
@@ -15,25 +17,35 @@
     "android": {
       "package": "com.dhlpng.gf.preview",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#D40511"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFCC00"
       },
       "edgeToEdgeEnabled": true
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "name": "myDHLi PNG",
+      "shortName": "myDHLi",
+      "lang": "en",
+      "scope": "/",
+      "startUrl": "/",
+      "themeColor": "#FFCC00",
+      "backgroundColor": "#FFCC00",
+      "display": "standalone",
+      "orientation": "portrait",
+      "description": "DHL Global Forwarding · Papua New Guinea"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
           "resizeMode": "contain",
-          "backgroundColor": "#000"
+          "backgroundColor": "#FFCC00"
         }
       ]
     ],

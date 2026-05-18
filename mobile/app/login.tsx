@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
   demoHintText: { fontSize: 11, color: Colors.dhlText, marginTop: 4, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
 
   // footer
-  footerSafe: { backgroundColor: Colors.white },
+  footerSafe: { backgroundColor: '#F2F2F2' },
   footerBar: {
     minHeight: 72,
     paddingHorizontal: 16,
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderTopWidth: 1,
     borderTopColor: Colors.dhlBorder,
-    backgroundColor: Colors.white,
+    backgroundColor: '#F2F2F2',
   },
   footerLeft: { flex: 1, paddingRight: 12 },
   footerLogo: { height: 40, aspectRatio: 3.209 },

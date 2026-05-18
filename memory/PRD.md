@@ -361,3 +361,63 @@ Repo-clean state is documented in:
   - `grep -ri "[Gg]enerate" /app/mobile/app /app/mobile/src` = **0**.
   - Bundle status: `HTTP/2 200` on `/login`.
 - Files changed: `app/login.tsx`, `app/index.tsx`, +2 assets.
+
+
+### Faz 7.2 — Footer colour fix + PWA setup — 2026-05-18
+
+#### Footer background match
+- Measured the stacked logo PNG's own background: `rgb(242, 242, 242)` (#F2F2F2).
+- `app/login.tsx`: `footerSafe.backgroundColor` and `footerBar.backgroundColor`
+  switched from `Colors.white` to `#F2F2F2`. The "DHL Group" wordmark now blends
+  seamlessly — no more inset-card effect. No other colour touched.
+
+#### PWA setup
+- Generated brand assets from the existing horizontal logo (yellow #FFCC00 canvas
+  centered with padding):
+  - `/app/mobile/assets/icon.png` (1024×1024)
+  - `/app/mobile/assets/adaptive-icon.png` (1024×1024, for Android adaptive)
+  - `/app/mobile/assets/favicon.png` (196×196)
+  - `/app/mobile/assets/splash.png` (1284×2778)
+  - `/app/mobile/assets/splash-icon.png` (400×400, for expo-splash-screen plugin)
+- `/app/mobile/app.json` updated:
+  - `expo.icon` → `./assets/icon.png`
+  - `expo.android.adaptiveIcon.foregroundImage` → `./assets/adaptive-icon.png`,
+    `backgroundColor` → `#FFCC00`
+  - `expo.web` now carries `name`, `shortName`, `lang`, `scope`, `startUrl`,
+    `themeColor`, `backgroundColor`, `display: standalone`, `orientation: portrait`,
+    `description`.
+  - `expo-splash-screen` plugin retargeted to `splash-icon.png` on yellow bg.
+- Static PWA assets under `/app/mobile/public/` (served at site root by Expo):
+  - `manifest.json` — full Web App Manifest with 192/512 icons + maskable.
+  - `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `favicon.png`, `splash.png`.
+- `app/+html.tsx` HTML template now injects:
+  - `<title>myDHLi PNG · DHL Global Forwarding</title>`
+  - `<meta name="theme-color" content="#FFCC00">`
+  - `<meta name="apple-mobile-web-app-capable">` + `…title` (myDHLi) + status-bar
+  - `<link rel="manifest" href="/manifest.json">`
+  - `<link rel="icon">` 192/512 + `<link rel="apple-touch-icon">` 180
+  - `<link rel="shortcut icon" href="/favicon.png">`
+
+#### Verification
+- `curl /manifest.json` → `HTTP/2 200`, `application/json`, valid Web App Manifest.
+- `curl /icon-192.png /icon-512.png /favicon.png /apple-touch-icon.png` → all 200.
+- DOM eval on `/login`:
+  - `link[rel=manifest]` present = `true`.
+  - `meta[name=theme-color]` content = `#FFCC00`.
+  - `[data-testid=login-footer]` computed `background-color` = `rgb(242, 242, 242)`.
+- `grep -ri "[Gg]enerate" /app/mobile/app /app/mobile/src` = **0**.
+- Bundle: preview `HTTP/2 200`.
+
+#### How user verifies "Installable" on their device
+- Open the preview URL in Chrome/Edge on Android or Safari on iOS.
+- Chrome: address-bar three-dot menu → **Install app** / **Add to Home Screen**.
+- Safari (iOS): Share sheet → **Add to Home Screen**.
+- DevTools (desktop): Application → Manifest → "Installability: Page is installable"
+  (192/512 icons + theme-color + standalone all green).
+
+#### Files changed
+- `app.json` (rewritten — PWA fields)
+- `app/+html.tsx` (head section augmented with manifest link + PWA meta tags)
+- `app/login.tsx` (`footerSafe` + `footerBar` backgroundColor → `#F2F2F2`)
+- New: `assets/{icon,adaptive-icon,favicon,splash,splash-icon}.png`
+- New: `public/{manifest.json,icon-192,icon-512,apple-touch-icon,favicon,splash}.png`
