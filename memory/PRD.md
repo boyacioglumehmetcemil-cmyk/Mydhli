@@ -455,3 +455,21 @@ Repo-clean state is documented in:
 #### Files changed
 - `app/+html.tsx` (color-scheme meta + CSS)
 - `app/login.tsx` (3 backgroundColor literals)
+
+
+### Faz 7.4 — UI cleanup (DEMO hint + DEMO MODE badge + PG locale picker removed) — 2026-05-18
+- **`app/login.tsx`**:
+  - Removed `<View style={styles.demoHint}>` block (DEMO label + `demo@dhlpng.com / Demo@2026` line).
+  - Removed footer `<View style={styles.localePill}>` block (globe icon + PG + chevron).
+  - Removed unused styles `demoHint`, `demoHintLabel`, `demoHintText`, `localePill`, `localeText`.
+- **`app/_layout.tsx`**: removed `DemoBadge` import and the `<DemoBadge />` mount at the
+  root of every screen.
+- **Deleted file:** `src/components/DemoBadge.tsx` (no remaining references).
+- Verification:
+  - `grep -ri "DEMO MODE|DemoBadge|locale-picker|Demo@2026|demo-hint|localePill|localeText" /app/mobile/app /app/mobile/src` = **0**.
+  - `grep -ri "[Gg]enerate"` = **0**.
+  - DOM eval on `/login`: `demoHintGone=true`, `localePickerGone=true`, `demoBadgePresent=false`;
+    `cardOK`, `submitOK`, `footerOK`, `footerPrivacy`, `topbarOK`, `contactUs` all `true`.
+  - DOM eval on `/` (authenticated dashboard): `demoBadgePresent=false`; KPIs + tab bar intact.
+  - `yarn tsc --noEmit`: login.tsx + _layout.tsx clean (baseline unchanged).
+  - Preview `HTTP/2 200`.

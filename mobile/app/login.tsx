@@ -154,11 +154,6 @@ export default function Login() {
                     <Text style={styles.openAccountLink}>Open an account</Text>
                   </TouchableOpacity>
                 </View>
-
-                <View style={styles.demoHint} testID="login-demo-hint">
-                  <Text style={styles.demoHintLabel}>DEMO</Text>
-                  <Text style={styles.demoHintText}>demo@dhlpng.com  /  Demo@2026</Text>
-                </View>
               </View>
             </View>
           </ScrollView>
@@ -192,11 +187,6 @@ export default function Login() {
                 <Text style={styles.footerLink}>Contact us</Text>
               </TouchableOpacity>
             </View>
-          </View>
-          <View style={styles.localePill} testID="login-locale-picker">
-            <Ionicons name="globe-outline" size={14} color={Colors.dhlInk} />
-            <Text style={styles.localeText}>PG</Text>
-            <Ionicons name="chevron-down" size={12} color={Colors.dhlInk} />
           </View>
         </View>
       </SafeAreaView>
@@ -286,15 +276,6 @@ const styles = StyleSheet.create({
   openAccountRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 18 },
   openAccountText: { fontSize: 12, color: Colors.dhlMuted },
   openAccountLink: { fontSize: 12, fontWeight: '700', color: Colors.dhlRed, textDecorationLine: 'underline' },
-  demoHint: {
-    marginTop: 22,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderTopColor: Colors.dhlBorder,
-    alignItems: 'center',
-  },
-  demoHintLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 2, color: Colors.dhlMuted },
-  demoHintText: { fontSize: 11, color: Colors.dhlText, marginTop: 4, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
 
   // footer
   footerSafe: { backgroundColor: '#F2F2F2' },
@@ -314,15 +295,4 @@ const styles = StyleSheet.create({
   footerLinks: { flexDirection: 'row', alignItems: 'center', marginTop: 6, flexWrap: 'wrap' },
   footerLink: { fontSize: 10, color: Colors.dhlMuted, fontWeight: '600' },
   footerDot: { fontSize: 10, color: Colors.dhlMuted, marginHorizontal: 6 },
-  localePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    borderWidth: 1,
-    borderColor: Colors.dhlBorder,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  localeText: { fontSize: 11, fontWeight: '700', color: Colors.dhlInk, marginHorizontal: 4 },
 });

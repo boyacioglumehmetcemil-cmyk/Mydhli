@@ -1,7 +1,6 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from '../src/contexts/AuthContext';
-import DemoBadge from '../src/components/DemoBadge';
 import { View, StyleSheet } from 'react-native';
 
 export default function RootLayout() {
@@ -42,7 +41,6 @@ export default function RootLayout() {
           <Stack.Screen name="customs" />
           <Stack.Screen name="settings" />
         </Stack>
-        <DemoBadge />
       </View>
     </AuthProvider>
   );
