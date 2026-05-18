@@ -594,3 +594,71 @@ Repo-clean state is documented in:
 #### Files changed
 - `app/login.tsx` (rewrite)
 - `assets/brand/dhl_gf_stacked_white.png` (new)
+
+### Faz 7.8 — Production deploy serves mobile Expo Web bundle — 2026-05-18
+- Production deploy at `https://merhaba-app-446.emergent.host` was serving the old
+  `/app/frontend/` (CRA web React) app. The user's PWA install was therefore
+  picking up the legacy web app, not the myDHLi mobile design.
+- **Solution:** swap the frontend deploy artifact so `/app/frontend/build/` now
+  contains the Expo Web export of `/app/mobile/`. Frontend React source under
+  `/app/frontend/src/` left untouched (acts as legacy backup).
+
+#### Steps performed
+1. `cd /app/mobile && yarn expo export --platform web --output-dir ./dist`
+   → 22 HTML routes + PWA assets at root (manifest.json, icon-192/512.png,
+   apple-touch-icon.png, favicon.png, splash.png) in 48s.
+2. `rm -rf /app/frontend/build && cp -r /app/mobile/dist /app/frontend/build`
+   → static artifact ready for the next deploy.
+3. **`frontend/package.json`** build script changed:
+   ```
+   "build": "if [ -d ../mobile/node_modules ]; then cd ../mobile && yarn expo export
+     --platform web --output-dir ../frontend/build; else echo 'Using prebuilt
+     mobile-as-web bundle in ./build/ (mobile/node_modules absent)'; fi",
+   ```
+   - When the deploy container has mobile deps installed → rebuilds on `yarn build`.
+   - When the deploy container only installs frontend deps → uses prebuilt
+     static artifact in `./build/` (idempotent, no failure).
+   - Original CRA build preserved as `"build:web-legacy": "craco build"`.
+
+#### Dynamic backend resolution (critical for prod)
+`expo export` bakes `EXPO_PUBLIC_BACKEND_URL` into the bundle at build time. The
+mobile `.env` points to `merhaba-app-446.preview.emergentagent.com` (preview
+backend), so a naïve build would have production users hitting the preview API.
+Fix: introduced `resolveBackendUrl()` in `mobile/src/lib/api.ts` that:
+- Falls back to `EXPO_PUBLIC_BACKEND_URL` only when origin contains
+  `.expo.preview.` or `localhost` (i.e. dev tunnel).
+- Otherwise returns `window.location.origin` → same-origin API on production
+  (Emergent ingress routes `/api/*` to backend at any host).
+- Native (no `window`) → still uses `EXPO_PUBLIC_BACKEND_URL`.
+The resolver replaces 3 other inline uses too:
+- `app/document/[id].tsx`
+- `app/invoices.tsx`
+- `app/customs-preview/[id].tsx`
+
+#### Verification
+- `/app/frontend/build/index.html` → `<title>myDHLi PNG · DHL Global
+  Forwarding</title>`, has `theme-color`, `apple-mobile-web-app-*`, `manifest`.
+- `/app/frontend/build/manifest.json` → full myDHLi PWA manifest (icons,
+  display: standalone, theme #FFCC00).
+- `/app/frontend/build/login.html` → myDHLi login route prerendered.
+- All PWA assets present at `/app/frontend/build/` root.
+- No `Made with Emergent` watermark in built artifact (Faz 7.7 carryover).
+- Mobile preview tunnel screenshot: login → dashboard works end-to-end (57
+  shipments, 26 At Depot, $269,180 outstanding). `resolveBackendUrl()` correctly
+  detects `.expo.preview.` origin and falls back to the preview API URL.
+- `yarn tsc --noEmit`: all 4 modified files clean (baseline 20 unchanged).
+- `grep -ri "[Gg]enerate"` = 0.
+
+#### Files changed
+- `mobile/src/lib/api.ts` (new `resolveBackendUrl()` export)
+- `mobile/app/document/[id].tsx` (use resolver)
+- `mobile/app/invoices.tsx` (use resolver)
+- `mobile/app/customs-preview/[id].tsx` (use resolver)
+- `frontend/package.json` (`build` script: idempotent mobile-web export)
+- `frontend/build/*` (new — prebuilt mobile-as-web artifact, 34 files)
+
+#### User action required
+Kullanıcı Emergent dashboard'dan **Redeploy** yapması gerekiyor. Sonrası:
+`https://merhaba-app-446.emergent.host` → myDHLi login açacak,
+Add-to-Home-Screen PWA olarak mobile native-style yüklenecek.
+

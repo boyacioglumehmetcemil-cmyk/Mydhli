@@ -23,6 +23,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { resolveBackendUrl } from '../../src/lib/api';
 import { Colors } from '../../src/constants/colors';
 import api from '../../src/lib/api';
 import { formatDate } from '../../src/lib/shipmentUtils';
@@ -59,7 +60,7 @@ export default function DocumentPreview() {
   const [metaErr, setMetaErr] = useState<string | null>(null);
   const [metaLoading, setMetaLoading] = useState(true);
 
-  const backendUrl = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
+  const backendUrl = resolveBackendUrl();
   const previewUrl = id ? `${backendUrl}/api/documents/${encodeURIComponent(id)}/preview` : '';
 
   useEffect(() => {

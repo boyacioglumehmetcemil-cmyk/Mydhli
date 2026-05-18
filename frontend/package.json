@@ -57,7 +57,8 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "craco build",
+    "build": "if [ -d ../mobile/node_modules ]; then cd ../mobile && yarn expo export --platform web --output-dir ../frontend/build; else echo 'Using prebuilt mobile-as-web bundle in ./build/ (mobile/node_modules absent)'; fi",
+    "build:web-legacy": "craco build",
     "test": "craco test"
   },
   "browserslist": {

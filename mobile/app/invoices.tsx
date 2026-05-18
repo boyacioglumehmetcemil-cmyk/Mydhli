@@ -21,7 +21,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
-import api from '../src/lib/api';
+import api, { resolveBackendUrl } from '../src/lib/api';
 import { formatDate, formatUSD, formatPGK } from '../src/lib/shipmentUtils';
 
 interface LineItem {
@@ -129,7 +129,7 @@ export default function InvoicesScreen() {
   ];
 
   const openInvoicePdf = (invoiceNumber: string) => {
-    const base = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
+    const base = resolveBackendUrl();
     Linking.openURL(`${base}/api/invoices/${encodeURIComponent(invoiceNumber)}/pdf`).catch(() => undefined);
   };
 
