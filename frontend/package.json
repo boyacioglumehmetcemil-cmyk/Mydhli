@@ -57,9 +57,10 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "yarn build:web-root && yarn build:mobile-subpath",
+    "build": "yarn build:mobile-to-public && craco build",
+    "build:mobile-to-public": "cd ../mobile && (test -d node_modules || yarn install --ignore-scripts --network-timeout 600000 --non-interactive) && yarn expo export --platform web --output-dir ../frontend/public/m",
     "build:web-root": "craco build",
-    "build:mobile-subpath": "cd ../mobile && (test -d node_modules || yarn install --ignore-scripts --network-timeout 600000 --non-interactive) && yarn expo export --platform web --output-dir ../frontend/build/m",
+    "build:mobile-subpath": "yarn build:mobile-to-public && craco build",
     "build:web-legacy": "craco build",
     "test": "craco test"
   },
