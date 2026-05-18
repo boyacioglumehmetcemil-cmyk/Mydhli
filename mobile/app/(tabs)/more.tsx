@@ -12,6 +12,7 @@ const menuItems = [
   { icon: 'calendar' as const, label: 'Schedule Pickup', sub: 'Arrange a freight pickup', route: '/schedule-pickup' },
   { icon: 'time' as const, label: 'My Pickups', sub: 'Scheduled collections', route: '/pickups' },
   { icon: 'book' as const, label: 'Parties', sub: 'Shipper, consignee & notify directory', route: '/addresses' },
+  { icon: 'notifications-outline' as const, label: 'Notifications', sub: 'View alerts & inbox', route: '/notifications', testID: 'more-link-notifications' },
   { icon: 'receipt' as const, label: 'Invoices', sub: 'Billing history & payments', route: '/invoices' },
   { icon: 'bar-chart' as const, label: 'Reports', sub: 'Account analytics', route: '/reports' },
   { icon: 'document-text' as const, label: 'Customs', sub: 'Customs documents', route: '/customs' },
@@ -49,7 +50,7 @@ export default function More() {
           {menuItems.map((item, i) => (
             <TouchableOpacity
               key={i}
-              testID={`more-menu-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+              testID={item.testID || `more-menu-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
               style={styles.menuItem}
               onPress={() => router.push(item.route as any)}
             >
