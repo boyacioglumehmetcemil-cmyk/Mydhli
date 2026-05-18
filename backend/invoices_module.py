@@ -307,7 +307,13 @@ def build_router(db, get_current_user_dep):
 
 # ============ SEED ============
 async def seed_invoices(db, user: dict):
-    """Seed 8 invoices (4 PAID, 3 UNPAID, 1 OVERDUE) referencing existing shipments."""
+    """Seed 8 USD invoices (4 PAID, 3 UNPAID, 1 OVERDUE) referencing existing
+    shipments. Calibrated so the total billed ledger is ~USD 269,180 — the
+    Phase 8.x ocean-freight target stated in the project handover.
+
+    Backward compatibility: subtotalPGK / taxPGK / totalPGK fields are still
+    written (zeroed) so older clients reading those keys don't crash.
+    """
     user_id = user["id"]
     existing = await db.invoices.count_documents({"userId": user_id})
     if existing >= 8:
@@ -316,26 +322,59 @@ async def seed_invoices(db, user: dict):
         await db.invoices.delete_many({"userId": user_id})
 
     # Grab shipments to use as line items
-    shipments = await db.shipments.find({"userId": user_id}, {"_id": 0}).to_list(length=50)
+    shipments = await db.shipments.find({"userId": user_id}, {"_id": 0}).to_list(length=100)
     if not shipments:
         return
 
+    # Deterministic per-invoice totals (sum ≈ USD 269,180)
+    invoice_totals_usd = [42500.00, 38900.00, 35200.00, 33750.00, 31500.00, 29800.00, 27200.00, 30330.00]
+    # 42500 + 38900 + 35200 + 33750 + 31500 + 29800 + 27200 + 30330 = 269,180
+
     random.seed(303)
     now = datetime.now(timezone.utc)
-    invoices = []
     statuses = ["PAID", "PAID", "PAID", "PAID", "UNPAID", "UNPAID", "UNPAID", "OVERDUE"]
-    for i, st in enumerate(statuses):
-        # Pick 2-4 shipments for line items
-        sample = random.sample(shipments, k=min(len(shipments), random.randint(2, 4)))
-        line_items = [
-            {"shipmentAwb": s["awb"],
-             "description": f"{s['service'].replace('_', ' ')} · {s['origin']['code']}→{s['destination']['code']}",
-             "costPGK": s["costPGK"]}
-            for s in sample
-        ]
-        subtotal = round(sum(li["costPGK"] for li in line_items), 2)
+    invoices = []
+    used = set()
+
+    for i, (st, total_target) in enumerate(zip(statuses, invoice_totals_usd)):
+        # Pick 2-3 shipments (prefer unused) for line items
+        available = [s for s in shipments if s["awb"] not in used] or shipments
+        sample = random.sample(available, k=min(len(available), random.randint(2, 3)))
+        for s in sample:
+            used.add(s["awb"])
+
+        # Base line-item amount from oceanSpecifics.freightCostUsd when present,
+        # otherwise convert legacy costPGK at the prevailing 0.27 PGK→USD rate.
+        line_items_raw = []
+        for s in sample:
+            ocean = (s.get("oceanSpecifics") or {})
+            usd_native = ocean.get("freightCostUsd")
+            base = float(usd_native) if usd_native else float(s.get("costPGK", 0)) * 0.27
+            line_items_raw.append({
+                "shipmentAwb": s["awb"],
+                "description": (
+                    f"{str(s.get('service', '')).replace('_', ' ')} · "
+                    f"{s['origin']['code']}→{s['destination']['code']}"
+                ),
+                "_base": base,
+            })
+
+        # Scale lines so subtotal = total_target / 1.10 (10% tax)
+        target_subtotal = round(total_target / 1.10, 2)
+        base_sum = sum(li["_base"] for li in line_items_raw) or 1.0
+        scale = target_subtotal / base_sum
+        line_items = []
+        for li in line_items_raw:
+            amount = round(li["_base"] * scale, 2)
+            line_items.append({
+                "shipmentAwb": li["shipmentAwb"],
+                "description": li["description"],
+                "amountUSD": amount,
+            })
+        subtotal = round(sum(li["amountUSD"] for li in line_items), 2)
         tax = round(subtotal * 0.10, 2)
         total = round(subtotal + tax, 2)
+
         # Dates
         if st == "OVERDUE":
             issue = now - timedelta(days=45)
@@ -349,13 +388,18 @@ async def seed_invoices(db, user: dict):
         inv = {
             "id": str(uuid.uuid4()),
             "userId": user_id,
-            "invoiceNumber": "INV" + "".join(str(random.randint(0, 9)) for _ in range(8)),
+            "invoiceNumber": f"INV-USD-{issue.strftime('%y%m')}-{i+1:04d}",
             "issueDate": issue.isoformat(),
             "dueDate": due.isoformat(),
             "status": st,
-            "subtotalPGK": subtotal,
-            "taxPGK": tax,
-            "totalPGK": total,
+            "currency": "USD",
+            "subtotalUSD": subtotal,
+            "taxUSD": tax,
+            "totalUSD": total,
+            # Legacy keys (kept for older clients; the new web + mobile prefer *USD).
+            "subtotalPGK": 0.0,
+            "taxPGK": 0.0,
+            "totalPGK": 0.0,
             "lineItems": line_items,
             "paidDate": (issue + timedelta(days=random.randint(2, 25))).isoformat() if st == "PAID" else None,
             "paymentReference": ("PAY" + "".join(str(random.randint(0, 9)) for _ in range(10))) if st == "PAID" else None,
@@ -363,7 +407,11 @@ async def seed_invoices(db, user: dict):
         invoices.append(inv)
 
     await db.invoices.insert_many(invoices)
-    logger.info(f"[SEED] Inserted {len(invoices)} invoices for {user['email']}")
+    total_billed = round(sum(inv["totalUSD"] for inv in invoices), 2)
+    logger.info(
+        f"[SEED] Inserted {len(invoices)} USD invoices for {user['email']} "
+        f"(total billed USD {total_billed:,.2f}, target 269,180)"
+    )
 
 
 

@@ -1,289 +1,382 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * Invoices ledger — Phase 5.
+ *
+ * Data: GET /api/invoices       → items + total
+ *       GET /api/invoices/{number}/pdf  (optional viewing)
+ *
+ * 3 KPI cards   : Total Billed / Paid / Outstanding (UNPAID + OVERDUE)
+ * 3 filter tabs : All / Paid / Outstanding
+ * Each row     : invoice #, AWB chip, amount (USD), status pill, due / paid date
+ * Tap row       → inline expand with line items + dates
+ *
+ * Currency: prefers totalUSD (Phase 8.x USD ledger); falls back to totalPGK
+ * for backward compat with older seeds.
+ */
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet,
-  ActivityIndicator, Alert, Modal,
+  View, Text, TouchableOpacity, FlatList, ScrollView, StyleSheet,
+  ActivityIndicator, RefreshControl, Linking, Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
 import api from '../src/lib/api';
-import { formatDate, formatPGK } from '../src/lib/shipmentUtils';
+import { formatDate, formatUSD, formatPGK } from '../src/lib/shipmentUtils';
 
-const statusTone: Record<string, { bg: string; text: string }> = {
-  PAID: { bg: Colors.green100, text: Colors.green900 },
-  UNPAID: { bg: 'rgba(255,204,0,0.3)', text: Colors.dhlInk },
-  OVERDUE: { bg: Colors.red100, text: Colors.dhlRed },
+interface LineItem {
+  shipmentAwb?: string;
+  description?: string;
+  amountUSD?: number;
+  costPGK?: number;
+}
+
+interface InvoiceItem {
+  id: string;
+  invoiceNumber: string;
+  issueDate?: string;
+  dueDate?: string | null;
+  paidDate?: string | null;
+  status: 'PAID' | 'UNPAID' | 'OVERDUE' | 'PENDING' | string;
+  currency?: string;
+  totalUSD?: number;
+  totalPGK?: number;
+  subtotalUSD?: number;
+  taxUSD?: number;
+  paymentReference?: string;
+  lineItems?: LineItem[];
+}
+
+type TabKey = 'ALL' | 'PAID' | 'OUTSTANDING';
+
+const STATUS_TONES: Record<string, { bg: string; text: string; dot: string }> = {
+  PAID:    { bg: Colors.green100, text: Colors.green900, dot: Colors.green600 },
+  OVERDUE: { bg: Colors.red100, text: Colors.dhlRed, dot: Colors.dhlRed },
+  UNPAID:  { bg: '#FFFBEB', text: '#78350F', dot: '#F59E0B' },
+  PENDING: { bg: Colors.gray100, text: Colors.gray700, dot: Colors.gray400 },
 };
 
-export default function Invoices() {
+export default function InvoicesScreen() {
   const router = useRouter();
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [currency, setCurrency] = useState<'USD' | 'PGK'>('USD');
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('ALL');
-  const [payInv, setPayInv] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [tab, setTab] = useState<TabKey>('ALL');
+  const [expanded, setExpanded] = useState<string | null>(null);
 
-  const load = () => {
+  const fetchAll = useCallback(async () => {
+    try {
+      const r = await api.get('/invoices');
+      const list = (r.data?.items || []) as InvoiceItem[];
+      const useUSD = list.some((it) => (it.totalUSD || 0) > 0);
+      setCurrency(useUSD ? 'USD' : 'PGK');
+      setItems(list);
+    } catch {
+      setItems([]);
+    }
+  }, []);
+
+  useEffect(() => {
     setLoading(true);
-    const params: any = filter !== 'ALL' ? { status: filter } : {};
-    api.get('/invoices', { params }).then(r => {
-      setItems(r.data.items);
-    }).catch(() => {}).finally(() => setLoading(false));
+    fetchAll().finally(() => setLoading(false));
+  }, [fetchAll]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchAll();
+    setRefreshing(false);
+  }, [fetchAll]);
+
+  const amountOf = useCallback((it: InvoiceItem) =>
+    currency === 'USD' ? (it.totalUSD || 0) : (it.totalPGK || 0),
+    [currency],
+  );
+
+  const fmt = useCallback((n: number) =>
+    currency === 'USD' ? formatUSD(n) : formatPGK(n),
+    [currency],
+  );
+
+  const stats = useMemo(() => {
+    let total = 0, paid = 0, outstanding = 0;
+    let paidCount = 0, outCount = 0;
+    items.forEach((it) => {
+      const v = amountOf(it);
+      total += v;
+      if (it.status === 'PAID') { paid += v; paidCount += 1; }
+      else if (it.status === 'UNPAID' || it.status === 'OVERDUE') { outstanding += v; outCount += 1; }
+    });
+    return { total, paid, outstanding, paidCount, outCount, totalCount: items.length };
+  }, [items, amountOf]);
+
+  const filtered = useMemo(() => {
+    if (tab === 'PAID') return items.filter((it) => it.status === 'PAID');
+    if (tab === 'OUTSTANDING') return items.filter((it) => it.status === 'UNPAID' || it.status === 'OVERDUE');
+    return items;
+  }, [items, tab]);
+
+  const counts = useMemo(() => ({
+    ALL: items.length,
+    PAID: items.filter((it) => it.status === 'PAID').length,
+    OUTSTANDING: items.filter((it) => it.status === 'UNPAID' || it.status === 'OVERDUE').length,
+  }), [items]);
+
+  const TABS: { key: TabKey; label: string }[] = [
+    { key: 'ALL', label: 'All' },
+    { key: 'PAID', label: 'Paid' },
+    { key: 'OUTSTANDING', label: 'Outstanding' },
+  ];
+
+  const openInvoicePdf = (invoiceNumber: string) => {
+    const base = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
+    Linking.openURL(`${base}/api/invoices/${encodeURIComponent(invoiceNumber)}/pdf`).catch(() => undefined);
   };
-
-  useEffect(() => { load(); }, [filter]);
-
-  const totalOutstanding = items.filter(i => i.status !== 'PAID').reduce((s, i) => s + i.totalPGK, 0);
-  const overdueTotal = items.filter(i => i.status === 'OVERDUE').reduce((s, i) => s + i.totalPGK, 0);
-  const paidCount = items.filter(i => i.status === 'PAID').length;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity testID="invoices-back-btn" onPress={() => router.back()} style={styles.backBtn}>
+      <View style={styles.topbar}>
+        <TouchableOpacity testID="invoices-back" onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={20} color={Colors.dhlText} />
-          <Text style={styles.backText}>Back</Text>
+          <Text style={styles.backText}>More</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View testID="invoices-page" style={styles.titleSection}>
-          <Text style={styles.pageTitle}>Invoices</Text>
-          <Text style={styles.pageSub}>Your billing history and outstanding balances.</Text>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.dhlYellow} />}
+      >
+        <View style={styles.header}>
+          <Text style={styles.eyebrow}>INVOICES · USD LEDGER</Text>
+          <Text style={styles.title}>Billing</Text>
+          <Text style={styles.subtitle}>
+            Open invoices, paid history and outstanding balance across your account.
+          </Text>
         </View>
-
-        {/* KPIs */}
-        <View style={styles.kpiRow}>
-          <View style={[styles.kpiCard, { backgroundColor: Colors.dhlYellow }]}>
-            <Text style={styles.kpiLabel}>OUTSTANDING</Text>
-            <Text style={styles.kpiValue}>{formatPGK(totalOutstanding)}</Text>
-          </View>
-          <View style={[styles.kpiCard, { backgroundColor: Colors.dhlRed }]}>
-            <Text style={[styles.kpiLabel, { color: 'rgba(255,255,255,0.7)' }]}>OVERDUE</Text>
-            <Text style={[styles.kpiValue, { color: Colors.white }]}>{formatPGK(overdueTotal)}</Text>
-          </View>
-        </View>
-        <View style={styles.kpiRow}>
-          <View style={[styles.kpiCard, { backgroundColor: Colors.dhlInk }]}>
-            <Text style={[styles.kpiLabel, { color: 'rgba(255,255,255,0.6)' }]}>PAID</Text>
-            <Text style={[styles.kpiValue, { color: Colors.white }]}>{paidCount}</Text>
-          </View>
-          <View style={[styles.kpiCard, { backgroundColor: Colors.dhlPanel }]}>
-            <Text style={styles.kpiLabel}>TOTAL</Text>
-            <Text style={styles.kpiValue}>{items.length}</Text>
-          </View>
-        </View>
-
-        {/* Filter */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterContent}>
-          {['ALL', 'UNPAID', 'PAID', 'OVERDUE'].map(f => (
-            <TouchableOpacity
-              key={f}
-              testID={`inv-filter-${f.toLowerCase()}`}
-              style={[styles.filterChip, filter === f && styles.filterChipActive]}
-              onPress={() => setFilter(f)}
-            >
-              <Text style={[styles.filterChipText, filter === f && styles.filterChipTextActive]}>{f}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
 
         {loading ? (
           <View style={styles.center}><ActivityIndicator size="large" color={Colors.dhlYellow} /></View>
-        ) : items.length === 0 ? (
-          <View testID="invoices-empty" style={styles.emptyCard}>
-            <Ionicons name="receipt-outline" size={48} color={Colors.dhlMuted} />
-            <Text style={styles.emptyText}>No invoices yet.</Text>
-          </View>
         ) : (
-          <View testID="invoices-list">
-            {items.map(inv => {
-              const tone = statusTone[inv.status] || statusTone.UNPAID;
-              return (
-                <View key={inv.invoiceNumber} testID={`invoice-row-${inv.invoiceNumber}`} style={styles.card}>
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.cardInvNum}>{inv.invoiceNumber}</Text>
-                    <View style={[styles.statusBadge, { backgroundColor: tone.bg }]}>
-                      <Text style={[styles.statusText, { color: tone.text }]}>{inv.status}</Text>
+          <>
+            {/* KPI row */}
+            <View style={styles.kpiRow}>
+              <KpiCard
+                testID="invoices-kpi-billed"
+                label="TOTAL BILLED"
+                value={fmt(stats.total)}
+                sub={`${stats.totalCount} invoice${stats.totalCount === 1 ? '' : 's'}`}
+                icon="card"
+                iconColor="#2563EB"
+                iconBg="#EFF6FF"
+              />
+              <KpiCard
+                testID="invoices-kpi-paid"
+                label="PAID"
+                value={fmt(stats.paid)}
+                sub={`${stats.paidCount} invoice${stats.paidCount === 1 ? '' : 's'}`}
+                icon="checkmark-circle"
+                iconColor={Colors.green600}
+                iconBg={Colors.green100}
+              />
+              <KpiCard
+                testID="invoices-kpi-overdue"
+                label="OUTSTANDING"
+                value={fmt(stats.outstanding)}
+                sub={`${stats.outCount} invoice${stats.outCount === 1 ? '' : 's'}`}
+                icon="alert-circle"
+                iconColor={Colors.dhlRed}
+                iconBg={Colors.red100}
+                valueColor={stats.outstanding > 0 ? Colors.dhlRed : undefined}
+              />
+            </View>
+
+            {/* Tabs */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chipsRow}
+            >
+              {TABS.map((t) => {
+                const active = tab === t.key;
+                return (
+                  <TouchableOpacity
+                    key={t.key}
+                    testID={`invoices-tab-${t.key.toLowerCase()}`}
+                    onPress={() => setTab(t.key)}
+                    style={[styles.chip, active && styles.chipActive]}
+                  >
+                    <Text style={[styles.chipLabel, active && styles.chipLabelActive]}>
+                      {t.label}
+                    </Text>
+                    <View style={[styles.chipCount, active && styles.chipCountActive]}>
+                      <Text style={[styles.chipCountText, active && styles.chipCountTextActive]}>{counts[t.key]}</Text>
                     </View>
-                  </View>
-                  <View style={styles.cardMeta}>
-                    <Text style={styles.metaText}>Issued: {formatDate(inv.issueDate)}</Text>
-                    <Text style={styles.metaText}>Due: {formatDate(inv.dueDate)}</Text>
-                  </View>
-                  <View style={styles.cardFooter}>
-                    <Text style={styles.cardAmount}>{formatPGK(inv.totalPGK)}</Text>
-                    <View style={styles.cardActions}>
-                      <TouchableOpacity testID={`inv-pdf-${inv.invoiceNumber}`} style={styles.actionBtn} onPress={() => Alert.alert('PDF', `Invoice ${inv.invoiceNumber} PDF downloaded`)}>
-                        <Ionicons name="document-text-outline" size={14} color={Colors.dhlText} />
-                        <Text style={styles.actionBtnText}>PDF</Text>
-                      </TouchableOpacity>
-                      {inv.status !== 'PAID' && (
-                        <TouchableOpacity testID={`inv-pay-${inv.invoiceNumber}`} style={styles.actionBtnRed} onPress={() => setPayInv(inv)}>
-                          <Ionicons name="card-outline" size={14} color={Colors.dhlRed} />
-                          <Text style={[styles.actionBtnText, { color: Colors.dhlRed }]}>PAY</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+
+            {/* List */}
+            <View style={{ paddingHorizontal: 12 }}>
+              <Text style={styles.countText}>
+                <Text style={styles.countNum}>{filtered.length}</Text> of{' '}
+                <Text style={styles.countNum}>{counts.ALL}</Text> invoice{filtered.length === 1 ? '' : 's'}
+              </Text>
+              {filtered.length === 0 ? (
+                <View testID="invoices-empty" style={styles.emptyCard}>
+                  <Ionicons name="receipt-outline" size={32} color={Colors.dhlMuted} />
+                  <Text style={styles.emptyTitle}>No invoices in this view</Text>
                 </View>
-              );
-            })}
-          </View>
+              ) : (
+                filtered.map((it) => {
+                  const tone = STATUS_TONES[it.status] || STATUS_TONES.PENDING;
+                  const isExpanded = expanded === it.invoiceNumber;
+                  const amount = amountOf(it);
+                  return (
+                    <TouchableOpacity
+                      key={it.invoiceNumber}
+                      testID={`invoice-row-${it.invoiceNumber}`}
+                      activeOpacity={0.8}
+                      onPress={() => setExpanded(isExpanded ? null : it.invoiceNumber)}
+                      style={styles.card}
+                    >
+                      <View style={styles.cardTop}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.cardNumber}>{it.invoiceNumber}</Text>
+                          <Text style={styles.cardMeta}>
+                            Issued {formatDate(it.issueDate)}
+                            {it.status === 'PAID' && it.paidDate ? ` · Paid ${formatDate(it.paidDate)}` :
+                              it.dueDate ? ` · Due ${formatDate(it.dueDate)}` : ''}
+                          </Text>
+                        </View>
+                        <View style={{ alignItems: 'flex-end' }}>
+                          <Text style={styles.cardAmount}>{fmt(amount)}</Text>
+                          <View
+                            testID={`invoice-status-pill-${it.invoiceNumber}`}
+                            style={[styles.statusPill, { backgroundColor: tone.bg }]}
+                          >
+                            <View style={[styles.statusDot, { backgroundColor: tone.dot }]} />
+                            <Text style={[styles.statusText, { color: tone.text }]}>
+                              {it.status}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                      {isExpanded && (
+                        <View style={styles.expanded}>
+                          {(it.lineItems || []).slice(0, 5).map((li, idx) => {
+                            const lineAmount = currency === 'USD' ? (li.amountUSD || 0) : (li.costPGK || 0);
+                            return (
+                              <View key={idx} style={styles.lineRow}>
+                                <View style={{ flex: 1 }}>
+                                  {li.shipmentAwb ? (
+                                    <Text style={styles.lineAwb}>{li.shipmentAwb}</Text>
+                                  ) : null}
+                                  <Text style={styles.lineDesc} numberOfLines={1}>
+                                    {li.description || '—'}
+                                  </Text>
+                                </View>
+                                <Text style={styles.lineAmt}>{fmt(lineAmount)}</Text>
+                              </View>
+                            );
+                          })}
+                          <View style={styles.expandActions}>
+                            <TouchableOpacity
+                              testID={`invoice-open-pdf-${it.invoiceNumber}`}
+                              onPress={() => openInvoicePdf(it.invoiceNumber)}
+                              style={styles.actionBtn}
+                            >
+                              <Ionicons name={Platform.OS === 'web' ? 'open-outline' : 'document-outline'} size={14} color={Colors.dhlInk} />
+                              <Text style={styles.actionTxt}>OPEN PDF</Text>
+                            </TouchableOpacity>
+                            {it.paymentReference ? (
+                              <Text style={styles.payRef}>Ref: {it.paymentReference}</Text>
+                            ) : null}
+                          </View>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  );
+                })
+              )}
+            </View>
+          </>
         )}
       </ScrollView>
-
-      {/* Pay Modal */}
-      {payInv && <PayModal invoice={payInv} onClose={() => setPayInv(null)} onPaid={load} />}
     </SafeAreaView>
   );
 }
 
-function PayModal({ invoice, onClose, onPaid }: { invoice: any; onClose: () => void; onPaid: () => void }) {
-  const [cardNumber, setCardNumber] = useState('4111 1111 1111 1111');
-  const [expMonth, setExpMonth] = useState('12');
-  const [expYear, setExpYear] = useState('2027');
-  const [cvv, setCvv] = useState('123');
-  const [name, setName] = useState('Demo User');
-  const [paying, setPaying] = useState(false);
-
-  const pay = async () => {
-    setPaying(true);
-    try {
-      const res = await api.post('/payments/charge', {
-        cardNumber, expMonth: Number(expMonth), expYear: Number(expYear),
-        cvv, cardholderName: name, amountPGK: invoice.totalPGK,
-        invoiceNumber: invoice.invoiceNumber,
-      });
-      if (res.data.status === 'FAILED') {
-        Alert.alert('Payment Failed', res.data.detail);
-        return;
-      }
-      await api.post(`/invoices/${invoice.invoiceNumber}/pay`);
-      Alert.alert('Success', `Payment successful · Ref ${res.data.referenceNumber}`);
-      onPaid();
-      onClose();
-    } catch (err: any) {
-      Alert.alert('Error', err?.response?.data?.detail || 'Payment failed');
-    } finally {
-      setPaying(false);
-    }
-  };
-
-  return (
-    <Modal visible animationType="slide" transparent>
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Pay {invoice.invoiceNumber}</Text>
-            <TouchableOpacity onPress={onClose}><Ionicons name="close" size={24} color={Colors.dhlText} /></TouchableOpacity>
-          </View>
-          <ScrollView contentContainerStyle={styles.modalScroll}>
-            <View style={styles.amountBanner}>
-              <Text style={styles.amountLabel}>AMOUNT DUE</Text>
-              <Text style={styles.amountValue}>{formatPGK(invoice.totalPGK)}</Text>
-            </View>
-            <View style={styles.demoNote}>
-              <Text style={styles.demoNoteText}>
-                Demo: <Text style={{ fontFamily: 'monospace', fontWeight: '700' }}>4111 1111 1111 1111</Text> = success
-              </Text>
-            </View>
-            <PayField label="CARD NUMBER" value={cardNumber} onChangeText={setCardNumber} testID="pay-card-number" />
-            <View style={styles.payRow}>
-              <View style={{ flex: 1 }}><PayField label="MONTH" value={expMonth} onChangeText={setExpMonth} testID="pay-exp-month" keyboardType="numeric" /></View>
-              <View style={{ flex: 1 }}><PayField label="YEAR" value={expYear} onChangeText={setExpYear} testID="pay-exp-year" keyboardType="numeric" /></View>
-              <View style={{ flex: 1 }}><PayField label="CVV" value={cvv} onChangeText={setCvv} testID="pay-cvv" keyboardType="numeric" /></View>
-            </View>
-            <PayField label="CARDHOLDER NAME" value={name} onChangeText={setName} testID="pay-name" />
-          </ScrollView>
-          <View style={styles.modalFooter}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
-              <Text style={styles.cancelBtnText}>CANCEL</Text>
-            </TouchableOpacity>
-            <TouchableOpacity testID="pay-submit" style={[styles.payBtn, paying && { opacity: 0.6 }]} onPress={pay} disabled={paying}>
-              {paying ? <ActivityIndicator color={Colors.dhlInk} /> : (
-                <Text style={styles.payBtnText}>PAY {formatPGK(invoice.totalPGK)}</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
-function PayField({ label, value, onChangeText, testID, keyboardType }: any) {
-  return (
-    <View style={styles.payFieldContainer}>
-      <Text style={styles.payFieldLabel}>{label}</Text>
-      <TextInput testID={testID} style={styles.payFieldInput} value={value} onChangeText={onChangeText} keyboardType={keyboardType || 'default'} />
+const KpiCard = ({
+  testID, label, value, sub, icon, iconColor, iconBg, valueColor,
+}: {
+  testID?: string;
+  label: string; value: string; sub: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconColor: string; iconBg: string;
+  valueColor?: string;
+}) => (
+  <View testID={testID} style={styles.kpi}>
+    <View style={[styles.kpiIcon, { backgroundColor: iconBg }]}>
+      <Ionicons name={icon} size={14} color={iconColor} />
     </View>
-  );
-}
+    <Text style={styles.kpiLabel}>{label}</Text>
+    <Text style={[styles.kpiValue, valueColor ? { color: valueColor } : null]} numberOfLines={1}>
+      {value}
+    </Text>
+    <Text style={styles.kpiSub} numberOfLines={1}>{sub}</Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.dhlPanel },
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 12, backgroundColor: Colors.white,
-    borderBottomWidth: 1, borderBottomColor: Colors.dhlBorder,
-  },
+  topbar: { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 10, backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: Colors.dhlBorder },
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   backText: { fontSize: 14, fontWeight: '700', color: Colors.dhlText },
-  scroll: { paddingBottom: 40 },
-  titleSection: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
-  pageTitle: { fontSize: 26, fontWeight: '900', color: Colors.dhlText, letterSpacing: -0.5 },
-  pageSub: { fontSize: 13, color: Colors.dhlMuted, marginTop: 4 },
-  kpiRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 8, marginBottom: 8 },
-  kpiCard: { flex: 1, padding: 14, borderWidth: 1, borderColor: Colors.dhlBorder },
-  kpiLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: 'rgba(0,0,0,0.5)', marginBottom: 4 },
-  kpiValue: { fontSize: 22, fontWeight: '900', color: Colors.dhlText },
-  filterScroll: { marginHorizontal: 16, marginVertical: 12 },
-  filterContent: { gap: 6 },
-  filterChip: { paddingHorizontal: 14, paddingVertical: 8, backgroundColor: Colors.dhlPanel },
-  filterChipActive: { backgroundColor: Colors.dhlYellow },
-  filterChipText: { fontSize: 10, fontWeight: '700', color: Colors.dhlMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
-  filterChipTextActive: { color: Colors.dhlInk },
+  scroll: { paddingBottom: 32 },
+  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
+  eyebrow: { fontSize: 10, fontWeight: '900', letterSpacing: 2, color: Colors.dhlRed, marginBottom: 4 },
+  title: { fontSize: 22, fontWeight: '900', color: Colors.dhlText, letterSpacing: -0.5 },
+  subtitle: { fontSize: 12, color: Colors.dhlMuted, marginTop: 4 },
+
+  kpiRow: { flexDirection: 'row', paddingHorizontal: 12, gap: 8, marginTop: 4 },
+  kpi: { flex: 1, backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.dhlBorder, padding: 10, minHeight: 100 },
+  kpiIcon: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+  kpiLabel: { fontSize: 8, fontWeight: '900', letterSpacing: 1, color: Colors.dhlMuted },
+  kpiValue: { fontSize: 16, fontWeight: '900', color: Colors.dhlText, letterSpacing: -0.5, marginTop: 2 },
+  kpiSub: { fontSize: 9, color: Colors.dhlMuted, marginTop: 1 },
+
+  chipsRow: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.dhlBorder },
+  chipActive: { backgroundColor: Colors.dhlYellow, borderColor: Colors.dhlInk },
+  chipLabel: { fontSize: 11, fontWeight: '800', color: Colors.dhlMuted, letterSpacing: 0.5 },
+  chipLabelActive: { color: Colors.dhlInk },
+  chipCount: { backgroundColor: Colors.dhlPanel, paddingHorizontal: 5, paddingVertical: 1, minWidth: 20, alignItems: 'center' },
+  chipCountActive: { backgroundColor: Colors.dhlInk },
+  chipCountText: { fontSize: 10, fontWeight: '900', color: Colors.dhlText },
+  chipCountTextActive: { color: Colors.dhlYellow },
+
+  countText: { fontSize: 11, color: Colors.dhlMuted, paddingBottom: 8, paddingHorizontal: 4 },
+  countNum: { fontWeight: '900', color: Colors.dhlText },
+  emptyCard: { alignItems: 'center', backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.dhlBorder, padding: 32 },
+  emptyTitle: { fontSize: 14, fontWeight: '800', color: Colors.dhlText, marginTop: 10 },
   center: { paddingVertical: 60, alignItems: 'center' },
-  emptyCard: { marginHorizontal: 16, backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.dhlBorder, padding: 32, alignItems: 'center' },
-  emptyText: { fontSize: 14, color: Colors.dhlMuted, marginTop: 12 },
-  card: { marginHorizontal: 16, marginBottom: 8, backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.dhlBorder, padding: 16 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  cardInvNum: { fontSize: 14, fontFamily: 'monospace', fontWeight: '700', color: Colors.dhlText },
-  statusBadge: { paddingHorizontal: 8, paddingVertical: 4 },
-  statusText: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
-  cardMeta: { flexDirection: 'row', gap: 16, marginBottom: 8 },
-  metaText: { fontSize: 12, color: Colors.dhlMuted },
-  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardAmount: { fontSize: 18, fontFamily: 'monospace', fontWeight: '900', color: Colors.dhlText },
-  cardActions: { flexDirection: 'row', gap: 12 },
-  actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: 6 },
-  actionBtnRed: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: 6 },
-  actionBtnText: { fontSize: 11, fontWeight: '800', color: Colors.dhlText, letterSpacing: 1 },
-  // Modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: Colors.white, maxHeight: '85%', borderTopLeftRadius: 12, borderTopRightRadius: 12 },
-  modalHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 20, borderBottomWidth: 1, borderBottomColor: Colors.dhlBorder,
-  },
-  modalTitle: { fontSize: 18, fontWeight: '900', color: Colors.dhlText },
-  modalScroll: { padding: 20, paddingBottom: 10 },
-  amountBanner: { backgroundColor: Colors.dhlInk, padding: 16, marginBottom: 12 },
-  amountLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 2, color: Colors.dhlYellow },
-  amountValue: { fontSize: 28, fontWeight: '900', color: Colors.white, marginTop: 4 },
-  demoNote: { backgroundColor: Colors.dhlPanel, padding: 10, marginBottom: 12 },
-  demoNoteText: { fontSize: 12, color: Colors.dhlMuted },
-  payRow: { flexDirection: 'row', gap: 8 },
-  payFieldContainer: { marginBottom: 12 },
-  payFieldLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, color: Colors.dhlText, marginBottom: 6, textTransform: 'uppercase' },
-  payFieldInput: { height: 44, backgroundColor: Colors.dhlPanel, borderWidth: 2, borderColor: Colors.dhlBorder, paddingHorizontal: 12, fontSize: 14, color: Colors.dhlText },
-  modalFooter: {
-    flexDirection: 'row', justifyContent: 'flex-end', gap: 12,
-    padding: 20, borderTopWidth: 1, borderTopColor: Colors.dhlBorder,
-  },
-  cancelBtn: { paddingHorizontal: 20, paddingVertical: 12 },
-  cancelBtnText: { fontSize: 12, fontWeight: '800', color: Colors.dhlText, letterSpacing: 1 },
-  payBtn: { paddingHorizontal: 24, paddingVertical: 12, backgroundColor: Colors.dhlYellow, borderWidth: 2, borderColor: Colors.dhlInk },
-  payBtnText: { fontSize: 12, fontWeight: '800', color: Colors.dhlInk, letterSpacing: 1.5 },
+
+  card: { backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.dhlBorder, padding: 12, marginBottom: 8 },
+  cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  cardNumber: { fontSize: 13, fontFamily: 'monospace', fontWeight: '800', color: Colors.dhlText, letterSpacing: 0.4 },
+  cardMeta: { fontSize: 10, color: Colors.dhlMuted, marginTop: 4 },
+  cardAmount: { fontSize: 14, fontWeight: '900', color: Colors.dhlText },
+  statusPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 6, paddingVertical: 2, marginTop: 4 },
+  statusDot: { width: 5, height: 5, borderRadius: 2.5 },
+  statusText: { fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  expanded: { marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: Colors.dhlBorder },
+  lineRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 },
+  lineAwb: { fontSize: 10, fontFamily: 'monospace', fontWeight: '800', color: Colors.dhlRed, letterSpacing: 0.5 },
+  lineDesc: { fontSize: 11, color: Colors.dhlMuted, marginTop: 1 },
+  lineAmt: { fontSize: 12, fontWeight: '700', color: Colors.dhlText, fontFamily: 'monospace' },
+  expandActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
+  actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: Colors.dhlYellow, borderWidth: 1, borderColor: Colors.dhlInk },
+  actionTxt: { fontSize: 10, fontWeight: '800', letterSpacing: 1, color: Colors.dhlInk },
+  payRef: { fontSize: 10, color: Colors.dhlMuted, fontFamily: 'monospace' },
 });

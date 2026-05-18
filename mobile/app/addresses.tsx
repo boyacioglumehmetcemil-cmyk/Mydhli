@@ -1,7 +1,19 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * Parties (formerly "Address Book") — Phase 5 rebrand.
+ *
+ * Web parity: /dashboard/addresses lists Shipper / Consignee / Notify
+ * directories. Backend exposes a single /api/addresses endpoint without an
+ * explicit `role` field; we derive role from the legacy boolean flags:
+ *   isDefaultSender   → SHIPPER
+ *   isDefaultReceiver → CONSIGNEE
+ *   neither flag      → NOTIFY
+ *
+ * NO doc-creation affordances. Only view / select role.
+ */
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet,
-  ActivityIndicator, Alert, Modal, KeyboardAvoidingView, Platform,
+  View, Text, TouchableOpacity, FlatList, ScrollView, StyleSheet,
+  ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,292 +21,254 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
 import api from '../src/lib/api';
 
-const blank = {
-  label: '', name: '', company: '', address: '', city: '', country: 'PG',
-  postalCode: '', phone: '', email: '',
-  isDefaultSender: false, isDefaultReceiver: false,
+type PartyRole = 'SHIPPER' | 'CONSIGNEE' | 'NOTIFY';
+
+interface ApiAddress {
+  id: string;
+  label?: string;
+  name?: string;
+  company?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  postalCode?: string;
+  phone?: string;
+  email?: string;
+  isDefaultSender?: boolean;
+  isDefaultReceiver?: boolean;
+  role?: PartyRole;
+  createdAt?: string;
+}
+
+function roleOf(addr: ApiAddress): PartyRole {
+  if (addr.role === 'SHIPPER' || addr.role === 'CONSIGNEE' || addr.role === 'NOTIFY') return addr.role;
+  if (addr.isDefaultSender) return 'SHIPPER';
+  if (addr.isDefaultReceiver) return 'CONSIGNEE';
+  return 'NOTIFY';
+}
+
+const ROLE_TONES: Record<PartyRole, { bg: string; text: string; dot: string }> = {
+  SHIPPER:   { bg: '#FFFBEB', text: '#78350F', dot: Colors.dhlYellow },
+  CONSIGNEE: { bg: '#EFF6FF', text: '#1E40AF', dot: '#2563EB' },
+  NOTIFY:    { bg: Colors.dhlPanel, text: Colors.dhlMuted, dot: Colors.dhlMuted },
 };
 
-export default function Addresses() {
+type TabKey = 'ALL' | PartyRole;
+
+export default function PartiesScreen() {
   const router = useRouter();
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<ApiAddress[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('ALL');
-  const [modal, setModal] = useState<{ mode: string; data: any } | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [tab, setTab] = useState<TabKey>('ALL');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const load = () => {
-    setLoading(true);
-    api.get('/addresses').then(r => setItems(r.data)).catch(() => {}).finally(() => setLoading(false));
-  };
-
-  useEffect(() => { load(); }, []);
-
-  const save = async () => {
-    if (!modal) return;
-    const d = modal.data;
-    if (!d.label || !d.name || !d.address || !d.city || !d.country) {
-      Alert.alert('Error', 'Please fill all required fields');
-      return;
-    }
+  const fetchAll = useCallback(async () => {
     try {
-      if (modal.mode === 'create') {
-        await api.post('/addresses', d);
-        Alert.alert('Success', 'Address added');
-      } else {
-        await api.put(`/addresses/${d.id}`, d);
-        Alert.alert('Success', 'Address updated');
-      }
-      setModal(null);
-      load();
+      const r = await api.get('/addresses');
+      const list = (Array.isArray(r.data) ? r.data : r.data?.items) as ApiAddress[];
+      setItems(list || []);
     } catch {
-      Alert.alert('Error', 'Save failed');
+      setItems([]);
     }
-  };
+  }, []);
 
-  const remove = (id: string) => {
-    Alert.alert('Delete', 'Delete this address?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => {
-        await api.delete(`/addresses/${id}`);
-        Alert.alert('Deleted', 'Address removed');
-        load();
-      }},
-    ]);
-  };
+  useEffect(() => {
+    setLoading(true);
+    fetchAll().finally(() => setLoading(false));
+  }, [fetchAll]);
 
-  const setDefault = async (id: string, kind: string) => {
-    await api.put(`/addresses/${id}/default`, { kind });
-    Alert.alert('Success', `Set as default ${kind}`);
-    load();
-  };
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchAll();
+    setRefreshing(false);
+  }, [fetchAll]);
 
-  const filtered = items.filter(a =>
-    tab === 'ALL' ||
-    (tab === 'SENDERS' && a.isDefaultSender) ||
-    (tab === 'RECEIVERS' && a.isDefaultReceiver)
-  );
+  const counts = useMemo(() => {
+    const c = { ALL: items.length, SHIPPER: 0, CONSIGNEE: 0, NOTIFY: 0 };
+    items.forEach((p) => {
+      const r = roleOf(p);
+      if (r === 'SHIPPER') c.SHIPPER += 1;
+      else if (r === 'CONSIGNEE') c.CONSIGNEE += 1;
+      else c.NOTIFY += 1;
+    });
+    return c;
+  }, [items]);
 
-  const updateField = (key: string, val: string) => {
-    if (!modal) return;
-    setModal({ ...modal, data: { ...modal.data, [key]: val } });
-  };
+  const filtered = useMemo(() => {
+    if (tab === 'ALL') return items;
+    return items.filter((p) => roleOf(p) === tab);
+  }, [items, tab]);
+
+  const TABS: { key: TabKey; label: string }[] = [
+    { key: 'ALL', label: 'All' },
+    { key: 'SHIPPER', label: 'Shipper' },
+    { key: 'CONSIGNEE', label: 'Consignee' },
+    { key: 'NOTIFY', label: 'Notify' },
+  ];
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity testID="addresses-back-btn" onPress={() => router.back()} style={styles.backBtn}>
+      <View style={styles.topbar}>
+        <TouchableOpacity testID="parties-back" onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={20} color={Colors.dhlText} />
-          <Text style={styles.backText}>Back</Text>
-        </TouchableOpacity>
-        <TouchableOpacity testID="add-address" style={styles.addBtn} onPress={() => setModal({ mode: 'create', data: { ...blank } })}>
-          <Ionicons name="add" size={16} color={Colors.dhlInk} />
-          <Text style={styles.addBtnText}>ADD</Text>
+          <Text style={styles.backText}>More</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View testID="addresses-page" style={styles.titleSection}>
-          <Text style={styles.pageTitle}>Address Book</Text>
-          <Text style={styles.pageSub}>Saved senders and receivers — autofill any shipment.</Text>
-        </View>
+      <View style={styles.header}>
+        <Text style={styles.eyebrow}>PARTIES</Text>
+        <Text style={styles.title}>Shipper, consignee & notify directory</Text>
+        <Text style={styles.subtitle}>
+          Every counterparty involved in your forwarding bookings, grouped by role.
+        </Text>
+      </View>
 
-        {/* Tabs */}
-        <View style={styles.tabRow}>
-          {['ALL', 'SENDERS', 'RECEIVERS'].map(t => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chipsRow}
+      >
+        {TABS.map((t) => {
+          const active = tab === t.key;
+          return (
             <TouchableOpacity
-              key={t}
-              testID={`addr-tab-${t.toLowerCase()}`}
-              style={[styles.tab, tab === t && styles.tabActive]}
-              onPress={() => setTab(t)}
+              key={t.key}
+              testID={`parties-tab-${t.key.toLowerCase()}`}
+              style={[styles.chip, active && styles.chipActive]}
+              onPress={() => setTab(t.key)}
             >
-              <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>
-                {t === 'ALL' ? 'All' : t === 'SENDERS' ? 'Senders' : 'Receivers'}
+              <Text style={[styles.chipLabel, active && styles.chipLabelActive]}>
+                {t.label}
               </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {loading ? (
-          <View style={styles.center}><ActivityIndicator size="large" color={Colors.dhlYellow} /></View>
-        ) : filtered.length === 0 ? (
-          <View testID="addresses-empty" style={styles.emptyCard}>
-            <Ionicons name="book-outline" size={48} color={Colors.dhlMuted} />
-            <Text style={styles.emptyTitle}>No addresses yet</Text>
-            <Text style={styles.emptyText}>Add your first address to autofill shipments.</Text>
-            <TouchableOpacity style={styles.primaryBtn} onPress={() => setModal({ mode: 'create', data: { ...blank } })}>
-              <Ionicons name="add" size={14} color={Colors.dhlInk} />
-              <Text style={styles.primaryBtnText}>ADD ADDRESS</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View testID="addresses-grid">
-            {filtered.map(a => (
-              <View key={a.id} testID={`address-card-${a.id}`} style={styles.card}>
-                <View style={styles.cardTop}>
-                  <Text style={styles.cardLabel}>{a.label}</Text>
-                  <View style={styles.badgeRow}>
-                    {a.isDefaultSender && (
-                      <View style={styles.senderBadge}><Text style={styles.senderBadgeText}>Sender</Text></View>
-                    )}
-                    {a.isDefaultReceiver && (
-                      <View style={styles.receiverBadge}><Text style={styles.receiverBadgeText}>Receiver</Text></View>
-                    )}
-                  </View>
-                </View>
-                <Text style={styles.cardName}>{a.name}</Text>
-                {a.company ? <Text style={styles.cardCompany}>{a.company}</Text> : null}
-                <Text style={styles.cardAddr}>{a.address}</Text>
-                <Text style={styles.cardAddr}>{a.city}, {a.country} {a.postalCode}</Text>
-                {a.phone ? <Text style={styles.cardPhone}>{a.phone}</Text> : null}
-
-                <View style={styles.cardActions}>
-                  <TouchableOpacity testID={`addr-edit-${a.id}`} style={styles.iconBtn} onPress={() => setModal({ mode: 'edit', data: a })}>
-                    <Ionicons name="create-outline" size={16} color={Colors.dhlMuted} />
-                  </TouchableOpacity>
-                  <TouchableOpacity testID={`addr-default-sender-${a.id}`} style={styles.iconBtn} onPress={() => setDefault(a.id, 'sender')}>
-                    <Ionicons name="star-outline" size={16} color={Colors.dhlYellowDark} />
-                  </TouchableOpacity>
-                  <TouchableOpacity testID={`addr-delete-${a.id}`} style={[styles.iconBtn, { marginLeft: 'auto' }]} onPress={() => remove(a.id)}>
-                    <Ionicons name="trash-outline" size={16} color={Colors.dhlRed} />
-                  </TouchableOpacity>
-                </View>
+              <View style={[styles.chipCount, active && styles.chipCountActive]}>
+                <Text style={[styles.chipCountText, active && styles.chipCountTextActive]}>
+                  {counts[t.key]}
+                </Text>
               </View>
-            ))}
-          </View>
-        )}
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
 
-      {/* Modal */}
-      <Modal visible={!!modal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalKav}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{modal?.mode === 'create' ? 'Add Address' : 'Edit Address'}</Text>
-                <TouchableOpacity onPress={() => setModal(null)}>
-                  <Ionicons name="close" size={24} color={Colors.dhlText} />
-                </TouchableOpacity>
-              </View>
-              <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
-                <ModalField label="Label *" value={modal?.data.label} onChangeText={v => updateField('label', v)} testID="addr-form-label" placeholder="e.g. Head Office" />
-                <ModalField label="Full Name *" value={modal?.data.name} onChangeText={v => updateField('name', v)} testID="addr-form-name" />
-                <ModalField label="Company" value={modal?.data.company} onChangeText={v => updateField('company', v)} />
-                <ModalField label="Country *" value={modal?.data.country} onChangeText={v => updateField('country', v)} />
-                <ModalField label="Address *" value={modal?.data.address} onChangeText={v => updateField('address', v)} testID="addr-form-address" />
-                <ModalField label="City *" value={modal?.data.city} onChangeText={v => updateField('city', v)} testID="addr-form-city" />
-                <ModalField label="Postal Code" value={modal?.data.postalCode} onChangeText={v => updateField('postalCode', v)} />
-                <ModalField label="Phone" value={modal?.data.phone} onChangeText={v => updateField('phone', v)} keyboardType="phone-pad" />
-                <ModalField label="Email" value={modal?.data.email} onChangeText={v => updateField('email', v)} keyboardType="email-address" />
-              </ScrollView>
-              <View style={styles.modalFooter}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setModal(null)}>
-                  <Text style={styles.cancelBtnText}>CANCEL</Text>
-                </TouchableOpacity>
-                <TouchableOpacity testID="addr-form-save" style={styles.saveBtn} onPress={save}>
-                  <Text style={styles.saveBtnText}>SAVE</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </KeyboardAvoidingView>
+      {loading ? (
+        <View style={styles.center}><ActivityIndicator size="large" color={Colors.dhlYellow} /></View>
+      ) : filtered.length === 0 ? (
+        <View testID="parties-empty" style={styles.center}>
+          <Ionicons name="people-outline" size={42} color={Colors.dhlMuted} />
+          <Text style={styles.emptyTitle}>No parties in this role yet</Text>
+          <Text style={styles.emptyText}>
+            Counterparties added at booking time will appear here.
+          </Text>
         </View>
-      </Modal>
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={(p) => p.id}
+          contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.dhlYellow} />}
+          renderItem={({ item }) => {
+            const role = roleOf(item);
+            const tone = ROLE_TONES[role];
+            const isExpanded = expandedId === item.id;
+            const isDefault = (role === 'SHIPPER' && item.isDefaultSender) || (role === 'CONSIGNEE' && item.isDefaultReceiver);
+            return (
+              <TouchableOpacity
+                testID={`party-row-${item.id}`}
+                activeOpacity={0.8}
+                onPress={() => setExpandedId(isExpanded ? null : item.id)}
+                style={styles.card}
+              >
+                <View style={styles.cardTop}>
+                  <View style={{ flex: 1 }}>
+                    <View style={styles.cardTitleRow}>
+                      <Text style={styles.cardCompany} numberOfLines={1}>
+                        {item.company || item.name || '—'}
+                      </Text>
+                      {isDefault && (
+                        <View testID={`party-default-badge-${item.id}`} style={styles.defaultBadge}>
+                          <Text style={styles.defaultBadgeText}>DEFAULT</Text>
+                        </View>
+                      )}
+                    </View>
+                    {item.name && item.company && item.name !== item.company ? (
+                      <Text style={styles.cardContact}>Attn: {item.name}</Text>
+                    ) : null}
+                    <Text style={styles.cardAddress} numberOfLines={2}>
+                      {[item.address, item.city, item.country, item.postalCode].filter(Boolean).join(', ')}
+                    </Text>
+                  </View>
+                  <View
+                    testID={`party-role-pill-${item.id}`}
+                    style={[styles.rolePill, { backgroundColor: tone.bg }]}
+                  >
+                    <View style={[styles.roleDot, { backgroundColor: tone.dot }]} />
+                    <Text style={[styles.roleText, { color: tone.text }]}>{role}</Text>
+                  </View>
+                </View>
+                {isExpanded && (
+                  <View style={styles.expanded}>
+                    {item.phone ? (
+                      <View style={styles.expandRow}>
+                        <Ionicons name="call-outline" size={12} color={Colors.dhlMuted} />
+                        <Text style={styles.expandTxt}>{item.phone}</Text>
+                      </View>
+                    ) : null}
+                    {item.email ? (
+                      <View style={styles.expandRow}>
+                        <Ionicons name="mail-outline" size={12} color={Colors.dhlMuted} />
+                        <Text style={styles.expandTxt}>{item.email}</Text>
+                      </View>
+                    ) : null}
+                    {!item.phone && !item.email ? (
+                      <Text style={styles.expandMuted}>No contact details on file.</Text>
+                    ) : null}
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }
 
-const ModalField = ({ label, value, onChangeText, testID, placeholder, keyboardType }: any) => (
-  <View style={styles.modalFieldContainer}>
-    <Text style={styles.modalFieldLabel}>{label}</Text>
-    <TextInput
-      testID={testID}
-      style={styles.modalFieldInput}
-      value={value || ''}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      placeholderTextColor={Colors.dhlMuted}
-      keyboardType={keyboardType || 'default'}
-    />
-  </View>
-);
-
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.dhlPanel },
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 12, backgroundColor: Colors.white,
-    borderBottomWidth: 1, borderBottomColor: Colors.dhlBorder,
-  },
+  topbar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: Colors.dhlBorder },
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   backText: { fontSize: 14, fontWeight: '700', color: Colors.dhlText },
-  addBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: Colors.dhlYellow, paddingHorizontal: 14, paddingVertical: 8,
-    borderWidth: 2, borderColor: Colors.dhlInk,
-  },
-  addBtnText: { fontSize: 11, fontWeight: '800', color: Colors.dhlInk, letterSpacing: 1.5 },
-  scroll: { paddingBottom: 40 },
-  titleSection: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
-  pageTitle: { fontSize: 26, fontWeight: '900', color: Colors.dhlText, letterSpacing: -0.5 },
-  pageSub: { fontSize: 13, color: Colors.dhlMuted, marginTop: 4 },
-  tabRow: { flexDirection: 'row', marginHorizontal: 16, marginVertical: 12, backgroundColor: Colors.dhlPanel, padding: 2 },
-  tab: { flex: 1, paddingVertical: 8, alignItems: 'center' },
-  tabActive: { backgroundColor: Colors.white },
-  tabText: { fontSize: 11, fontWeight: '700', color: Colors.dhlMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
-  tabTextActive: { color: Colors.dhlInk },
-  center: { paddingVertical: 60, alignItems: 'center' },
-  emptyCard: {
-    marginHorizontal: 16, backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.dhlBorder,
-    padding: 32, alignItems: 'center',
-  },
-  emptyTitle: { fontSize: 18, fontWeight: '900', color: Colors.dhlText, marginTop: 16, marginBottom: 8 },
-  emptyText: { fontSize: 13, color: Colors.dhlMuted, textAlign: 'center', marginBottom: 20 },
-  primaryBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6, height: 44,
-    backgroundColor: Colors.dhlYellow, paddingHorizontal: 20, borderWidth: 2, borderColor: Colors.dhlInk,
-  },
-  primaryBtnText: { fontSize: 12, fontWeight: '800', color: Colors.dhlInk, letterSpacing: 1.5 },
-  card: {
-    marginHorizontal: 16, marginBottom: 8, backgroundColor: Colors.white,
-    borderWidth: 1, borderColor: Colors.dhlBorder, padding: 16,
-  },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  cardLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 1.5, color: Colors.dhlRed, textTransform: 'uppercase' },
-  badgeRow: { flexDirection: 'row', gap: 4 },
-  senderBadge: { backgroundColor: Colors.dhlYellow, paddingHorizontal: 6, paddingVertical: 2 },
-  senderBadgeText: { fontSize: 9, fontWeight: '800', color: Colors.dhlInk, textTransform: 'uppercase', letterSpacing: 0.5 },
-  receiverBadge: { backgroundColor: Colors.dhlInk, paddingHorizontal: 6, paddingVertical: 2 },
-  receiverBadgeText: { fontSize: 9, fontWeight: '800', color: Colors.dhlYellow, textTransform: 'uppercase', letterSpacing: 0.5 },
-  cardName: { fontSize: 15, fontWeight: '700', color: Colors.dhlText },
-  cardCompany: { fontSize: 13, color: Colors.dhlMuted, marginTop: 1 },
-  cardAddr: { fontSize: 12, color: Colors.dhlMuted },
-  cardPhone: { fontSize: 12, color: Colors.dhlMuted, marginTop: 4 },
-  cardActions: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingTop: 12, marginTop: 12, borderTopWidth: 1, borderTopColor: Colors.dhlBorder,
-  },
-  iconBtn: { padding: 8 },
-  // Modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalKav: { flex: 1, justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: Colors.white, maxHeight: '85%', borderTopLeftRadius: 12, borderTopRightRadius: 12 },
-  modalHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 20, borderBottomWidth: 1, borderBottomColor: Colors.dhlBorder,
-  },
-  modalTitle: { fontSize: 20, fontWeight: '900', color: Colors.dhlText },
-  modalScroll: { padding: 20, paddingBottom: 10 },
-  modalFieldContainer: { marginBottom: 12 },
-  modalFieldLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, color: Colors.dhlText, marginBottom: 6, textTransform: 'uppercase' },
-  modalFieldInput: { height: 44, backgroundColor: Colors.dhlPanel, borderWidth: 2, borderColor: Colors.dhlBorder, paddingHorizontal: 12, fontSize: 14, color: Colors.dhlText },
-  modalFooter: {
-    flexDirection: 'row', justifyContent: 'flex-end', gap: 12,
-    padding: 20, borderTopWidth: 1, borderTopColor: Colors.dhlBorder,
-  },
-  cancelBtn: { paddingHorizontal: 20, paddingVertical: 12 },
-  cancelBtnText: { fontSize: 12, fontWeight: '800', color: Colors.dhlText, letterSpacing: 1 },
-  saveBtn: {
-    paddingHorizontal: 24, paddingVertical: 12,
-    backgroundColor: Colors.dhlYellow, borderWidth: 2, borderColor: Colors.dhlInk,
-  },
-  saveBtnText: { fontSize: 12, fontWeight: '800', color: Colors.dhlInk, letterSpacing: 1.5 },
+  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
+  eyebrow: { fontSize: 10, fontWeight: '900', letterSpacing: 2, color: Colors.dhlRed, marginBottom: 4 },
+  title: { fontSize: 22, fontWeight: '900', color: Colors.dhlText, letterSpacing: -0.5 },
+  subtitle: { fontSize: 12, color: Colors.dhlMuted, marginTop: 4 },
+  chipsRow: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.dhlBorder },
+  chipActive: { backgroundColor: Colors.dhlYellow, borderColor: Colors.dhlInk },
+  chipLabel: { fontSize: 11, fontWeight: '800', color: Colors.dhlMuted, letterSpacing: 0.5 },
+  chipLabelActive: { color: Colors.dhlInk },
+  chipCount: { backgroundColor: Colors.dhlPanel, paddingHorizontal: 5, paddingVertical: 1, minWidth: 20, alignItems: 'center' },
+  chipCountActive: { backgroundColor: Colors.dhlInk },
+  chipCountText: { fontSize: 10, fontWeight: '900', color: Colors.dhlText },
+  chipCountTextActive: { color: Colors.dhlYellow },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
+  emptyTitle: { fontSize: 16, fontWeight: '900', color: Colors.dhlText, marginTop: 12 },
+  emptyText: { fontSize: 12, color: Colors.dhlMuted, marginTop: 6, textAlign: 'center', maxWidth: 280 },
+  list: { paddingHorizontal: 12, paddingBottom: 32 },
+  card: { backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.dhlBorder, padding: 12, marginBottom: 8 },
+  cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2, flexWrap: 'wrap' },
+  cardCompany: { fontSize: 14, fontWeight: '800', color: Colors.dhlText, flexShrink: 1 },
+  defaultBadge: { backgroundColor: Colors.dhlYellow, paddingHorizontal: 5, paddingVertical: 1, borderWidth: 1, borderColor: Colors.dhlInk },
+  defaultBadgeText: { fontSize: 8, fontWeight: '900', letterSpacing: 1, color: Colors.dhlInk },
+  cardContact: { fontSize: 11, color: Colors.dhlMuted, marginBottom: 4 },
+  cardAddress: { fontSize: 12, color: Colors.dhlText, lineHeight: 17 },
+  rolePill: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start' },
+  roleDot: { width: 6, height: 6, borderRadius: 3 },
+  roleText: { fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  expanded: { marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: Colors.dhlBorder },
+  expandRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 },
+  expandTxt: { fontSize: 12, color: Colors.dhlText, fontFamily: 'monospace' },
+  expandMuted: { fontSize: 11, color: Colors.dhlMuted, fontStyle: 'italic' },
 });
