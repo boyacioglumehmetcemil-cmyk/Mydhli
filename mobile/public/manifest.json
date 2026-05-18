@@ -3,24 +3,36 @@
   "short_name": "myDHLi",
   "description": "DHL Global Forwarding · Papua New Guinea",
   "lang": "en",
-  "scope": "/m/",
-  "start_url": "/m/",
+  "scope": "/",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#FFCC00",
   "background_color": "#FFCC00",
   "icons": [
     {
-      "src": "/m/icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/m/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
