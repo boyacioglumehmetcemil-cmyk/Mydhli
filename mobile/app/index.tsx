@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, Image, StyleSheet } from 'react-native';
 import { Redirect } from 'expo-router';
 import { Colors } from '../src/constants/colors';
 import { useAuth } from '../src/contexts/AuthContext';
-import BrandWordmark from '../src/components/BrandWordmark';
+
+const LOGO_HORIZONTAL = require('../assets/brand/dhl_gf_horizontal.png');
 
 /**
  * Root entry. Decides between authenticated (tabs) and unauthenticated (login)
@@ -16,7 +17,12 @@ export default function Index() {
   if (loading) {
     return (
       <View testID="root-splash" style={styles.splash}>
-        <BrandWordmark size="lg" />
+        <Image
+          source={LOGO_HORIZONTAL}
+          style={styles.splashLogo}
+          resizeMode="contain"
+          accessibilityLabel="DHL Global Forwarding"
+        />
         <ActivityIndicator color={Colors.dhlInk} style={styles.spinner} />
       </View>
     );
@@ -32,5 +38,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.dhlYellow,
   },
+  splashLogo: { height: 64, aspectRatio: 2.535 },
   spinner: { marginTop: 24 },
 });

@@ -341,3 +341,23 @@ Repo-clean state is documented in:
 - "Move freight worldwide" landing hero, stats strip, Freight Forwarding cards
   (entire prior `app/index.tsx` body). Not re-archived — git history is the
   reference if ever needed.
+
+
+### Faz 7.1 — Official DHL Global Forwarding logo assets — 2026-05-18
+- New brand assets committed under `/app/mobile/assets/brand/`:
+  - `dhl_gf_horizontal.png` (256×101, aspectRatio 2.535) — top yellow bar usage.
+  - `dhl_gf_stacked.png` (353×110, aspectRatio 3.209) — bottom white footer usage.
+- `app/login.tsx`: `<BrandWordmark>` placeholders in top bar and footer replaced with
+  `<Image source={require(...)}>` referencing the local PNG assets. Styles added:
+  `topLogo` (height 36, aspectRatio 2.535) and `footerLogo` (height 40, aspectRatio 3.209).
+- `app/index.tsx`: splash screen also switched to the horizontal PNG (height 64).
+- `BrandWordmark` component left unchanged — still used in More-tab user card and
+  other auth surfaces. The variant-prop refactor was deferred (optional in spec,
+  blast radius too wide for a single login-asset task).
+- Verification:
+  - Both `<img>` tags resolve (`/assets/?unstable_path=...dhl_gf_horizontal.png` and
+    `...dhl_gf_stacked.png`) and render at expected sizes on a 390×844 viewport.
+  - `yarn tsc --noEmit`: index/login dosyalarında 0 hata; baseline 20 (pre-existing).
+  - `grep -ri "[Gg]enerate" /app/mobile/app /app/mobile/src` = **0**.
+  - Bundle status: `HTTP/2 200` on `/login`.
+- Files changed: `app/login.tsx`, `app/index.tsx`, +2 assets.

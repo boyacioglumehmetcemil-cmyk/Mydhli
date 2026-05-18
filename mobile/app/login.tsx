@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,
-  KeyboardAvoidingView, Platform, ScrollView, Alert, ImageBackground, Linking,
+  KeyboardAvoidingView, Platform, ScrollView, Alert, ImageBackground, Image, Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
 import { useAuth } from '../src/contexts/AuthContext';
-import BrandWordmark from '../src/components/BrandWordmark';
 
 const BG_IMAGE =
   'https://images.unsplash.com/photo-1670121180530-cfcba4438038?crop=entropy&cs=srgb&fm=jpg&w=1600&q=70';
 
 const SUPPORT_EMAIL = 'support@dhlpng.com';
+
+// Official DHL Global Forwarding marks (Faz 7.1)
+const LOGO_HORIZONTAL = require('../assets/brand/dhl_gf_horizontal.png');
+const LOGO_STACKED = require('../assets/brand/dhl_gf_stacked.png');
 
 export default function Login() {
   const router = useRouter();
@@ -49,7 +52,12 @@ export default function Login() {
       {/* TOP YELLOW BAR */}
       <SafeAreaView edges={['top']} style={styles.topBarSafe}>
         <View style={styles.topBar} testID="login-topbar">
-          <BrandWordmark size="md" />
+          <Image
+            source={LOGO_HORIZONTAL}
+            style={styles.topLogo}
+            resizeMode="contain"
+            accessibilityLabel="DHL Global Forwarding"
+          />
           <TouchableOpacity
             testID="login-contact-us"
             onPress={openMail}
@@ -161,7 +169,12 @@ export default function Login() {
       <SafeAreaView edges={['bottom']} style={styles.footerSafe}>
         <View style={styles.footerBar} testID="login-footer">
           <View style={styles.footerLeft}>
-            <BrandWordmark size="sm" showSub={false} />
+            <Image
+              source={LOGO_STACKED}
+              style={styles.footerLogo}
+              resizeMode="contain"
+              accessibilityLabel="DHL Global Forwarding"
+            />
             <View style={styles.footerLinks}>
               <TouchableOpacity testID="login-footer-privacy" onPress={openMail}>
                 <Text style={styles.footerLink}>Privacy Notice</Text>
@@ -205,6 +218,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: Colors.dhlYellow,
   },
+  topLogo: { height: 36, aspectRatio: 2.535 },
   contactRow: { flexDirection: 'row', alignItems: 'center' },
   contactText: { color: Colors.dhlRed, fontSize: 13, fontWeight: '700' },
   contactIcon: { marginLeft: 4 },
@@ -296,6 +310,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   footerLeft: { flex: 1, paddingRight: 12 },
+  footerLogo: { height: 40, aspectRatio: 3.209 },
   footerLinks: { flexDirection: 'row', alignItems: 'center', marginTop: 6, flexWrap: 'wrap' },
   footerLink: { fontSize: 10, color: Colors.dhlMuted, fontWeight: '600' },
   footerDot: { fontSize: 10, color: Colors.dhlMuted, marginHorizontal: 6 },
