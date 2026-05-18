@@ -1,16 +1,22 @@
 /**
  * PDF preview modal — fullscreen Expo Router screen registered with
- * `presentation: 'modal'` in app/_layout.tsx. Renders the document inside a
- * react-native-webview that authenticates the initial request through the
- * Bearer token stored in AsyncStorage.
+ * `presentation: 'modal'` in app/_layout.tsx.
  *
- * Strategy = (A) inline Authorization header on the WebView source. We keep
- * (B) local-cache + file:// URI in reserve for a follow-up if any platform
- * fails to render — see Phase 3 report.
+ * Two-platform render strategy:
+ *
+ *   • Native (iOS / Android) — react-native-webview with Strategy A:
+ *     inline `source.headers: { Authorization: 'Bearer …' }`. Backend
+ *     `/api/documents/{id}/preview` returns a single PDF binary so the
+ *     initial-request-only header is sufficient.
+ *
+ *   • Web (Expo Web running in-browser) — react-native-webview is not
+ *     supported on the web target, so we fetch the PDF with the Bearer
+ *     header, wrap the response in an Object URL via `URL.createObjectURL`,
+ *     and render it inside a DOM <iframe>. The blob URL is revoked on
+ *     unmount / id change to avoid memory leaks.
  *
  * NO doc-creation affordances. Phase 8.4c forbids them. The only affordances
- * them. The only affordances here are CLOSE and (optional) OPEN-IN-BROWSER
- * for native save.
+ * here are CLOSE and OPEN-IN-BROWSER (native save fallback).
  */
 import React, { useEffect, useState } from 'react';
 import {
@@ -56,6 +62,10 @@ export default function DocumentPreview() {
   const [error, setError] = useState<string | null>(null);
   const [loadingPdf, setLoadingPdf] = useState(true);
   const [metaLoading, setMetaLoading] = useState(true);
+  // Web-only: blob URL fetched with the Bearer header so an <iframe> can show it.
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  // Retry trigger for the web fetch path (bumping forces re-run).
+  const [retryNonce, setRetryNonce] = useState(0);
 
   const backendUrl = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
   const previewUrl = id ? `${backendUrl}/api/documents/${encodeURIComponent(id)}/preview` : '';
@@ -70,6 +80,48 @@ export default function DocumentPreview() {
       .catch(() => setError('Failed to load document metadata'))
       .finally(() => setMetaLoading(false));
   }, [id]);
+
+  // 2) Web-only: download the PDF as a blob and wrap it in an Object URL.
+  //    react-native-webview is not implemented on the web target so we render
+  //    a DOM <iframe> instead. The Object URL is revoked on unmount / id
+  //    change to avoid memory leaks.
+  useEffect(() => {
+    if (Platform.OS !== 'web') return undefined;
+    if (!id || !token || !previewUrl) return undefined;
+
+    let cancelled = false;
+    let createdUrl: string | null = null;
+
+    setLoadingPdf(true);
+    setError(null);
+    setBlobUrl(null);
+
+    (async () => {
+      try {
+        const res = await fetch(previewUrl, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          throw new Error(`Backend returned HTTP ${res.status} for the preview.`);
+        }
+        const blob = await res.blob();
+        if (cancelled) return;
+        createdUrl = URL.createObjectURL(blob);
+        setBlobUrl(createdUrl);
+        setLoadingPdf(false);
+      } catch (e: unknown) {
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : 'Failed to load document';
+        setError(msg);
+        setLoadingPdf(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (createdUrl) URL.revokeObjectURL(createdUrl);
+    };
+  }, [id, token, previewUrl, retryNonce]);
 
   const close = () => {
     if (router.canGoBack()) router.back();
@@ -153,7 +205,14 @@ export default function DocumentPreview() {
             <TouchableOpacity
               testID="document-error-retry"
               style={styles.primaryBtn}
-              onPress={() => { setError(null); setLoadingPdf(true); }}
+              onPress={() => {
+                setError(null);
+                setLoadingPdf(true);
+                // Web branch is gated on `retryNonce`; bumping it re-runs the
+                // blob fetch. Native WebView re-mounts naturally when error
+                // state changes back to renderable.
+                if (Platform.OS === 'web') setRetryNonce((n) => n + 1);
+              }}
             >
               <Text style={styles.primaryBtnText}>TRY AGAIN</Text>
             </TouchableOpacity>
@@ -167,7 +226,36 @@ export default function DocumentPreview() {
             <ActivityIndicator size="large" color={Colors.dhlYellow} />
             <Text style={styles.loadingText}>Authenticating…</Text>
           </View>
+        ) : Platform.OS === 'web' ? (
+          // ── WEB BRANCH ─────────────────────────────────────────────────
+          // react-native-webview is unsupported on the web target.
+          // We fetched the PDF as a blob (see useEffect above) and now
+          // render a DOM <iframe> for the user. The blob URL is revoked
+          // automatically by the effect cleanup on unmount / id change.
+          <>
+            {blobUrl ? (
+              React.createElement('iframe', {
+                'data-testid': 'document-webview',
+                src: blobUrl,
+                title: meta?.file_name || 'Document preview',
+                style: {
+                  width: '100%',
+                  height: '100%',
+                  border: 0,
+                  backgroundColor: '#2A2A2A',
+                  display: 'block',
+                },
+              })
+            ) : null}
+            {loadingPdf && (
+              <View pointerEvents="none" style={styles.loaderOverlay}>
+                <ActivityIndicator size="large" color={Colors.dhlYellow} />
+                <Text style={styles.loadingText}>Loading PDF…</Text>
+              </View>
+            )}
+          </>
         ) : (
+          // ── NATIVE BRANCH (iOS / Android) ──────────────────────────────
           <>
             <WebView
               testID="document-webview"
