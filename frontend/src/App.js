@@ -1,11 +1,10 @@
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CountryProvider } from "@/contexts/CountryContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DemoBadge from "@/components/DemoBadge";
-import Landing from "@/pages/Landing";
 import GlobalForwarding from "@/pages/GlobalForwarding";
 import Solutions from "@/pages/Solutions";
 import Help from "@/pages/Help";
@@ -32,13 +31,21 @@ import Dashboard from "@/pages/Dashboard";
 import DashboardTrack from "@/pages/DashboardTrack";
 import NotFound from "@/pages/NotFound";
 
+// Faz 7 (web parity): root URL no longer renders a marketing landing.
+// Authenticated users go straight to /dashboard, the rest to /login.
+function RootRedirect() {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return null;
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+}
+
 function App() {
   return (
     <AuthProvider>
       <CountryProvider>
         <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<RootRedirect />} />
           <Route path="/global-forwarding" element={<GlobalForwarding />} />
           <Route path="/solutions" element={<Solutions />} />
           <Route path="/help" element={<Help />} />
