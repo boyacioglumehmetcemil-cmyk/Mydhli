@@ -1,35 +1,32 @@
 /**
- * PDF preview modal — fullscreen Expo Router screen registered with
- * `presentation: 'modal'` in app/_layout.tsx.
+ * Document preview shell — fullscreen Expo Router modal
+ * (`presentation: 'modal'` registered in app/_layout.tsx).
  *
- * Two-platform render strategy:
+ * Platform-agnostic kabuk:
+ *   • Toolbar  : close button → title / meta → open-in-browser
+ *   • Sub-meta : size · status chip · uploaded date
+ *   • Body     : <DocumentViewer/> — resolves to ./_viewer.web.tsx on web,
+ *                 ./_viewer.native.tsx on iOS / Android (Metro auto-picks).
  *
- *   • Native (iOS / Android) — react-native-webview with Strategy A:
- *     inline `source.headers: { Authorization: 'Bearer …' }`. Backend
- *     `/api/documents/{id}/preview` returns a single PDF binary so the
- *     initial-request-only header is sufficient.
- *
- *   • Web (Expo Web running in-browser) — react-native-webview is not
- *     supported on the web target, so we fetch the PDF with the Bearer
- *     header, wrap the response in an Object URL via `URL.createObjectURL`,
- *     and render it inside a DOM <iframe>. The blob URL is revoked on
- *     unmount / id change to avoid memory leaks.
+ * Critical: react-native-webview is NEVER imported in this shell. That keeps
+ * it out of the web bundle entirely. Confirmed by:
+ *   $ curl <preview>/.../entry.bundle?platform=web | grep -c 'react-native-webview' → 0
  *
  * NO doc-creation affordances. Phase 8.4c forbids them. The only affordances
  * here are CLOSE and OPEN-IN-BROWSER (native save fallback).
  */
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Platform, Linking,
+  View, Text, TouchableOpacity, StyleSheet, Linking,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '../../src/constants/colors';
 import api from '../../src/lib/api';
 import { formatDate } from '../../src/lib/shipmentUtils';
+import DocumentViewer from './_viewer';
 
 interface DocMeta {
   document_id: string;
@@ -59,69 +56,21 @@ export default function DocumentPreview() {
   const router = useRouter();
   const [meta, setMeta] = useState<DocMeta | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loadingPdf, setLoadingPdf] = useState(true);
+  const [metaErr, setMetaErr] = useState<string | null>(null);
   const [metaLoading, setMetaLoading] = useState(true);
-  // Web-only: blob URL fetched with the Bearer header so an <iframe> can show it.
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
-  // Retry trigger for the web fetch path (bumping forces re-run).
-  const [retryNonce, setRetryNonce] = useState(0);
 
   const backendUrl = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
   const previewUrl = id ? `${backendUrl}/api/documents/${encodeURIComponent(id)}/preview` : '';
 
-  // 1) Bootstrap auth token + document metadata in parallel.
   useEffect(() => {
     if (!id) return;
     AsyncStorage.getItem('dhl_auth_token').then((t) => setToken(t));
     setMetaLoading(true);
     api.get(`/documents/${encodeURIComponent(id)}`)
       .then((r) => setMeta(r.data))
-      .catch(() => setError('Failed to load document metadata'))
+      .catch(() => setMetaErr('Failed to load document metadata'))
       .finally(() => setMetaLoading(false));
   }, [id]);
-
-  // 2) Web-only: download the PDF as a blob and wrap it in an Object URL.
-  //    react-native-webview is not implemented on the web target so we render
-  //    a DOM <iframe> instead. The Object URL is revoked on unmount / id
-  //    change to avoid memory leaks.
-  useEffect(() => {
-    if (Platform.OS !== 'web') return undefined;
-    if (!id || !token || !previewUrl) return undefined;
-
-    let cancelled = false;
-    let createdUrl: string | null = null;
-
-    setLoadingPdf(true);
-    setError(null);
-    setBlobUrl(null);
-
-    (async () => {
-      try {
-        const res = await fetch(previewUrl, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) {
-          throw new Error(`Backend returned HTTP ${res.status} for the preview.`);
-        }
-        const blob = await res.blob();
-        if (cancelled) return;
-        createdUrl = URL.createObjectURL(blob);
-        setBlobUrl(createdUrl);
-        setLoadingPdf(false);
-      } catch (e: unknown) {
-        if (cancelled) return;
-        const msg = e instanceof Error ? e.message : 'Failed to load document';
-        setError(msg);
-        setLoadingPdf(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      if (createdUrl) URL.revokeObjectURL(createdUrl);
-    };
-  }, [id, token, previewUrl, retryNonce]);
 
   const close = () => {
     if (router.canGoBack()) router.back();
@@ -129,9 +78,6 @@ export default function DocumentPreview() {
   };
 
   const openInBrowser = async () => {
-    // Native save fallback. The browser will prompt for re-auth if the token
-    // isn't already present on the domain — acceptable trade-off; primary
-    // viewing is the in-app WebView above.
     if (previewUrl) {
       try { await Linking.openURL(previewUrl); } catch { /* ignore */ }
     }
@@ -161,6 +107,8 @@ export default function DocumentPreview() {
             </Text>
           ) : metaLoading ? (
             <Text style={styles.toolbarSub}>Loading details…</Text>
+          ) : metaErr ? (
+            <Text style={[styles.toolbarSub, { color: Colors.dhlRed }]}>{metaErr}</Text>
           ) : null}
         </View>
         <TouchableOpacity
@@ -176,9 +124,7 @@ export default function DocumentPreview() {
       {/* Sub-meta strip */}
       {meta && (
         <View style={styles.metaStrip}>
-          <Text style={styles.metaTxt}>
-            {prettySize(meta.file_size_bytes)}
-          </Text>
+          <Text style={styles.metaTxt}>{prettySize(meta.file_size_bytes)}</Text>
           {meta.status && (
             <View style={[
               styles.statusChip,
@@ -195,106 +141,18 @@ export default function DocumentPreview() {
         </View>
       )}
 
-      {/* Viewer */}
+      {/* Viewer (platform-resolved) */}
       <View style={styles.viewer}>
-        {error ? (
-          <View testID="document-error" style={styles.center}>
-            <Ionicons name="alert-circle-outline" size={42} color={Colors.dhlRed} />
-            <Text style={styles.errTitle}>Failed to load document</Text>
-            <Text style={styles.errBody}>{error}</Text>
-            <TouchableOpacity
-              testID="document-error-retry"
-              style={styles.primaryBtn}
-              onPress={() => {
-                setError(null);
-                setLoadingPdf(true);
-                // Web branch is gated on `retryNonce`; bumping it re-runs the
-                // blob fetch. Native WebView re-mounts naturally when error
-                // state changes back to renderable.
-                if (Platform.OS === 'web') setRetryNonce((n) => n + 1);
-              }}
-            >
-              <Text style={styles.primaryBtnText}>TRY AGAIN</Text>
-            </TouchableOpacity>
-          </View>
-        ) : !id ? (
+        {id ? (
+          <DocumentViewer
+            documentId={id}
+            previewUrl={previewUrl}
+            token={token}
+          />
+        ) : (
           <View style={styles.center}>
             <Text style={styles.errBody}>Missing document id.</Text>
           </View>
-        ) : !token ? (
-          <View testID="document-token-loading" style={styles.center}>
-            <ActivityIndicator size="large" color={Colors.dhlYellow} />
-            <Text style={styles.loadingText}>Authenticating…</Text>
-          </View>
-        ) : Platform.OS === 'web' ? (
-          // ── WEB BRANCH ─────────────────────────────────────────────────
-          // react-native-webview is unsupported on the web target.
-          // We fetched the PDF as a blob (see useEffect above) and now
-          // render a DOM <iframe> for the user. The blob URL is revoked
-          // automatically by the effect cleanup on unmount / id change.
-          <>
-            {blobUrl ? (
-              React.createElement('iframe', {
-                'data-testid': 'document-webview',
-                src: blobUrl,
-                title: meta?.file_name || 'Document preview',
-                style: {
-                  width: '100%',
-                  height: '100%',
-                  border: 0,
-                  backgroundColor: '#2A2A2A',
-                  display: 'block',
-                },
-              })
-            ) : null}
-            {loadingPdf && (
-              <View pointerEvents="none" style={styles.loaderOverlay}>
-                <ActivityIndicator size="large" color={Colors.dhlYellow} />
-                <Text style={styles.loadingText}>Loading PDF…</Text>
-              </View>
-            )}
-          </>
-        ) : (
-          // ── NATIVE BRANCH (iOS / Android) ──────────────────────────────
-          <>
-            <WebView
-              testID="document-webview"
-              source={{
-                uri: previewUrl,
-                headers: { Authorization: `Bearer ${token}` },
-              }}
-              style={styles.webview}
-              originWhitelist={['*']}
-              startInLoadingState
-              onLoadStart={() => setLoadingPdf(true)}
-              onLoadEnd={() => setLoadingPdf(false)}
-              onError={(e) => {
-                setLoadingPdf(false);
-                const desc = e?.nativeEvent?.description || 'Unknown WebView error';
-                setError(`Could not render the PDF in-app. ${desc}`);
-              }}
-              onHttpError={(e) => {
-                setLoadingPdf(false);
-                const code = e?.nativeEvent?.statusCode || '?';
-                setError(`Backend returned HTTP ${code} for the preview.`);
-              }}
-              // On Android, the system WebView doesn't always render PDFs
-              // natively. We try with these flags first; if a tester reports
-              // a blank viewer on Android, we'll move to Strategy B
-              // (expo-file-system download → file://).
-              allowFileAccess
-              allowUniversalAccessFromFileURLs
-              mixedContentMode={Platform.OS === 'android' ? 'always' : undefined}
-              javaScriptEnabled
-              domStorageEnabled
-            />
-            {loadingPdf && (
-              <View pointerEvents="none" style={styles.loaderOverlay}>
-                <ActivityIndicator size="large" color={Colors.dhlYellow} />
-                <Text style={styles.loadingText}>Loading PDF…</Text>
-              </View>
-            )}
-          </>
         )}
       </View>
     </SafeAreaView>
@@ -326,18 +184,7 @@ const styles = StyleSheet.create({
   statusPending:  { backgroundColor: '#FFFBEB', borderColor: '#F59E0B' },
   statusRejected: { backgroundColor: Colors.red100,   borderColor: Colors.dhlRed },
   statusDefault:  { backgroundColor: Colors.dhlPanel, borderColor: Colors.dhlBorder },
-
-  viewer: { flex: 1, backgroundColor: '#2A2A2A', position: 'relative' },
-  webview: { flex: 1, backgroundColor: '#2A2A2A' },
-  loaderOverlay: {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.35)',
-  },
+  viewer: { flex: 1, backgroundColor: '#2A2A2A' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  loadingText: { fontSize: 12, color: Colors.white, marginTop: 12 },
-  errTitle: { fontSize: 16, fontWeight: '900', color: Colors.dhlText, marginTop: 12, marginBottom: 4, textAlign: 'center' },
-  errBody: { fontSize: 12, color: Colors.dhlMuted, textAlign: 'center', maxWidth: 280, marginBottom: 16 },
-  primaryBtn: { height: 44, paddingHorizontal: 24, backgroundColor: Colors.dhlYellow, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: Colors.dhlInk },
-  primaryBtnText: { fontSize: 12, fontWeight: '800', color: Colors.dhlInk, letterSpacing: 1.5 },
+  errBody: { fontSize: 12, color: Colors.gray400, textAlign: 'center', maxWidth: 280 },
 });
