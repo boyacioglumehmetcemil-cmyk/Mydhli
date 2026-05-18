@@ -221,7 +221,7 @@ export default function Customs() {
                   <Text style={styles.cancelBtnText}>CANCEL</Text>
                 </TouchableOpacity>
                 <TouchableOpacity testID="customs-save" style={styles.saveBtn} onPress={save}>
-                  <Text style={styles.saveBtnText}>SAVE & GENERATE</Text>
+                  <Text style={styles.saveBtnText}>SAVE & SUBMIT</Text>
                 </TouchableOpacity>
               </View>
             </View>

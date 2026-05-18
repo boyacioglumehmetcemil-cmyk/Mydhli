@@ -17,7 +17,7 @@
  *   yet populate them. shipmentUtils.getPickupBadge() derives them from
  *   `oceanSpecifics.depotStatus.since` + 5 business days when missing.
  *
- * No generate-documents type — that pipeline is forbidden by handover.
+ * No doc-creation pipeline — that flow is forbidden by handover.
  */
 
 // ─── Primary status (Phase 8.3+ ocean model) ─────────────────────────────────

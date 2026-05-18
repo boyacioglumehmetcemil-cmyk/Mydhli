@@ -25,6 +25,40 @@ import {
 } from '../../src/lib/shipmentUtils';
 import type { Shipment, ShipmentEvent } from '../../src/types/shipment';
 
+// Document row shape served by /api/shipments/{awb}/documents.
+interface ShipmentDocItem {
+  document_id: string;
+  document_type?: string;
+  file_name: string;
+  file_size_bytes?: number;
+  page_count?: number;
+  status?: string;
+  uploaded_at?: string;
+}
+
+const DOC_TYPE_LABELS: Record<string, string> = {
+  COMMERCIAL_INVOICE: 'Commercial Invoice',
+  PACKING_LIST: 'Packing List',
+  HBL: 'House B/L',
+  MBL: 'Master B/L',
+  BOOKING_CONFIRMATION: 'Booking Confirmation',
+  DHL_SHIPPING_FORM: 'DHL Shipping Form',
+  CUSTOMS_DECLARATION: 'Customs Declaration',
+  ARRIVAL_NOTICE: 'Arrival Notice',
+  PROOF_OF_DELIVERY: 'Proof of Delivery',
+  WAREHOUSE_RECEIPT: 'Warehouse Receipt',
+  PENDING_ACTION_NOTE: 'Pending Action',
+  CERTIFICATE_OF_ORIGIN: 'Certificate of Origin',
+};
+const prettyDocType = (t?: string) =>
+  !t ? 'Document' : (DOC_TYPE_LABELS[t] || t.replace(/_/g, ' '));
+const prettySize = (bytes?: number) => {
+  if (!bytes || bytes <= 0) return '—';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
 // ─── Canonical ocean milestone pipeline ─────────────────────────────────────
 // Maps the 7 user-facing milestones to the backend DHL event codes emitted
 // by /api/shipments/{awb}. AT_DEPOT shipments stop at step 6 (Final Depot).
@@ -92,7 +126,8 @@ export default function ShipmentDetail() {
   const [shipment, setShipment] = useState<Shipment | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [docCount, setDocCount] = useState<number | null>(null);
+  const [docs, setDocs] = useState<ShipmentDocItem[]>([]);
+  const [docsLoading, setDocsLoading] = useState(true);
 
   useEffect(() => {
     if (!awb) return;
@@ -106,16 +141,17 @@ export default function ShipmentDetail() {
       .finally(() => setLoading(false));
   }, [awb]);
 
-  // Documents count (used for the Phase 3 placeholder card). Best-effort —
-  // the placeholder still renders if this fails.
+  // Per-shipment documents list (replaces Phase 2 count-only placeholder).
   useEffect(() => {
     if (!awb) return;
+    setDocsLoading(true);
     api.get(`/shipments/${encodeURIComponent(awb)}/documents`)
       .then((r) => {
         const arr = Array.isArray(r.data) ? r.data : (r.data?.items || []);
-        setDocCount(arr.length);
+        setDocs(arr as ShipmentDocItem[]);
       })
-      .catch(() => setDocCount(null));
+      .catch(() => setDocs([]))
+      .finally(() => setDocsLoading(false));
   }, [awb]);
 
   const pickup = useMemo(() => getPickupBadge(shipment), [shipment]);
@@ -348,26 +384,60 @@ export default function ShipmentDetail() {
               </SectionCard>
             )}
 
-            {/* 7) Documents preview — Phase 3 placeholder */}
+            {/* 7) Documents — Phase 3 live list (replaces placeholder) */}
             <SectionCard title="DOCUMENTS">
-              <View testID="shipment-documents-placeholder" style={styles.docsPlaceholder}>
-                <View style={styles.docsCountRow}>
-                  <Ionicons name="document-text" size={20} color={Colors.dhlRed} />
-                  <Text style={styles.docsCount}>
-                    {docCount === null ? '—' : docCount.toLocaleString()}{' '}
-                    <Text style={styles.docsCountSub}>document{docCount === 1 ? '' : 's'} on file</Text>
+              {docsLoading ? (
+                <View testID="shipment-documents-loading" style={{ paddingVertical: 16, alignItems: 'center' }}>
+                  <ActivityIndicator size="small" color={Colors.dhlYellow} />
+                  <Text style={styles.docsCopy}>Loading documents…</Text>
+                </View>
+              ) : docs.length === 0 ? (
+                <View testID="shipment-documents-empty" style={{ paddingVertical: 12 }}>
+                  <Text style={styles.docsCopy}>
+                    No operational documents on file for this shipment yet.
                   </Text>
                 </View>
-                <Text style={styles.docsCopy}>
-                  Inline PDF preview and download arrive in the next release.
-                  All operational paperwork (B/L, packing list, certificate of origin,
-                  customs declaration, POD) is already indexed.
-                </Text>
-                <View style={styles.docsKicker}>
-                  <Ionicons name="hourglass-outline" size={12} color={Colors.dhlMuted} />
-                  <Text style={styles.docsKickerText}>Phase 3 — coming soon</Text>
+              ) : (
+                <View testID="shipment-documents-list">
+                  <View style={styles.docsCountRow}>
+                    <Ionicons name="document-text" size={18} color={Colors.dhlRed} />
+                    <Text style={styles.docsCount}>
+                      {docs.length}{' '}
+                      <Text style={styles.docsCountSub}>
+                        document{docs.length === 1 ? '' : 's'} on file
+                      </Text>
+                    </Text>
+                  </View>
+                  {docs.map((doc) => (
+                    <TouchableOpacity
+                      key={doc.document_id}
+                      testID={`shipment-doc-${doc.document_id}`}
+                      activeOpacity={0.8}
+                      onPress={() => router.push(`/document/${doc.document_id}` as never)}
+                      style={shipDocStyles.row}
+                    >
+                      <View style={shipDocStyles.iconBox}>
+                        <Ionicons name="document-text" size={16} color={Colors.dhlRed} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={shipDocStyles.name} numberOfLines={1}>{doc.file_name}</Text>
+                        <View style={shipDocStyles.metaRow}>
+                          <View style={shipDocStyles.typeChip}>
+                            <Text style={shipDocStyles.typeChipText} numberOfLines={1}>
+                              {prettyDocType(doc.document_type)}
+                            </Text>
+                          </View>
+                          <Text style={shipDocStyles.metaTxt}>
+                            {prettySize(doc.file_size_bytes)}
+                            {doc.page_count ? ` · ${doc.page_count}p` : ''}
+                          </Text>
+                        </View>
+                      </View>
+                      <Ionicons name="eye-outline" size={18} color={Colors.dhlMuted} />
+                    </TouchableOpacity>
+                  ))}
                 </View>
-              </View>
+              )}
             </SectionCard>
           </View>
         )}
@@ -452,6 +522,24 @@ const partyStyles = StyleSheet.create({
   address: { fontSize: 12, color: Colors.dhlText, marginBottom: 2 },
   contact: { fontSize: 11, color: Colors.dhlMuted, fontFamily: 'monospace' },
   placeholder: { fontSize: 12, color: Colors.dhlMuted, fontStyle: 'italic' },
+});
+
+const shipDocStyles = StyleSheet.create({
+  row: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 10,
+    borderTopWidth: 1, borderTopColor: Colors.dhlBorder,
+  },
+  iconBox: {
+    width: 32, height: 32,
+    backgroundColor: Colors.red100,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  name: { fontSize: 12, fontWeight: '700', color: Colors.dhlText },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3, flexWrap: 'wrap' },
+  typeChip: { backgroundColor: Colors.dhlPanel, paddingHorizontal: 5, paddingVertical: 1 },
+  typeChipText: { fontSize: 8, fontWeight: '800', letterSpacing: 1, color: Colors.dhlText, textTransform: 'uppercase', maxWidth: 140 },
+  metaTxt: { fontSize: 10, color: Colors.dhlMuted, fontFamily: 'monospace' },
 });
 
 const styles = StyleSheet.create({

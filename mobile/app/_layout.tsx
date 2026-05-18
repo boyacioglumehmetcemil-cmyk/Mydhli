@@ -16,6 +16,14 @@ export default function RootLayout() {
           <Stack.Screen name="forgot-password" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="shipment/[awb]" options={{ presentation: 'card' }} />
+          <Stack.Screen
+            name="document/[id]"
+            options={{
+              presentation: 'modal',
+              animation: 'slide_from_bottom',
+              gestureEnabled: true,
+            }}
+          />
           <Stack.Screen name="quote" />
           <Stack.Screen name="addresses" />
           <Stack.Screen name="schedule-pickup" />
