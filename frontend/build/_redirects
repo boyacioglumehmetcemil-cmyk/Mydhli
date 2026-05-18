@@ -1,0 +1,9 @@
+# Force the mobile subpath bare-directory request to its index.html.
+# Without this rule Emergent's static server falls back to the CRA SPA shell
+# for "/m/" with a trailing slash, even though "/m/login", "/m/manifest.json",
+# etc. resolve correctly.
+/m       /m/index.html   200
+/m/      /m/index.html   200
+
+# Root SPA fallback (any non-static request lands on CRA index.html).
+/*       /index.html     200
