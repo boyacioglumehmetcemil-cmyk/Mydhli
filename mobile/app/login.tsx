@@ -1,23 +1,80 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,
-  KeyboardAvoidingView, Platform, ScrollView, Alert, ImageBackground, Image, Linking,
+  KeyboardAvoidingView, Platform, ScrollView, Alert, Image, Linking, Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../src/constants/colors';
 import { useAuth } from '../src/contexts/AuthContext';
-
-const BG_IMAGE =
-  'https://images.unsplash.com/photo-1670121180530-cfcba4438038?crop=entropy&cs=srgb&fm=jpg&w=1600&q=70';
 
 const SUPPORT_EMAIL = 'support@dhlpng.com';
 
-// Official DHL Global Forwarding marks (Faz 7.1)
+// Official DHL Global Forwarding marks
 const LOGO_HORIZONTAL = require('../assets/brand/dhl_gf_horizontal.png');
-const LOGO_STACKED = require('../assets/brand/dhl_gf_stacked.png');
+const LOGO_STACKED_WHITE = require('../assets/brand/dhl_gf_stacked_white.png');
 
+// ---------------- Floating-label input ----------------
+type FloatingInputProps = {
+  label: string;
+  value: string;
+  onChangeText: (s: string) => void;
+  secureTextEntry?: boolean;
+  keyboardType?: 'default' | 'email-address';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  autoComplete?: 'email' | 'password';
+  testID?: string;
+  trailing?: React.ReactNode;
+};
+
+function FloatingInput({
+  label, value, onChangeText, secureTextEntry, keyboardType,
+  autoCapitalize, autoComplete, testID, trailing,
+}: FloatingInputProps) {
+  const [focused, setFocused] = useState(false);
+  const anim = useRef(new Animated.Value(value ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(anim, {
+      toValue: focused || value.length > 0 ? 1 : 0,
+      duration: 140,
+      useNativeDriver: false,
+    }).start();
+  }, [focused, value, anim]);
+
+  const labelTop = anim.interpolate({ inputRange: [0, 1], outputRange: [18, 6] });
+  const labelFontSize = anim.interpolate({ inputRange: [0, 1], outputRange: [15, 11] });
+  const labelColor = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['#666666', '#333333'],
+  });
+
+  return (
+    <View style={[styles.fieldWrap, focused && styles.fieldWrapFocused]}>
+      <Animated.Text
+        style={[styles.fieldLabel, { top: labelTop, fontSize: labelFontSize, color: labelColor }]}
+        pointerEvents="none"
+      >
+        {label}
+      </Animated.Text>
+      <TextInput
+        testID={testID}
+        style={styles.fieldInput}
+        value={value}
+        onChangeText={onChangeText}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        secureTextEntry={secureTextEntry}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
+        autoComplete={autoComplete}
+      />
+      {trailing ? <View style={styles.fieldTrailing}>{trailing}</View> : null}
+    </View>
+  );
+}
+
+// ---------------- Login screen ----------------
 export default function Login() {
   const router = useRouter();
   const { login } = useAuth();
@@ -64,141 +121,116 @@ export default function Login() {
             style={styles.contactRow}
           >
             <Text style={styles.contactText}>Contact us</Text>
-            <Ionicons name="open-outline" size={14} color={Colors.dhlRed} style={styles.contactIcon} />
+            <Ionicons name="open-outline" size={14} color="#000000" style={styles.contactIcon} />
           </TouchableOpacity>
         </View>
       </SafeAreaView>
 
-      {/* BODY — IMAGE BACKGROUND */}
-      <ImageBackground
-        source={{ uri: BG_IMAGE }}
-        style={styles.bg}
-        resizeMode="cover"
-        testID="login-bg-image"
+      {/* BODY — white, no card, no BG image */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.flex}
       >
-        <View style={styles.bgOverlay} />
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.flex}
+        <ScrollView
+          style={styles.bodyScroll}
+          contentContainerStyle={styles.bodyContent}
+          keyboardShouldPersistTaps="handled"
         >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.cardWrap}>
-              <View style={styles.card} testID="login-card">
-                <Text style={styles.cardTitle}>Welcome to myDHLi</Text>
+          <View style={styles.formWrap} testID="login-card">
+            <Text style={styles.heading}>Welcome to myDHLi</Text>
 
-                <Text style={styles.fieldLabel}>EMAIL</Text>
-                <TextInput
-                  testID="login-email"
-                  style={styles.input}
-                  placeholder="Email"
-                  placeholderTextColor={Colors.dhlMuted}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                />
+            <FloatingInput
+              testID="login-email"
+              label="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+            />
 
-                <Text style={styles.fieldLabel}>PASSWORD</Text>
-                <View style={styles.passwordRow}>
-                  <TextInput
-                    testID="login-password"
-                    style={[styles.input, styles.passwordInput]}
-                    placeholder="Password"
-                    placeholderTextColor={Colors.dhlMuted}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={!showPwd}
-                    autoComplete="password"
-                  />
-                  <TouchableOpacity
-                    testID="login-password-toggle"
-                    style={styles.eyeBtn}
-                    onPress={() => setShowPwd(!showPwd)}
-                  >
-                    <Ionicons name={showPwd ? 'eye-off' : 'eye'} size={18} color={Colors.dhlMuted} />
-                  </TouchableOpacity>
-                </View>
-
+            <FloatingInput
+              testID="login-password"
+              label="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPwd}
+              autoComplete="password"
+              trailing={
                 <TouchableOpacity
-                  testID="login-forgot"
-                  onPress={() => router.push('/forgot-password')}
-                  style={styles.forgotRow}
+                  testID="login-password-toggle"
+                  onPress={() => setShowPwd(!showPwd)}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Text style={styles.forgotText}>Forgot your password?</Text>
+                  <Ionicons name={showPwd ? 'eye-off' : 'eye'} size={18} color="#666666" />
                 </TouchableOpacity>
+              }
+            />
 
-                <TouchableOpacity
-                  testID="login-submit"
-                  style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
-                  onPress={handleSubmit}
-                  disabled={loading}
-                  activeOpacity={0.85}
-                >
-                  {loading ? (
-                    <ActivityIndicator color={Colors.white} />
-                  ) : (
-                    <Text style={styles.submitText}>Login</Text>
-                  )}
-                </TouchableOpacity>
+            <TouchableOpacity
+              testID="login-forgot"
+              onPress={() => router.push('/forgot-password')}
+              style={styles.forgotRow}
+            >
+              <Text style={styles.forgotText}>Forgot your password?</Text>
+            </TouchableOpacity>
 
-                <View style={styles.openAccountRow}>
-                  <Text style={styles.openAccountText}>New to myDHLi? </Text>
-                  <TouchableOpacity
-                    testID="login-open-account"
-                    onPress={() => router.push('/register')}
-                  >
-                    <Text style={styles.openAccountLink}>Open an account</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </ImageBackground>
+            <TouchableOpacity
+              testID="login-submit"
+              style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
+              onPress={handleSubmit}
+              disabled={loading}
+              activeOpacity={0.85}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.submitText}>Login</Text>
+              )}
+            </TouchableOpacity>
+          </View>
 
-      {/* BOTTOM FOOTER BAR */}
-      <SafeAreaView edges={['bottom']} style={styles.footerSafe}>
-        <View style={styles.footerBar} testID="login-footer">
-          <View style={styles.footerLeft}>
+          {/* FOOTER — left-aligned, white bg */}
+          <View style={styles.footer} testID="login-footer">
             <Image
-              source={LOGO_STACKED}
+              source={LOGO_STACKED_WHITE}
               style={styles.footerLogo}
               resizeMode="contain"
               accessibilityLabel="DHL Global Forwarding"
             />
+            <TouchableOpacity style={styles.localeRow} testID="login-locale-picker">
+              <Text style={styles.localeText}>English</Text>
+              <Ionicons name="chevron-down" size={14} color="#000000" style={{ marginLeft: 4 }} />
+            </TouchableOpacity>
             <View style={styles.footerLinks}>
               <TouchableOpacity testID="login-footer-privacy" onPress={openMail}>
                 <Text style={styles.footerLink}>Privacy Notice</Text>
               </TouchableOpacity>
-              <Text style={styles.footerDot}>·</Text>
               <TouchableOpacity testID="login-footer-terms" onPress={openMail}>
                 <Text style={styles.footerLink}>Terms of Use</Text>
               </TouchableOpacity>
-              <Text style={styles.footerDot}>·</Text>
               <TouchableOpacity testID="login-footer-legal" onPress={openMail}>
                 <Text style={styles.footerLink}>Legal Notice</Text>
               </TouchableOpacity>
-              <Text style={styles.footerDot}>·</Text>
               <TouchableOpacity testID="login-footer-contact" onPress={openMail}>
                 <Text style={styles.footerLink}>Contact us</Text>
               </TouchableOpacity>
             </View>
+            <Text style={styles.copyright} testID="login-copyright">
+              © DHL Global Forwarding Management GmbH. All rights reserved.
+            </Text>
           </View>
-        </View>
-      </SafeAreaView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#FFCC00' },
+  root: { flex: 1, backgroundColor: '#FFFFFF' },
   flex: { flex: 1 },
 
-  // top bar — exact #FFCC00 to match the logo PNG's own yellow background
+  // top bar
   topBarSafe: { backgroundColor: '#FFCC00' },
   topBar: {
     height: 64,
@@ -210,89 +242,97 @@ const styles = StyleSheet.create({
   },
   topLogo: { width: 92, height: 36, alignSelf: 'flex-start' },
   contactRow: { flexDirection: 'row', alignItems: 'center' },
-  contactText: { color: Colors.dhlRed, fontSize: 13, fontWeight: '700' },
+  contactText: { color: '#000000', fontSize: 14, fontWeight: '700' },
   contactIcon: { marginLeft: 4 },
 
-  // image background body
-  bg: { flex: 1, width: '100%' },
-  bgOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-  },
-  scrollContent: { flexGrow: 1, justifyContent: 'center', paddingVertical: 32 },
-  cardWrap: { alignItems: 'center', paddingHorizontal: 20 },
-  card: {
-    width: '100%',
-    maxWidth: 400,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 28,
-    paddingVertical: 32,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
-  },
-  cardTitle: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: Colors.dhlText,
-    marginBottom: 24,
+  // body
+  bodyScroll: { flex: 1, backgroundColor: '#FFFFFF' },
+  bodyContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 32, paddingBottom: 32 },
+
+  // form
+  formWrap: { width: '100%', maxWidth: 440, alignSelf: 'center' },
+  heading: {
+    fontSize: 30,
+    lineHeight: 36,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    marginBottom: 28,
     letterSpacing: -0.3,
   },
-  fieldLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-    color: Colors.dhlMuted,
-    marginTop: 12,
-    marginBottom: 6,
-  },
-  input: {
-    height: 46,
-    borderWidth: 1.5,
-    borderColor: Colors.dhlBorder,
+
+  // field
+  fieldWrap: {
+    height: 56,
+    borderWidth: 1,
+    borderColor: '#CCCCCC',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 2,
     paddingHorizontal: 14,
-    fontSize: 15,
-    color: Colors.dhlText,
-    backgroundColor: Colors.white,
-    borderRadius: 4,
+    marginBottom: 12,
+    justifyContent: 'flex-end',
+    position: 'relative',
   },
-  passwordRow: { position: 'relative' },
-  passwordInput: { paddingRight: 44 },
-  eyeBtn: { position: 'absolute', right: 12, top: 13 },
-  forgotRow: { alignSelf: 'flex-end', marginTop: 12, marginBottom: 20 },
-  forgotText: { fontSize: 13, fontWeight: '700', color: Colors.dhlRed, textDecorationLine: 'underline' },
+  fieldWrapFocused: { borderColor: '#333333', borderWidth: 1.5 },
+  fieldLabel: {
+    position: 'absolute',
+    left: 14,
+    backgroundColor: 'transparent',
+    fontWeight: '500',
+  },
+  fieldInput: {
+    height: 30,
+    paddingTop: 8,
+    paddingBottom: 4,
+    fontSize: 15,
+    color: '#1A1A1A',
+    outlineStyle: 'none',
+  } as any,
+  fieldTrailing: {
+    position: 'absolute',
+    right: 12,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+  },
+
+  // forgot + submit
+  forgotRow: { alignSelf: 'center', marginTop: 18, marginBottom: 22 },
+  forgotText: {
+    fontSize: 14,
+    color: '#000000',
+    textDecorationLine: 'underline',
+    fontWeight: '500',
+  },
   submitBtn: {
-    height: 48,
-    backgroundColor: Colors.dhlRed,
+    height: 56,
+    backgroundColor: '#D40511',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 4,
   },
   submitBtnDisabled: { opacity: 0.7 },
-  submitText: { color: Colors.white, fontSize: 14, fontWeight: '800', letterSpacing: 1.2, textTransform: 'uppercase' },
-  openAccountRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 18 },
-  openAccountText: { fontSize: 12, color: Colors.dhlMuted },
-  openAccountLink: { fontSize: 12, fontWeight: '700', color: Colors.dhlRed, textDecorationLine: 'underline' },
+  submitText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
 
   // footer
-  footerSafe: { backgroundColor: '#F2F2F2' },
-  footerBar: {
-    minHeight: 72,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: Colors.dhlBorder,
-    backgroundColor: '#F2F2F2',
+  footer: {
+    width: '100%',
+    maxWidth: 440,
+    alignSelf: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingTop: 32,
+    paddingBottom: 16,
+    alignItems: 'flex-start',
   },
-  footerLeft: { flex: 1, alignItems: 'center' },
-  footerLogo: { width: 128, height: 40 },
-  footerLinks: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginTop: 6, flexWrap: 'wrap' },
-  footerLink: { fontSize: 10, color: Colors.dhlMuted, fontWeight: '600' },
-  footerDot: { fontSize: 10, color: Colors.dhlMuted, marginHorizontal: 6 },
+  footerLogo: { width: 128, height: 40, marginBottom: 16 },
+  localeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  localeText: { fontSize: 14, color: '#000000', fontWeight: '500' },
+  footerLinks: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    columnGap: 16,
+    rowGap: 6,
+    marginBottom: 16,
+  },
+  footerLink: { fontSize: 14, color: '#000000', fontWeight: '500' },
+  copyright: { fontSize: 12, color: '#888888', lineHeight: 18 },
 });

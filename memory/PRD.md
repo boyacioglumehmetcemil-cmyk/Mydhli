@@ -503,3 +503,62 @@ Repo-clean state is documented in:
 - `splash` (in `app/index.tsx`) still uses `aspectRatio` for its DHL logo. Splash
   only flashes briefly during auth load; if user complaints about it later,
   switch to explicit width/height the same way.
+
+
+### Faz 7.6 — Login pixel-perfect mirror of myDHLi.com — 2026-05-18
+- **Scope: MOBILE ONLY.** Web frontend (`/app/frontend/`) NOT touched —
+  `git diff -- frontend/` returns empty.
+- Reference: real myDHLi.com login screenshot supplied by user
+  (`vjkvtp1u_WhatsApp%20Image%202026-05-18%20at%2013.19.41.jpeg`).
+- **`app/login.tsx`** rewritten from scratch:
+  - Top bar `#FFCC00`: horizontal DHL/GF logo left, "Contact us ↗" right with
+    **black** text (`#000000`) — was red previously.
+  - Body: pure `#FFFFFF`. ImageBackground (cargo-ship) removed. Card style
+    + shadow removed — form sits directly on white.
+  - Heading: "Welcome to myDHLi", 30px, weight 800, left-aligned, `#1A1A1A`.
+  - Custom `<FloatingInput>` component (animated via `Animated.timing`,
+    140ms transition) for Email + Password — Material-style floating label,
+    1px `#CCCCCC` border, 1.5px `#333333` on focus, border-radius 2.
+    Password input has `eye` toggle in trailing slot.
+  - "Forgot your password?": center-aligned, **black** underlined text
+    (was red).
+  - Login button: `#D40511`, full-width, height 56, border-radius 4, **"Login"**
+    (no `textTransform: uppercase` — literal "Login" per user spec).
+  - "Open an account" link **removed** entirely.
+- Footer (still inside the scroll, white bg, left-aligned items):
+  - Stacked DHL Group logo (using new `dhl_gf_stacked_white.png` asset where
+    the PNG's intrinsic `#F2F2F2` border has been re-coloured to `#FFFFFF` via
+    PIL so it blends seamlessly with the white footer).
+  - `English ⌄` locale picker (replaces previous "PG").
+  - 4-link row (Privacy Notice · Terms of Use · Legal Notice · Contact us)
+    separated by `columnGap: 16` (spaces, no dots).
+  - Copyright: "© DHL Global Forwarding Management GmbH. All rights reserved."
+    in muted `#888888` 12px.
+- New asset: `assets/brand/dhl_gf_stacked_white.png` (353×110, white bg).
+- `Colors` import dropped from `login.tsx` — all values are now literal hex
+  for spec compliance and design isolation.
+
+#### Verification (Playwright @ 390×844)
+- All 15 testIDs present (`login-topbar`, `login-card`, `login-email`,
+  `login-password`, `login-password-toggle`, `login-forgot`, `login-submit`,
+  `login-footer`, `login-locale-picker`, `login-footer-privacy/terms/legal/contact`,
+  `login-copyright`, `login-contact-us`).
+- `_submit_text` = `"Login"` (not "LOGIN").
+- `_open_account_present` = `false`.
+- `_body_bg` = `rgb(255, 255, 255)`.
+- Screenshot side-by-side matches reference: same yellow strip, same heading
+  treatment, same form scaffolding, same footer ordering.
+- `yarn tsc --noEmit`: `login.tsx` 0 errors (baseline 20 unchanged).
+- `grep -ri "[Gg]enerate" /app/mobile/app /app/mobile/src` = 0.
+- Preview `HTTP/2 200`.
+- Demo flow still functional (`AuthContext.login` unchanged).
+
+#### Web frontend untouched — confirmation
+- `git status` shows only `mobile/app/login.tsx` as modified.
+- `git diff -- frontend/` empty (no source file changes).
+- `frontend/yarn.lock` is untracked since May 17 23:26 — pre-existing,
+  not from this session.
+
+#### Files changed
+- `app/login.tsx` (rewrite)
+- `assets/brand/dhl_gf_stacked_white.png` (new)
