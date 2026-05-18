@@ -4,7 +4,7 @@ import time
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://merhaba-app-446.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://cargo-connect-416.preview.emergentagent.com").rstrip("/")
 # Fallback: read from frontend .env if env not set
 if "REACT_APP_BACKEND_URL" not in os.environ:
     try:
