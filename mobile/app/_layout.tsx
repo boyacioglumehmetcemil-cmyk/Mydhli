@@ -25,6 +25,14 @@ export default function RootLayout() {
               gestureEnabled: true,
             }}
           />
+          <Stack.Screen
+            name="customs-preview/[id]"
+            options={{
+              presentation: 'modal',
+              animation: 'slide_from_bottom',
+              gestureEnabled: true,
+            }}
+          />
           <Stack.Screen name="quote" />
           <Stack.Screen name="addresses" />
           <Stack.Screen name="schedule-pickup" />

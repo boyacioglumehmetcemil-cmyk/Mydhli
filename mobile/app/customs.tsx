@@ -3,7 +3,7 @@
  *
  * Data:
  *   GET  /api/customs                  → list of CustomsDocOut
- *   GET  /api/customs/{id}/pdf         → binary PDF (Linking.openURL for native save)
+ *   GET  /api/customs/{id}/pdf         → in-app PDF preview via /customs-preview/{id}
  *   POST /api/customs                  → create (handled by previous form; kept as overflow)
  *
  * NO doc-creation pipeline added — the existing minimal form was already in
@@ -13,7 +13,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, TouchableOpacity, FlatList, StyleSheet, ActivityIndicator,
-  RefreshControl, Linking, Platform,
+  RefreshControl, Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -80,8 +80,7 @@ export default function CustomsScreen() {
   }, [fetchAll]);
 
   const previewPdf = (id: string) => {
-    const base = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/$/, '');
-    Linking.openURL(`${base}/api/customs/${encodeURIComponent(id)}/pdf`).catch(() => undefined);
+    router.push(`/customs-preview/${id}` as never);
   };
 
   return (
