@@ -473,3 +473,33 @@ Repo-clean state is documented in:
   - DOM eval on `/` (authenticated dashboard): `demoBadgePresent=false`; KPIs + tab bar intact.
   - `yarn tsc --noEmit`: login.tsx + _layout.tsx clean (baseline unchanged).
   - Preview `HTTP/2 200`.
+
+
+### Faz 7.5 — Login layout polish (logo sizing + alignment) — 2026-05-18
+- Issue discovered: React Native Web does not honour `aspectRatio` style on `<Image>`
+  for `require()`-loaded PNGs. Both logos were rendering at the PNG's intrinsic
+  pixel width (256 px for top, 353 px for footer) on a 390 px viewport — making
+  the top logo look "centered" because it filled most of the bar.
+- **`app/login.tsx`** — explicit `width` + `height` (drop `aspectRatio`):
+  - `topLogo`: `{ width: 92, height: 36, alignSelf: 'flex-start' }`
+  - `footerLogo`: `{ width: 128, height: 40 }`
+- Footer alignment for spec compliance ("links centered, same vertical axis as logo"):
+  - `footerLeft`: `paddingRight: 12` removed; `alignItems: 'center'` retained.
+  - `footerLinks`: added `justifyContent: 'center'`, `alignSelf: 'center'`.
+
+#### Verification (Playwright @ 390×844)
+- Topbar: logo at left=20 px, width=92 px (left-aligned per spec).
+- Footer logo: `center_offset = 0 px` (exact centering).
+- Footer link row (Privacy → Contact us span): `center_offset = 0 px`,
+  `left_pad = 51 px`, `right_pad = 51 px` (symmetric).
+- Visual: small DHL/GF wordmark top-left, "Contact us ↗" top-right, footer logo
+  and 4-link row both on the same centred vertical axis.
+- `grep -ri "[Gg]enerate"` = 0. Preview `HTTP/2 200`.
+
+#### Files changed
+- `app/login.tsx` (3 style entries: `topLogo`, `footerLeft`, `footerLogo`, `footerLinks`).
+
+#### Note for next agent
+- `splash` (in `app/index.tsx`) still uses `aspectRatio` for its DHL logo. Splash
+  only flashes briefly during auth load; if user complaints about it later,
+  switch to explicit width/height the same way.
