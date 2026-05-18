@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import sys
+import asyncio
 import logging
 from pathlib import Path
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
@@ -24,10 +26,32 @@ from invoices_module import (
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
+# ============ LOGGING ============
+# Force stdout so Emergent/Kubernetes log collector reliably captures every
+# startup phase. uvicorn defaults to stderr which some collectors drop.
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stdout,
+    format='%(asctime)s %(levelname)s %(name)s: %(message)s',
+    force=True,
+)
+logger = logging.getLogger(__name__)
+
+# ============ MongoDB connection (Atlas-safe, fast-fail) ============
+# Module-import time: only construct the client (motor 3.x defers DNS+TLS to
+# first operation). Add tight timeouts so a slow / unreachable Atlas cluster
+# fails fast (≤5s) instead of hanging the startup probe for 30s.
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'dhlpng_demo')]
+DB_NAME = os.environ.get('DB_NAME', 'dhlpng_demo')
+logger.info(f"[BOOT] MONGO_URL prefix={mongo_url.split('://', 1)[0]}://… DB_NAME={DB_NAME}")
+client = AsyncIOMotorClient(
+    mongo_url,
+    serverSelectionTimeoutMS=5000,
+    connectTimeoutMS=5000,
+    socketTimeoutMS=10000,
+    retryWrites=True,
+)
+db = client[DB_NAME]
 
 # JWT config
 JWT_SECRET = os.environ.get('JWT_SECRET', 'change-me-in-production')
@@ -424,25 +448,33 @@ async def root_health():
 
 
 # CORS
-# Note: when CORS_ORIGINS is "*" we must drop allow_credentials, otherwise
-# Starlette's CORSMiddleware refuses to send "Access-Control-Allow-Origin: *"
-# alongside "Access-Control-Allow-Credentials: true" (browsers reject it too).
-_cors_origins = os.environ.get('CORS_ORIGINS', '*').split(',')
-_allow_credentials = False if _cors_origins == ['*'] else True
+# Production-safe handling for the two common deploy shapes:
+#   1) `CORS_ORIGINS=*`  → use regex `.*` + credentials=False (browsers reject
+#      `*` + credentials=true on responses).
+#   2) `CORS_ORIGINS=https://a.com,https://b.com` → explicit list + credentials=True
+# Using `allow_origin_regex` instead of `allow_origins=["*"]` also lets the
+# preflight response echo the request Origin (some hosts require this).
+_raw = os.environ.get('CORS_ORIGINS', '*').strip()
+if _raw in ('', '*'):
+    _cors_kwargs = {
+        "allow_origin_regex": r".*",
+        "allow_credentials": False,
+    }
+else:
+    _cors_kwargs = {
+        "allow_origins": [o.strip() for o in _raw.split(',') if o.strip()],
+        "allow_credentials": True,
+    }
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=_allow_credentials,
-    allow_origins=_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
+    **_cors_kwargs,
 )
 
-# Logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# Logging is configured at the top of the file (stdout, structured).
+# This block is intentionally left empty so re-imports / hot reloads don't
+# clobber the early-boot configuration.
 
 
 # ============ STARTUP / SHUTDOWN ============
@@ -520,18 +552,37 @@ async def _seed_demo_customs(db, user: dict):
 async def startup_seed():
     """Top-level startup wrapper.
 
-    Every seed step below is individually wrapped in try/except so a
-    misbehaving seed cannot fail the container's startup probe in production
-    (Atlas, Emergent deploy, etc.). The app must always become ready and serve
-    /api/ within the probe timeout window, even if MongoDB is slow or seeds
-    fail mid-flight.
-
-    Production safety net: set DISABLE_SEED=true in the deploy environment to
-    skip every seed step entirely (used while pinning down deploy issues).
+    Strategy for Atlas / Emergent production:
+    - **Non-blocking**: the actual seed work is dispatched as a background
+      asyncio task so the FastAPI app becomes ready immediately and the
+      Kubernetes / Emergent startup probe never times out (probe window is
+      typically 30-60s; full Atlas seed of 57 shipments + 482 PDFs would
+      blow past that).
+    - **Default OFF in production**: if `DISABLE_SEED` env var is not set
+      we default to `'true'` because production runs against an existing
+      Atlas cluster that already holds the seed data. The sandbox `.env`
+      explicitly sets `DISABLE_SEED=false`, so local dev still seeds on
+      first boot.
+    - **Crash isolation**: every seed step is individually wrapped in
+      try/except inside `_run_seed_steps()` so a single Mongo hiccup
+      cannot bring the whole API down.
     """
-    if os.environ.get('DISABLE_SEED', 'false').lower() == 'true':
+    if os.environ.get('DISABLE_SEED', 'true').lower() == 'true':
         logger.warning("[STARTUP] DISABLE_SEED=true — skipping all seed steps.")
         return
+
+    # Run seed as a background task — don't block the startup probe.
+    logger.info("[STARTUP] Dispatching seed steps as background task…")
+    asyncio.create_task(_run_seed_steps())
+
+
+async def _run_seed_steps():
+    """Body of the original synchronous seed, moved into a background task.
+
+    Every step is wrapped in try/except so a Mongo connection error or a
+    malformed document cannot terminate the seed task silently.
+    """
+    logger.info("[SEED] Starting background seed…")
 
     # Ensure unique index on email
     try:
