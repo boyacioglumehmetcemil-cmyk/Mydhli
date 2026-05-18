@@ -404,19 +404,35 @@ app.include_router(documents_router)
 
 
 # ============ HEALTH CHECK ============
-# Lightweight liveness probe (in addition to the existing /api/ route).
+# Lightweight liveness probes (in addition to the existing /api/ route).
 # Must NOT hit MongoDB so that Atlas connection lag never trips
-# Kubernetes/Emergent probes.
+# Kubernetes/Emergent probes. We expose all common probe paths so deploys
+# pass regardless of which path the platform happens to hit.
 @app.get("/api/health")
 async def api_health():
     return {"status": "ok"}
 
 
+@app.get("/health")
+async def basic_health():
+    return {"status": "ok"}
+
+
+@app.get("/")
+async def root_health():
+    return {"status": "ok", "service": "DHL Global Forwarding PNG"}
+
+
 # CORS
+# Note: when CORS_ORIGINS is "*" we must drop allow_credentials, otherwise
+# Starlette's CORSMiddleware refuses to send "Access-Control-Allow-Origin: *"
+# alongside "Access-Control-Allow-Credentials: true" (browsers reject it too).
+_cors_origins = os.environ.get('CORS_ORIGINS', '*').split(',')
+_allow_credentials = False if _cors_origins == ['*'] else True
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_credentials=_allow_credentials,
+    allow_origins=_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -509,7 +525,14 @@ async def startup_seed():
     (Atlas, Emergent deploy, etc.). The app must always become ready and serve
     /api/ within the probe timeout window, even if MongoDB is slow or seeds
     fail mid-flight.
+
+    Production safety net: set DISABLE_SEED=true in the deploy environment to
+    skip every seed step entirely (used while pinning down deploy issues).
     """
+    if os.environ.get('DISABLE_SEED', 'false').lower() == 'true':
+        logger.warning("[STARTUP] DISABLE_SEED=true — skipping all seed steps.")
+        return
+
     # Ensure unique index on email
     try:
         await db.users.create_index("email", unique=True)
