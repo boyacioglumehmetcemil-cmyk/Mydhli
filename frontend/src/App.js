@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CountryProvider } from "@/contexts/CountryContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DemoBadge from "@/components/DemoBadge";
+import Landing from "@/pages/Landing";
 import GlobalForwarding from "@/pages/GlobalForwarding";
 import Solutions from "@/pages/Solutions";
 import Help from "@/pages/Help";
@@ -31,12 +32,29 @@ import Dashboard from "@/pages/Dashboard";
 import DashboardTrack from "@/pages/DashboardTrack";
 import NotFound from "@/pages/NotFound";
 
-// Faz 7 (web parity): root URL no longer renders a marketing landing.
-// Authenticated users go straight to /dashboard, the rest to /login.
+// Device-aware root routing:
+//   - Authenticated → /dashboard
+//   - Mobile (PWA install flow) → /login (no marketing surface)
+//   - Desktop browser → marketing Landing (myDHLi.com mirror)
+//
+// The UA-string check covers actual mobile browsers; the matchMedia fallback
+// catches narrow desktop windows / responsive devtools. Both must miss for
+// the visitor to see Landing.
+function isMobileDevice() {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  const uaMobile = /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|Opera Mini|IEMobile/i.test(ua);
+  const narrow = typeof window.matchMedia === "function"
+    && window.matchMedia("(max-width: 768px)").matches;
+  return uaMobile || narrow;
+}
+
 function RootRedirect() {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return null;
-  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (isMobileDevice()) return <Navigate to="/login" replace />;
+  return <Landing />;
 }
 
 function App() {
