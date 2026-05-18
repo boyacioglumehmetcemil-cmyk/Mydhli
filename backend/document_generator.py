@@ -88,7 +88,7 @@ _S_DISCLAIMER = ParagraphStyle(
 
 # ============ SERVICE LABELS ============
 SERVICE_LABEL = {
-    "EXPRESS_WORLDWIDE": "Express Worldwide",
+    "EXPRESS_WORLDWIDE": "Forwarding Worldwide",
     "EXPRESS_12_00": "Air Priority",
     "ECONOMY_SELECT": "Economy Select",
 }

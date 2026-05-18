@@ -71,7 +71,7 @@ SERVICES = [
     {"code": "EXPRESS_12_00", "name": "Express 12:00",
      "description": "Guaranteed delivery before 12 noon next business day to major hubs.",
      "transitDaysHint": "1 day", "tier": "premium"},
-    {"code": "EXPRESS_WORLDWIDE", "name": "Express Worldwide",
+    {"code": "EXPRESS_WORLDWIDE", "name": "Forwarding Worldwide",
      "description": "Time-definite end-of-day delivery to 220+ countries.",
      "transitDaysHint": "1-3 days", "tier": "standard"},
     {"code": "ECONOMY_SELECT", "name": "Economy Select",
