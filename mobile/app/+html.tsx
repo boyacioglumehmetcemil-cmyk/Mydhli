@@ -20,6 +20,9 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="myDHLi" />
         <meta name="mobile-web-app-capable" content="yes" />
+        {/* Force light color-scheme — block Chrome/Samsung dark-mode auto-invert */}
+        <meta name="color-scheme" content="light only" />
+        <meta name="supported-color-schemes" content="light" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
@@ -29,6 +32,15 @@ export default function Root({ children }: PropsWithChildren) {
         <style
           dangerouslySetInnerHTML={{
             __html: `
+              :root { color-scheme: light only; }
+              html, body {
+                color-scheme: light only;
+                background-color: #FFFFFF;
+                forced-color-adjust: none;
+              }
+              @media (prefers-color-scheme: dark) {
+                :root, html, body { color-scheme: light only !important; }
+              }
               body > div:first-child { position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; }
               [role="tablist"] [role="tab"] * { overflow: visible !important; }
               [role="heading"], [role="heading"] * { overflow: visible !important; }

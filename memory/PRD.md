@@ -421,3 +421,37 @@ Repo-clean state is documented in:
 - `app/login.tsx` (`footerSafe` + `footerBar` backgroundColor → `#F2F2F2`)
 - New: `assets/{icon,adaptive-icon,favicon,splash,splash-icon}.png`
 - New: `public/{manifest.json,icon-192,icon-512,apple-touch-icon,favicon,splash}.png`
+
+
+### Faz 7.3 — Force light color-scheme + top bar exact match — 2026-05-18
+- Reported: Android Chrome/Samsung Browser auto-inverted login under system dark mode
+  (top bar brown, card black, yellow logo "card" effect).
+- Measured `dhl_gf_horizontal.png` corner pixels via PIL → all `rgb(255,204,0) = #FFCC00`.
+  Confirmed visual mismatch was browser auto-invert, not a colour-token discrepancy.
+- **`app/+html.tsx`** — head + global CSS now blocks dark-mode auto-invert:
+  - `<meta name="color-scheme" content="light only">`
+  - `<meta name="supported-color-schemes" content="light">`
+  - Inline `<style>`: `:root{color-scheme:light only;}`,
+    `html,body{color-scheme:light only;background-color:#FFFFFF;forced-color-adjust:none;}`,
+    plus a `@media (prefers-color-scheme: dark)` override that re-asserts light.
+- **`app/login.tsx`** — explicit literal hexes (no token indirection):
+  - `root.backgroundColor`, `topBarSafe.backgroundColor`, `topBar.backgroundColor` → `#FFCC00`
+    (exact match to logo PNG bg, verified pixel-perfect via PIL).
+  - `card.backgroundColor` → `#FFFFFF` (solid, no alpha).
+- StatusBar already `style="dark"` in `_layout.tsx` (light icons-on-yellow is wrong
+  per Apple/Material guidelines; `dark` glyphs over the yellow bar is correct).
+- Other surfaces (dashboard, tabs, modals) untouched per spec.
+
+#### Verification (Playwright + `emulate_media color_scheme=dark`)
+- `prefers-color-scheme: dark` is True (emulation active).
+- `meta[name=color-scheme]` = `light only`.
+- `getComputedStyle(html).colorScheme` = `light only` (CSS rule wins).
+- `getComputedStyle([data-testid=login-topbar]).backgroundColor` = `rgb(255, 204, 0)`.
+- `getComputedStyle([data-testid=login-card]).backgroundColor` = `rgb(255, 255, 255)`.
+- Screenshot under dark-prefers shows the **same light layout** — no invert.
+- `grep -ri "[Gg]enerate"` = 0.
+- Preview `HTTP/2 200` on `/login`.
+
+#### Files changed
+- `app/+html.tsx` (color-scheme meta + CSS)
+- `app/login.tsx` (3 backgroundColor literals)

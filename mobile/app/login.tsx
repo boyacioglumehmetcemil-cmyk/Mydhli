@@ -205,18 +205,18 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.dhlYellow },
+  root: { flex: 1, backgroundColor: '#FFCC00' },
   flex: { flex: 1 },
 
-  // top bar
-  topBarSafe: { backgroundColor: Colors.dhlYellow },
+  // top bar — exact #FFCC00 to match the logo PNG's own yellow background
+  topBarSafe: { backgroundColor: '#FFCC00' },
   topBar: {
     height: 64,
     paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.dhlYellow,
+    backgroundColor: '#FFCC00',
   },
   topLogo: { height: 36, aspectRatio: 2.535 },
   contactRow: { flexDirection: 'row', alignItems: 'center' },
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 400,
-    backgroundColor: Colors.white,
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 28,
     paddingVertical: 32,
     borderRadius: 8,
