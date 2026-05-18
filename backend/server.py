@@ -25,9 +25,9 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[os.environ.get('DB_NAME', 'dhlpng_demo')]
 
 # JWT config
 JWT_SECRET = os.environ.get('JWT_SECRET', 'change-me-in-production')
@@ -402,6 +402,16 @@ app.include_router(documents_router)
 # is intentionally NOT mounted anymore. Until DHL provides official blank
 # templates, no generic / template-based PDF generation is available.
 
+
+# ============ HEALTH CHECK ============
+# Lightweight liveness probe (in addition to the existing /api/ route).
+# Must NOT hit MongoDB so that Atlas connection lag never trips
+# Kubernetes/Emergent probes.
+@app.get("/api/health")
+async def api_health():
+    return {"status": "ok"}
+
+
 # CORS
 app.add_middleware(
     CORSMiddleware,
@@ -492,6 +502,14 @@ async def _seed_demo_customs(db, user: dict):
 
 @app.on_event("startup")
 async def startup_seed():
+    """Top-level startup wrapper.
+
+    Every seed step below is individually wrapped in try/except so a
+    misbehaving seed cannot fail the container's startup probe in production
+    (Atlas, Emergent deploy, etc.). The app must always become ready and serve
+    /api/ within the probe timeout window, even if MongoDB is slow or seeds
+    fail mid-flight.
+    """
     # Ensure unique index on email
     try:
         await db.users.create_index("email", unique=True)
