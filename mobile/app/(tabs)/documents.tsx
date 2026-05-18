@@ -23,6 +23,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/colors';
 import api from '../../src/lib/api';
+import HeaderBell from '../../src/components/HeaderBell';
 import { formatDate } from '../../src/lib/shipmentUtils';
 
 interface DocItem {
@@ -132,11 +133,14 @@ export default function DocumentsTab() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>DOCUMENT LIBRARY</Text>
-        <Text style={styles.title}>Operational paperwork</Text>
-        <Text testID="documents-headline-count" style={styles.subtitle}>
-          <Text style={styles.subtitleNum}>{total.toLocaleString()}</Text>{' '}PDFs indexed across your account
-        </Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.eyebrow}>DOCUMENT LIBRARY</Text>
+          <Text style={styles.title}>Operational paperwork</Text>
+          <Text testID="documents-headline-count" style={styles.subtitle}>
+            <Text style={styles.subtitleNum}>{total.toLocaleString()}</Text>{' '}PDFs indexed across your account
+          </Text>
+        </View>
+        <HeaderBell />
       </View>
 
       {/* Search */}
@@ -311,7 +315,10 @@ const DocRow = React.memo(function DocRow({
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.dhlPanel },
-  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 10 },
+  header: {
+    flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10,
+  },
   eyebrow: { fontSize: 10, fontWeight: '800', letterSpacing: 2, color: Colors.dhlRed, marginBottom: 4 },
   title: { fontSize: 26, fontWeight: '900', color: Colors.dhlText, letterSpacing: -0.5 },
   subtitle: { fontSize: 12, color: Colors.dhlMuted, marginTop: 6 },

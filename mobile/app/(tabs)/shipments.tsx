@@ -20,6 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/colors';
 import api from '../../src/lib/api';
+import HeaderBell from '../../src/components/HeaderBell';
 import {
   formatDate, formatRouteCodes, getPickupBadge, getStatusColor, getStatusLabel,
   freightServiceFor,
@@ -102,8 +103,11 @@ export default function ShipmentsTab() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>My Shipments</Text>
-        <Text style={styles.subtitle}>Ocean freight bookings across Singapore → PNG / Fiji.</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>My Shipments</Text>
+          <Text style={styles.subtitle}>Ocean freight bookings across Singapore → PNG / Fiji.</Text>
+        </View>
+        <HeaderBell />
       </View>
 
       {/* Search */}
@@ -296,7 +300,10 @@ const ShipmentRow = React.memo(function ShipmentRow({
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.dhlPanel },
-  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 },
+  header: {
+    flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12,
+  },
   title: { fontSize: 26, fontWeight: '900', color: Colors.dhlText, letterSpacing: -0.5 },
   subtitle: { fontSize: 13, color: Colors.dhlMuted, marginTop: 4 },
   searchRow: {

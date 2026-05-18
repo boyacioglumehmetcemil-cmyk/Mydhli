@@ -1,55 +1,135 @@
-import React, { useEffect, useState } from 'react';
+/**
+ * Home tab — Dashboard mirroring web /dashboard.
+ *
+ * Phase 4 contract:
+ *   • Top header  : DHL Forwarding wordmark + HeaderBell + settings + logout
+ *   • Welcome     : firstName greeting
+ *   • 4 KPI cards : Total / At Depot / Overdue Pickups / Outstanding Invoices
+ *   • Urgent list : top 3-5 AT_DEPOT shipments with overdue / ≤2-day badges
+ *   • Quick links : Schedule Pickup / Get Quote / My Shipments  (existing footer kept)
+ *
+ * Data sources:
+ *   • GET /api/shipments?pageSize=100  → totals, status mix, oceanSpecifics
+ *   • GET /api/invoices               → ledger total + OVERDUE total
+ *   • GET /api/notifications/unread-count (via HeaderBell)
+ */
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, RefreshControl,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/colors';
 import { useAuth } from '../../src/contexts/AuthContext';
-import StatusBadge from '../../src/components/StatusBadge';
+import HeaderBell from '../../src/components/HeaderBell';
 import api from '../../src/lib/api';
-import { formatDate, formatPGK } from '../../src/lib/shipmentUtils';
+import {
+  formatDate, formatPGK, formatUSD, getPickupBadge,
+} from '../../src/lib/shipmentUtils';
+import type { ShipmentSummary, Invoice } from '../../src/types/shipment';
 
-const ACTIVE_STATUSES = ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'];
+interface DashboardStats {
+  total: number;
+  atDepot: number;
+  delivered: number;
+  overdueCount: number;
+  urgentCount: number;
+  ledgerTotal: number;
+  ledgerOverdue: number;
+  ledgerCurrency: 'USD' | 'PGK';
+  invoiceCount: number;
+  loading: boolean;
+}
+
+const initialStats: DashboardStats = {
+  total: 0, atDepot: 0, delivered: 0, overdueCount: 0, urgentCount: 0,
+  ledgerTotal: 0, ledgerOverdue: 0, ledgerCurrency: 'USD',
+  invoiceCount: 0, loading: true,
+};
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [stats, setStats] = useState({ active: 0, monthSpend: 0, loading: true });
-  const [recent, setRecent] = useState<any[]>([]);
-  const [recentLoading, setRecentLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>(initialStats);
+  const [urgent, setUrgent] = useState<ShipmentSummary[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
+    // Shipments — derive total, AT_DEPOT count, overdue / urgent set.
     try {
-      const recentRes = await api.get('/shipments', { params: { page: 1, pageSize: 5 } });
-      setRecent(recentRes.data.items);
-    } catch {} finally { setRecentLoading(false); }
+      const r = await api.get('/shipments', { params: { page: 1, pageSize: 100 } });
+      const items = (r.data?.items || []) as ShipmentSummary[];
+      const atDepot = items.filter((s) => s.status === 'AT_DEPOT');
+      const delivered = items.filter((s) => s.status === 'DELIVERED').length;
+      const withBadges = atDepot
+        .map((s) => ({ s, badge: getPickupBadge(s) }))
+        .filter((x) => x.badge !== null);
+      const overdueCount = withBadges.filter((x) => x.badge!.overdue).length;
+      const urgentCount = withBadges.filter((x) => x.badge!.urgent).length;
 
+      // Top 5 urgent shipments — overdue first (by absolute days), then urgent.
+      const sorted = withBadges
+        .filter((x) => x.badge!.urgent)
+        .sort((a, b) => {
+          const ao = a.badge!.overdue ? 1 : 0;
+          const bo = b.badge!.overdue ? 1 : 0;
+          if (ao !== bo) return bo - ao;
+          // Larger overdue magnitude first
+          return Math.abs(b.badge!.daysRemaining) - Math.abs(a.badge!.daysRemaining);
+        })
+        .slice(0, 5)
+        .map((x) => x.s);
+
+      setUrgent(sorted);
+      setStats((prev) => ({
+        ...prev,
+        total: r.data?.total ?? items.length,
+        atDepot: atDepot.length,
+        delivered,
+        overdueCount,
+        urgentCount,
+      }));
+    } catch {
+      /* leave previous values */
+    }
+
+    // Invoices — ledger total + OVERDUE total (USD if available, else PGK fallback).
     try {
-      const responses = await Promise.all(
-        ACTIVE_STATUSES.map(st => api.get('/shipments', { params: { status: st, page: 1, pageSize: 1 } }))
-      );
-      const active = responses.reduce((acc, r) => acc + (r.data?.total || 0), 0);
-      setStats(s => ({ ...s, active, loading: false }));
-    } catch { setStats(s => ({ ...s, loading: false })); }
+      const r = await api.get('/invoices');
+      const items = (r.data?.items || []) as Invoice[];
+      let usdTotal = 0, pgkTotal = 0, overdueUSD = 0, overduePGK = 0, anyUSD = false;
+      for (const inv of items) {
+        const u = Number(inv.totalUSD || 0);
+        const p = Number(inv.totalPGK || 0);
+        if (u > 0) anyUSD = true;
+        usdTotal += u;
+        pgkTotal += p;
+        if (inv.status === 'OVERDUE') {
+          overdueUSD += u;
+          overduePGK += p;
+        }
+      }
+      const useUSD = anyUSD;
+      setStats((prev) => ({
+        ...prev,
+        invoiceCount: items.length,
+        ledgerTotal: useUSD ? usdTotal : pgkTotal,
+        ledgerOverdue: useUSD ? overdueUSD : overduePGK,
+        ledgerCurrency: useUSD ? 'USD' : 'PGK',
+        loading: false,
+      }));
+    } catch {
+      setStats((prev) => ({ ...prev, loading: false }));
+    }
+  }, []);
 
-    try {
-      const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      const res = await api.get('/shipments', { params: { dateFrom: monthStart, page: 1, pageSize: 100 } });
-      const monthSpend = res.data.items.reduce((sum: number, it: any) => sum + (it.costPGK || 0), 0);
-      setStats(s => ({ ...s, monthSpend }));
-    } catch {}
-  };
-
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [loadData]);
+  useFocusEffect(useCallback(() => { loadData(); return undefined; }, [loadData]));
 
   const onRefresh = async () => {
     setRefreshing(true);
-    setRecentLoading(true);
-    setStats(s => ({ ...s, loading: true }));
+    setStats((s) => ({ ...s, loading: true }));
     await loadData();
     setRefreshing(false);
   };
@@ -58,6 +138,10 @@ export default function Dashboard() {
     router.replace('/');
     await logout();
   };
+
+  const fmtMoney = useCallback((n: number) => {
+    return stats.ledgerCurrency === 'USD' ? formatUSD(n) : formatPGK(n);
+  }, [stats.ledgerCurrency]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -68,6 +152,7 @@ export default function Dashboard() {
           <Text style={styles.logoAccent}> Forwarding</Text>
         </View>
         <View style={styles.headerRight}>
+          <HeaderBell />
           <TouchableOpacity testID="dashboard-settings-btn" onPress={() => router.push('/settings')} style={styles.headerIcon}>
             <Ionicons name="settings-outline" size={20} color={Colors.dhlText} />
           </TouchableOpacity>
@@ -86,160 +171,285 @@ export default function Dashboard() {
         <View testID="dashboard-page" style={styles.welcome}>
           <Text style={styles.welcomeLabel}>myDHLi · DASHBOARD</Text>
           <Text style={styles.welcomeTitle}>Welcome back, {user?.firstName || 'there'}.</Text>
-          <Text style={styles.welcomeSub}>Here's a snapshot of your account.</Text>
+          <Text style={styles.welcomeSub}>Snapshot of your ocean freight account.</Text>
         </View>
 
-        {/* KPIs */}
-        <View style={styles.kpiRow}>
-          <View style={styles.kpiCard}>
-            <View style={[styles.kpiIcon, { backgroundColor: Colors.dhlYellow }]}>
-              <Ionicons name="cube" size={16} color={Colors.dhlInk} />
-            </View>
-            <Text style={styles.kpiLabel}>ACTIVE SHIPMENTS</Text>
-            {stats.loading ? <ActivityIndicator color={Colors.dhlYellow} /> : (
-              <Text style={styles.kpiValue}>{stats.active}</Text>
-            )}
-          </View>
-          <View style={styles.kpiCard}>
-            <View style={[styles.kpiIcon, { backgroundColor: Colors.dhlRed }]}>
-              <Ionicons name="cash" size={16} color={Colors.white} />
-            </View>
-            <Text style={styles.kpiLabel}>THIS MONTH</Text>
-            {stats.loading ? <ActivityIndicator color={Colors.dhlYellow} /> : (
-              <Text style={styles.kpiValue}>{formatPGK(stats.monthSpend)}</Text>
-            )}
-          </View>
+        {/* KPI grid 2×2 */}
+        <View style={styles.kpiGrid}>
+          <KpiCard
+            testID="home-kpi-total"
+            icon="cube"
+            iconBg={Colors.dhlYellow}
+            iconColor={Colors.dhlInk}
+            label="TOTAL SHIPMENTS"
+            value={stats.loading ? null : String(stats.total)}
+            sub="Ocean Freight"
+            onPress={() => router.push('/(tabs)/shipments' as never)}
+          />
+          <KpiCard
+            testID="home-kpi-at-depot"
+            icon="business"
+            iconBg="#FFFBEB"
+            iconColor="#F59E0B"
+            label="AT DEPOT"
+            value={stats.loading ? null : String(stats.atDepot)}
+            sub={stats.atDepot === 0 ? 'None awaiting' : `${stats.atDepot} awaiting collection`}
+            onPress={() => router.push('/(tabs)/shipments' as never)}
+          />
+          <KpiCard
+            testID="home-kpi-overdue"
+            icon="alert-circle"
+            iconBg={Colors.red100}
+            iconColor={Colors.dhlRed}
+            label="OVERDUE PICKUPS"
+            value={stats.loading ? null : String(stats.overdueCount)}
+            valueColor={stats.overdueCount > 0 ? Colors.dhlRed : undefined}
+            sub={
+              stats.overdueCount > 0
+                ? `${stats.urgentCount - stats.overdueCount} urgent ≤2 days`
+                : 'All within window'
+            }
+            onPress={() => router.push('/(tabs)/shipments' as never)}
+          />
+          <KpiCard
+            testID="home-kpi-billed"
+            icon="card"
+            iconBg="#EFF6FF"
+            iconColor="#2563EB"
+            label="OUTSTANDING"
+            value={stats.loading ? null : fmtMoney(stats.ledgerTotal)}
+            sub={
+              stats.invoiceCount === 0
+                ? 'No invoices on file'
+                : `${stats.invoiceCount} invoice${stats.invoiceCount === 1 ? '' : 's'}${
+                    stats.ledgerOverdue > 0 ? ` · ${fmtMoney(stats.ledgerOverdue)} overdue` : ''
+                  }`
+            }
+            onPress={() => router.push('/invoices' as never)}
+          />
         </View>
 
-        {/* Quick Actions */}
-        <Text style={styles.sectionLabel}>QUICK ACTIONS</Text>
-        <Text style={styles.sectionTitle}>What's next?</Text>
-        <View style={styles.actionsGrid}>
+        {/* AT_DEPOT urgency list */}
+        <SectionTitle
+          title="AWAITING BUYER COLLECTION"
+          actionLabel={urgent.length > 0 ? 'VIEW ALL' : undefined}
+          onAction={() => router.push('/(tabs)/shipments' as never)}
+        />
+        {stats.loading ? (
+          <View style={styles.center}>
+            <ActivityIndicator color={Colors.dhlYellow} />
+          </View>
+        ) : urgent.length === 0 ? (
+          <View testID="home-urgent-empty" style={styles.emptyCard}>
+            <Ionicons name="checkmark-circle" size={28} color={Colors.green600} />
+            <Text style={styles.emptyTxt}>No pickups overdue or due within 2 days.</Text>
+          </View>
+        ) : (
+          <View testID="home-urgent-list" style={{ marginBottom: 8 }}>
+            {urgent.map((s) => (
+              <UrgentRow
+                key={s.awb}
+                shipment={s}
+                onPress={() => router.push(`/shipment/${s.awb}` as never)}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* Quick links */}
+        <SectionTitle title="QUICK ACTIONS" />
+        <View style={styles.actionsRow}>
           {[
-            { icon: 'send' as const, label: 'Ship Now', sub: 'Create a new shipment', route: '/(tabs)/ship', testId: 'quick-ship-now' },
-            { icon: 'search' as const, label: 'Track', sub: 'Look up any AWB', route: '/track', testId: 'quick-track' },
-            { icon: 'calculator' as const, label: 'Get Quote', sub: 'Estimate rates instantly', route: '/quote', testId: 'quick-quote' },
+            { icon: 'cube' as const, label: 'Shipments', sub: 'All bookings', route: '/(tabs)/shipments', testId: 'quick-shipments' },
+            { icon: 'document-text' as const, label: 'Documents', sub: 'Operational PDFs', route: '/(tabs)/documents', testId: 'quick-documents' },
+            { icon: 'search' as const, label: 'Track', sub: 'Trace any AWB', route: '/(tabs)/track', testId: 'quick-track' },
             { icon: 'calendar' as const, label: 'Pickup', sub: 'Arrange a freight pickup', route: '/schedule-pickup', testId: 'quick-pickup' },
-          ].map((a, i) => (
-            <TouchableOpacity key={i} testID={a.testId} style={styles.actionCard} onPress={() => router.push(a.route as any)}>
-              <View style={styles.actionIconBox}>
-                <Ionicons name={a.icon} size={20} color={Colors.dhlInk} />
-              </View>
+          ].map((a) => (
+            <TouchableOpacity key={a.label} testID={a.testId} style={styles.actionTile} onPress={() => router.push(a.route as never)}>
+              <View style={styles.actionIcon}><Ionicons name={a.icon} size={18} color={Colors.dhlInk} /></View>
               <Text style={styles.actionLabel}>{a.label}</Text>
               <Text style={styles.actionSub}>{a.sub}</Text>
             </TouchableOpacity>
           ))}
-        </View>
-
-        {/* Recent Shipments */}
-        <View style={styles.recentSection}>
-          <View style={styles.recentHeader}>
-            <View>
-              <Text style={styles.recentLabel}>ACTIVITY</Text>
-              <Text style={styles.recentTitle}>Recent Shipments</Text>
-            </View>
-            <TouchableOpacity testID="view-all-shipments" onPress={() => router.push('/(tabs)/shipments')}>
-              <Text style={styles.viewAll}>VIEW ALL →</Text>
-            </TouchableOpacity>
-          </View>
-
-          {recentLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator color={Colors.dhlYellow} />
-              <Text style={styles.loadingText}>Loading recent shipments…</Text>
-            </View>
-          ) : recent.length === 0 ? (
-            <View testID="recent-shipments-empty" style={styles.emptyState}>
-              <Ionicons name="cube-outline" size={40} color={Colors.dhlMuted} />
-              <Text style={styles.emptyTitle}>No shipments yet.</Text>
-            </View>
-          ) : (
-            recent.map(s => (
-              <TouchableOpacity
-                key={s.awb}
-                testID={`recent-row-${s.awb}`}
-                style={styles.shipmentCard}
-                onPress={() => router.push(`/shipment/${s.awb}`)}
-              >
-                <View style={styles.shipmentHeader}>
-                  <Text style={styles.shipmentAwb}>{s.awb}</Text>
-                  <StatusBadge status={s.status} />
-                </View>
-                <Text style={styles.shipmentReceiver}>{s.receiverName}</Text>
-                <View style={styles.shipmentRoute}>
-                  <Text style={styles.routeCode}>{s.origin?.code}</Text>
-                  <Ionicons name="arrow-forward" size={12} color={Colors.dhlRed} />
-                  <Text style={styles.routeCode}>{s.destination?.code}</Text>
-                  <Text style={styles.shipmentCost}>{formatPGK(s.costPGK)}</Text>
-                </View>
-              </TouchableOpacity>
-            ))
-          )}
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+// ─── Sub-components ─────────────────────────────────────────────────────────
+const SectionTitle = ({
+  title, actionLabel, onAction,
+}: { title: string; actionLabel?: string; onAction?: () => void }) => (
+  <View style={styles.sectionTitleRow}>
+    <Text style={styles.sectionTitle}>{title}</Text>
+    {actionLabel && onAction ? (
+      <TouchableOpacity onPress={onAction}>
+        <Text style={styles.sectionAction}>{actionLabel}</Text>
+      </TouchableOpacity>
+    ) : null}
+  </View>
+);
+
+const KpiCard = ({
+  testID, icon, iconBg, iconColor, label, value, valueColor, sub, onPress,
+}: {
+  testID?: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconBg: string;
+  iconColor: string;
+  label: string;
+  value: string | null;
+  valueColor?: string;
+  sub: string;
+  onPress?: () => void;
+}) => (
+  <TouchableOpacity
+    testID={testID}
+    activeOpacity={onPress ? 0.8 : 1}
+    onPress={onPress}
+    style={styles.kpiCard}
+  >
+    <View style={[styles.kpiIcon, { backgroundColor: iconBg }]}>
+      <Ionicons name={icon} size={16} color={iconColor} />
+    </View>
+    <Text style={styles.kpiLabel}>{label}</Text>
+    {value === null ? (
+      <ActivityIndicator color={Colors.dhlYellow} style={{ marginVertical: 4 }} />
+    ) : (
+      <Text style={[styles.kpiValue, valueColor ? { color: valueColor } : null]} numberOfLines={1}>
+        {value}
+      </Text>
+    )}
+    <Text style={styles.kpiSub} numberOfLines={1}>{sub}</Text>
+  </TouchableOpacity>
+);
+
+const UrgentRow = ({
+  shipment, onPress,
+}: { shipment: ShipmentSummary; onPress: () => void }) => {
+  const pickup = getPickupBadge(shipment);
+  if (!pickup) return null;
+  return (
+    <TouchableOpacity
+      testID={`home-urgent-card-${shipment.awb}`}
+      activeOpacity={0.8}
+      onPress={onPress}
+      style={[styles.urgentRow, { borderLeftColor: pickup.border }]}
+    >
+      <View style={[styles.urgentIcon, { backgroundColor: pickup.bg }]}>
+        <Ionicons
+          name={pickup.overdue ? 'alert-circle' : 'time-outline'}
+          size={18}
+          color={pickup.fg}
+        />
+      </View>
+      <View style={{ flex: 1 }}>
+        <View style={styles.urgentHead}>
+          <Text style={styles.urgentAwb}>{shipment.awb}</Text>
+          <Text style={[styles.urgentBadge, { color: pickup.fg }]}>{pickup.text}</Text>
+        </View>
+        <Text style={styles.urgentReceiver} numberOfLines={1}>
+          {shipment.receiverName}
+        </Text>
+        <Text style={styles.urgentRoute}>
+          {shipment.origin?.code} → {shipment.destination?.code}
+          {shipment.oceanSpecifics?.depotStatus?.location
+            ? `  ·  ${shipment.oceanSpecifics.depotStatus.location.split('–')[0].trim()}`
+            : ''}
+        </Text>
+        {shipment.eta ? (
+          <Text style={styles.urgentEta}>ETA {formatDate(shipment.eta)}</Text>
+        ) : null}
+      </View>
+      <Ionicons name="chevron-forward" size={16} color={Colors.dhlMuted} />
+    </TouchableOpacity>
+  );
+};
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.dhlPanel },
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 12, backgroundColor: Colors.white,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 12,
+    backgroundColor: Colors.white,
     borderBottomWidth: 1, borderBottomColor: Colors.dhlBorder,
   },
-  logoPill: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: Colors.dhlYellow, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 14,
-  },
-  logoText: { fontSize: 13, fontWeight: '900', color: Colors.dhlInk },
-  logoAccent: { fontSize: 13, fontWeight: '900', color: Colors.dhlRed },
-  headerRight: { flexDirection: 'row', gap: 8 },
-  headerIcon: { padding: 8 },
+  logoPill: { flexDirection: 'row', alignItems: 'baseline' },
+  logoText: { fontSize: 18, fontWeight: '900', color: Colors.dhlRed, letterSpacing: 0.5 },
+  logoAccent: { fontSize: 14, fontWeight: '600', color: Colors.dhlText },
+  headerRight: { flexDirection: 'row', alignItems: 'center' },
+  headerIcon: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+
   scroll: { flex: 1 },
-  content: { paddingBottom: 24 },
-  welcome: { padding: 20 },
-  welcomeLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 2, color: Colors.dhlRed, marginBottom: 8 },
-  welcomeTitle: { fontSize: 26, fontWeight: '900', color: Colors.dhlText, letterSpacing: -0.5 },
+  content: { paddingBottom: 40 },
+
+  welcome: { paddingHorizontal: 20, paddingTop: 18, paddingBottom: 10 },
+  welcomeLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 2, color: Colors.dhlRed, marginBottom: 4 },
+  welcomeTitle: { fontSize: 22, fontWeight: '900', color: Colors.dhlText, letterSpacing: -0.5 },
   welcomeSub: { fontSize: 13, color: Colors.dhlMuted, marginTop: 4 },
-  kpiRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 12, marginBottom: 24 },
+
+  kpiGrid: {
+    flexDirection: 'row', flexWrap: 'wrap',
+    paddingHorizontal: 12, gap: 8, marginTop: 4,
+  },
   kpiCard: {
-    flex: 1, backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.dhlBorder, padding: 16,
+    width: '48%',
+    backgroundColor: Colors.white,
+    borderWidth: 1, borderColor: Colors.dhlBorder,
+    padding: 12,
+    minHeight: 100,
   },
-  kpiIcon: { width: 32, height: 32, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  kpiLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5, color: Colors.dhlMuted, marginBottom: 8 },
-  kpiValue: { fontSize: 28, fontWeight: '900', color: Colors.dhlText },
-  sectionLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 2, color: Colors.dhlMuted, paddingHorizontal: 20, marginBottom: 4 },
-  sectionTitle: { fontSize: 22, fontWeight: '900', color: Colors.dhlText, paddingHorizontal: 20, marginBottom: 16 },
-  actionsGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, gap: 12, marginBottom: 24 },
-  actionCard: {
-    width: '47%', backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.dhlBorder, padding: 16,
+  kpiIcon: {
+    width: 28, height: 28,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 6,
   },
-  actionIconBox: {
-    width: 40, height: 40, backgroundColor: Colors.dhlYellow,
-    justifyContent: 'center', alignItems: 'center', marginBottom: 12,
-  },
-  actionLabel: { fontSize: 15, fontWeight: '700', color: Colors.dhlText, marginBottom: 2 },
-  actionSub: { fontSize: 11, color: Colors.dhlMuted },
-  recentSection: {
-    marginHorizontal: 16, backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.dhlBorder,
-  },
-  recentHeader: {
+  kpiLabel: { fontSize: 9, fontWeight: '900', letterSpacing: 1.2, color: Colors.dhlMuted },
+  kpiValue: { fontSize: 24, fontWeight: '900', color: Colors.dhlText, letterSpacing: -0.5, marginTop: 2 },
+  kpiSub: { fontSize: 10, color: Colors.dhlMuted, marginTop: 2 },
+
+  sectionTitleRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.dhlBorder,
+    paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8,
   },
-  recentLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 2, color: Colors.dhlMuted },
-  recentTitle: { fontSize: 16, fontWeight: '700', color: Colors.dhlText, marginTop: 2 },
-  viewAll: { fontSize: 11, fontWeight: '800', letterSpacing: 1, color: Colors.dhlRed },
-  loadingContainer: { padding: 32, alignItems: 'center' },
-  loadingText: { fontSize: 12, color: Colors.dhlMuted, marginTop: 8 },
-  emptyState: { padding: 40, alignItems: 'center' },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: Colors.dhlText, marginTop: 12 },
-  shipmentCard: { padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.dhlBorder },
-  shipmentHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  shipmentAwb: { fontSize: 14, fontFamily: 'monospace', fontWeight: '700', color: Colors.dhlText },
-  shipmentReceiver: { fontSize: 14, fontWeight: '600', color: Colors.dhlText, marginBottom: 4 },
-  shipmentRoute: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  routeCode: { fontSize: 12, fontFamily: 'monospace', fontWeight: '700', color: Colors.dhlText },
-  shipmentCost: { marginLeft: 'auto', fontSize: 12, fontFamily: 'monospace', fontWeight: '700', color: Colors.dhlText },
+  sectionTitle: { fontSize: 10, fontWeight: '900', letterSpacing: 2, color: Colors.dhlMuted },
+  sectionAction: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5, color: Colors.dhlRed },
+
+  center: { paddingVertical: 24, alignItems: 'center' },
+  emptyCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginHorizontal: 16,
+    backgroundColor: Colors.white,
+    borderWidth: 1, borderColor: Colors.dhlBorder,
+    padding: 14,
+  },
+  emptyTxt: { fontSize: 12, color: Colors.dhlMuted, flex: 1 },
+
+  urgentRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginHorizontal: 16, marginBottom: 6,
+    backgroundColor: Colors.white,
+    borderWidth: 1, borderColor: Colors.dhlBorder,
+    borderLeftWidth: 4,
+    padding: 12,
+  },
+  urgentIcon: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
+  urgentHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  urgentAwb: { fontSize: 12, fontFamily: 'monospace', fontWeight: '800', color: Colors.dhlText, letterSpacing: 0.4 },
+  urgentBadge: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
+  urgentReceiver: { fontSize: 12, fontWeight: '600', color: Colors.dhlText, marginTop: 2 },
+  urgentRoute: { fontSize: 10, color: Colors.dhlMuted, marginTop: 2, fontFamily: 'monospace' },
+  urgentEta: { fontSize: 10, color: Colors.dhlMuted, marginTop: 2 },
+
+  actionsRow: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 8 },
+  actionTile: {
+    width: '48%',
+    backgroundColor: Colors.white,
+    borderWidth: 1, borderColor: Colors.dhlBorder,
+    padding: 12,
+  },
+  actionIcon: { width: 28, height: 28, backgroundColor: Colors.dhlYellow, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+  actionLabel: { fontSize: 13, fontWeight: '900', color: Colors.dhlText },
+  actionSub: { fontSize: 10, color: Colors.dhlMuted, marginTop: 2 },
 });
