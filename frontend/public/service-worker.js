@@ -1,84 +1,38 @@
-/* myDHLi PWA service worker — v2
+/* myDHLi PWA service worker — TOMBSTONE (Faz 7.9 cleanup)
  *
- * Goal: satisfy Chrome's "installable" criteria so the Add to Home Screen
- * flow promotes a proper PWA install (with the DHL Global Forwarding icon)
- * instead of a generic bookmark shortcut.
+ * The web shell at `/` is no longer a PWA — that role moved to the mobile
+ * Expo Web bundle at `/m/` in Faz 7.9. This file is intentionally a
+ * self-uninstalling worker so any browser that still has v1 or v2 cached
+ * will drop it on next visit instead of intercepting navigation requests
+ * (which is what made Add-to-Home-Screen attach to the wrong app).
  *
- * Strategy:
- *   • Pre-cache a tiny core (shell HTML + manifest + branded icons) at
- *     install time so the install bar can render a branded preview.
- *   • Network-first for navigation requests, falling back to the cached
- *     root shell — this gives Chrome a real `respondWith` for
- *     `request.mode === 'navigate'`, which is the formal installability
- *     check today.
- *   • Cache-first for the icon set and manifest — keeps the home-screen
- *     icon stable even if the network drops.
- *   • `v2` cache key + cleanup so the v1 (no-op) worker is replaced on
- *     first visit after redeploy.
- *
- * This worker does NOT cache the JS / CSS bundles, so a redeploy always
- * serves fresh app code. Only the shell + icons + manifest are cached.
+ * Do not delete this file: removing it would make older clients keep their
+ * stale workers indefinitely (a 404 on the script does NOT trigger
+ * unregister). The tombstone must stay reachable until we're confident
+ * every user has cleared their cache.
  */
-const CACHE = "mydhli-pwa-v2";
-const CORE = [
-  "/",
-  "/manifest.json",
-  "/favicon.ico",
-  "/favicon-16x16.png",
-  "/favicon-32x32.png",
-  "/apple-touch-icon.png",
-  "/pwa-192x192.png",
-  "/pwa-512x512.png",
-];
-
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE)
-      .then((cache) => cache.addAll(CORE))
-      .catch(() => {
-        // Don't fail the install if a single asset misses — the worker
-        // must still register so the page is "installable".
-      })
-  );
+self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
+      // Drop all caches this worker (or its predecessors) owned.
       const keys = await caches.keys();
       await Promise.all(
-        keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))
+        keys.filter((k) => k.startsWith("mydhli-pwa-")).map((k) => caches.delete(k)),
       );
-      await self.clients.claim();
-    })()
+      // Unregister self so the browser stops treating / as a PWA.
+      await self.registration.unregister();
+      // Force every open client to reload without the worker.
+      const clients = await self.clients.matchAll({ type: "window" });
+      for (const client of clients) {
+        client.navigate(client.url).catch(() => {});
+      }
+    })(),
   );
 });
 
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
-
-  // 1) Navigation requests (HTML page loads): network-first, fall back to
-  //    the cached root shell. This branch is the formal installability
-  //    requirement Chrome checks for ("a service worker that handles
-  //    fetch events with a response").
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req).catch(() => caches.match("/").then((r) => r || Response.error()))
-    );
-    return;
-  }
-
-  // 2) Same-origin core asset (icons + manifest): cache-first.
-  const url = new URL(req.url);
-  if (url.origin === self.location.origin && CORE.some((p) => url.pathname === p)) {
-    event.respondWith(
-      caches.match(req).then((cached) => cached || fetch(req))
-    );
-    return;
-  }
-
-  // 3) Everything else: default network behaviour, no SW interference.
-  //    (We intentionally don't call event.respondWith here.)
-});
+// No fetch handler — navigation requests fall through to the network,
+// which removes the "controlled by service worker" installability signal.

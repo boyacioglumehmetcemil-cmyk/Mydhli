@@ -140,5 +140,63 @@ DHL'in Papua New Guinea operasyonu için gerçekçi, pixel-perfect myDHLi Forwar
 ## Yeni Job Başlangıç Komutu
 > Read `/app/memory/HANDOVER.md` and continue with mobile Expo parity at `/app/mobile`. Backend is live; do **not** add a generate-documents UI or pipeline. User speaks Turkish — respond in Turkish.
 
+## Faz 8.5 — PWA + Backend backward-compat hotfix — 2026-05-20
+
+### Problem
+- Kullanıcı telefondan `https://merhaba-app-446.emergent.host/` adresinden
+  "Add to Home Screen" yapınca **web sitesinin PWA'sı** yükleniyordu;
+  ikona basınca web `/login` (CRA split-screen) açılıyordu, mobil app'in
+  `/m/login`'i değil. Faz 7.9'da rol bölünmesi yapılmıştı ama web shell'i
+  hala kendi manifest+service-worker'ıyla "installable" sinyali veriyordu.
+
+### Çözüm — Web artık PWA değil
+- **`frontend/public/manifest.json`** — **silindi**. Web shell'i artık PWA
+  manifest sunmuyor; Chrome/Edge "Install app" davetiyesi göstermez.
+- **`frontend/public/index.html`** — `<link rel="manifest">`,
+  `apple-mobile-web-app-*` meta'ları ve `mobile-web-app-capable` kaldırıldı.
+  Apple touch icon tek başına bookmark thumbnail olarak korundu.
+- **`frontend/public/service-worker.js`** — TOMBSTONE'a çevrildi:
+  install → skipWaiting, activate → cache temizle + self-unregister +
+  açık client'ları reload. Eski v1/v2 worker'ları taşıyan tarayıcılar
+  bir sonraki ziyarette otomatik temizleniyor.
+- **`frontend/src/index.js`** — service worker REGISTER yerine
+  UNREGISTER mantığı (her sayfa yüklenmesinde `getRegistrations()` →
+  `unregister()` + `mydhli-pwa-*` cache temizliği). Noop once clean.
+- **PWA install hedefi artık tek bir yer:** `/m/` (mobil Expo bundle). Ana
+  ekrana eklemek isteyen kullanıcı oraya navigate etmeli.
+
+### Mobil manifest /m/ tutarlılığı
+- **`mobile/public/manifest.json`** — `scope: "/m/"`, `start_url: "/m/?source=pwa"`,
+  `id: "/m/?source=pwa"`, icon path'leri `/m/icon-192.png` & `/m/icon-512.png`'ye
+  düzeltildi. Önceden hala `"/"` scope'taydı — `app.json`'ın `/m/`
+  scope'uyla çelişiyordu.
+
+### Backend backward-compat
+- **`backend/business_module.py`** `PUT /addresses/{id}/default` artık hem
+  legacy `kind: sender|receiver` hem v2 `role: SHIPPER|CONSIGNEE|NOTIFY`
+  body'sini kabul ediyor. NOTIFY rollerinde noop+200 dönüyor (çünkü legacy
+  collection'da notify default'u yok). Test_default_toggle fail'i bu
+  köprüyle birlikte geçiyor olmalı.
+- `dailyVolume` zaten doğru dönüyordu (kod çoktan `volumeOverTime→dailyVolume`
+  dönüşümünü yapmış). Eski 11 Mayıs test raporu eskimiş.
+
+### Files changed (Faz 8.5)
+- `frontend/public/manifest.json` (SILİNDİ)
+- `frontend/public/index.html` (PWA meta + manifest link kaldırıldı)
+- `frontend/public/service-worker.js` (TOMBSTONE)
+- `frontend/src/index.js` (register → unregister)
+- `mobile/public/manifest.json` (scope /m/, id, icon path'leri düzeltildi)
+- `backend/business_module.py` (kind|role düal-schema)
+- `memory/HANDOVER.md` (bu blok)
+
+### Kullanıcı adımı — Redeploy + telefon temizliği
+1. Emergent dashboard → **Redeploy**.
+2. Telefondaki **eski myDHLi PWA kısayolunu silin** (eski cache'i taşıyor).
+3. Chrome/Safari'de **çerezleri ve site verilerini temizleyin**
+   (Settings → Site Settings → merhaba-app-446 → Clear).
+4. `https://merhaba-app-446.emergent.host/m/` adresine gidin.
+5. "Add to Home Screen" — artık mobil app PWA'ı (myDHLi sarı ikon, mobil login)
+   yüklenecek.
+
 ---
-*Son güncelleme: 2026-05-17 — Phase 8.4c revert sonrası temiz durum.*
+*Son güncelleme: 2026-05-20 — Faz 8.5 PWA hotfix + backend backward-compat.*

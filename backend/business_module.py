@@ -413,9 +413,26 @@ def build_router(db, get_current_user_dep):
 
     @router.put("/addresses/{addr_id}/default")
     async def set_default(addr_id: str, body: dict, user: dict = Depends(get_current_user_dep)):
-        kind = body.get("kind")
+        # Accept both the legacy `kind` schema (sender/receiver) and the
+        # Faz 8.4 v2 `role` schema (SHIPPER/CONSIGNEE/NOTIFY). Notify parties
+        # do not have a default-of-this-role flag in the legacy collection,
+        # so they no-op gracefully.
+        kind = (body.get("kind") or "").strip().lower()
+        role = (body.get("role") or "").strip().upper()
+        if not kind and role:
+            if role == "SHIPPER":
+                kind = "sender"
+            elif role == "CONSIGNEE":
+                kind = "receiver"
+            elif role == "NOTIFY":
+                # Notify parties have no legacy default flag — accept the
+                # request as a successful no-op so callers don't 400.
+                return {"success": True, "noop": "NOTIFY role has no default flag"}
         if kind not in ("sender", "receiver"):
-            raise HTTPException(status_code=400, detail="kind must be 'sender' or 'receiver'")
+            raise HTTPException(
+                status_code=400,
+                detail="Provide either kind='sender'|'receiver' or role='SHIPPER'|'CONSIGNEE'|'NOTIFY'",
+            )
         field = "isDefaultSender" if kind == "sender" else "isDefaultReceiver"
         await db.addresses.update_many({"userId": user["id"]}, {"$set": {field: False}})
         res = await db.addresses.update_one({"id": addr_id, "userId": user["id"]}, {"$set": {field: True}})

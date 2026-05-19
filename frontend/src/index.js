@@ -25,25 +25,31 @@ root.render(
   </React.StrictMode>,
 );
 
-// ---- PWA service worker registration ----
-// Registers `/service-worker.js` so Chrome / Edge consider the page
-// "installable" and show the DHL Global Forwarding icon on "Add to Home
-// Screen". The worker is intentionally a no-op pass-through (see
-// public/service-worker.js) — no offline caching, so deploys always serve
-// fresh content. Only runs in production builds; CRA dev server has its
-// own HMR socket which conflicts with a registered worker.
-if (
-  typeof window !== "undefined" &&
-  "serviceWorker" in navigator &&
-  (process.env.NODE_ENV === "production" ||
-    window.location.protocol === "https:")
-) {
+// ---- PWA service worker UNREGISTER (post-Faz 7.9 cleanup) ----
+// Faz 7.9 moved the PWA install role to the mobile Expo bundle at /m/.
+// The web shell at / is no longer a PWA. Any service worker registered by
+// earlier visits (v1, v2) must be actively unregistered, otherwise the
+// user's phone keeps treating / as the install target and intercepts
+// navigation requests. This block silently cleans up legacy workers and
+// their caches on every page load. Safe to keep long-term: noop once
+// no workers exist.
+if (typeof window !== "undefined" && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register("/service-worker.js", { scope: "/" })
-      .catch((err) => {
-        // Non-fatal: app still works without the worker.
-        console.warn("[PWA] service worker registration failed:", err);
-      });
+      .getRegistrations()
+      .then((regs) => Promise.all(regs.map((r) => r.unregister())))
+      .catch(() => {});
+    if (typeof caches !== "undefined" && caches.keys) {
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(
+            keys
+              .filter((k) => k.startsWith("mydhli-pwa-"))
+              .map((k) => caches.delete(k)),
+          ),
+        )
+        .catch(() => {});
+    }
   });
 }
