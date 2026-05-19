@@ -12,15 +12,19 @@
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-        <!-- iOS / iPadOS home-screen icon -->
+        <!-- iOS / iPadOS home-screen icon — multiple sizes so iOS picks the
+             best fit and Android Chrome can fall back to apple-touch-icon
+             if the manifest icons fail to resolve for any reason. -->
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/pwa-192x192.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/pwa-512x512.png" />
 
         <!-- PWA manifest (Android Chrome / Edge "Add to Home Screen") -->
         <link rel="manifest" href="/manifest.json" />
 
         <!-- iOS PWA meta -->
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="myDHLi" />
         <meta name="application-name" content="myDHLi" />
         <meta name="mobile-web-app-capable" content="yes" />
