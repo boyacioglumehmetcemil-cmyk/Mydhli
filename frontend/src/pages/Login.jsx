@@ -326,8 +326,15 @@ const Login = () => {
               ))}
             </nav>
             <p className="text-xs text-stone-500 mt-2">
-              © 2026 DHL Global Forwarding — Demo build · Not affiliated with Deutsche Post DHL Group · myDHLi placeholder
+              © {new Date().getFullYear()} DHL Global Forwarding. All rights reserved.
             </p>
+            <a
+              href="/m/"
+              data-testid="login-footer-install-app"
+              className="text-xs text-stone-700 hover:text-dhl-red underline-offset-4 hover:underline mt-1"
+            >
+              Install our mobile app →
+            </a>
           </div>
           <div className="flex-shrink-0">
             <CountryPicker />

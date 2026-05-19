@@ -84,7 +84,6 @@ export default function ForgotPassword() {
               <Text style={styles.successSub}>
                 If an account exists for <Text style={{ fontWeight: '700', color: Colors.dhlText }}>{email}</Text>, we've sent a reset link.
               </Text>
-              <Text style={styles.demoNote}>(Demo build — no real email is sent.)</Text>
               <TouchableOpacity testID="forgot-return-link" style={styles.returnBtn} onPress={() => router.push('/login')}>
                 <Ionicons name="arrow-back" size={16} color={Colors.white} />
                 <Text style={styles.returnText}>BACK TO SIGN IN</Text>
@@ -133,7 +132,6 @@ const styles = StyleSheet.create({
   },
   successTitle: { fontSize: 28, fontWeight: '900', color: Colors.dhlText, marginBottom: 12 },
   successSub: { fontSize: 14, color: Colors.dhlMuted, textAlign: 'center', marginBottom: 8 },
-  demoNote: { fontSize: 12, color: Colors.dhlMuted, fontStyle: 'italic', marginBottom: 24 },
   returnBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: Colors.dhlInk, paddingHorizontal: 24, paddingVertical: 14,

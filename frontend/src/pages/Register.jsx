@@ -291,7 +291,7 @@ const Register = () => {
               <a href="#" className="text-dhl-red font-bold hover:underline">
                 Privacy Policy
               </a>
-              . This is a demo build — credentials stored for demo purposes only.
+              .
             </Label>
           </div>
 

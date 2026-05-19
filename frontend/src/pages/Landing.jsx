@@ -1476,12 +1476,16 @@ export const Footer = ({ showPromoCards = true }) => {
             ))}
           </ul>
 
-          {/* Row C: copyright + demo badge */}
+          {/* Row C: copyright */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-5 border-t border-dhl-border text-[11px] text-dhl-muted">
-            <div className="text-center md:text-left">© 2026 — All rights reserved.</div>
-            <div className="font-mono uppercase tracking-wider text-dhl-muted/70 text-[10px]">
-              Demo build · Not affiliated with Deutsche Post DHL Group · myDHLi placeholder
-            </div>
+            <div className="text-center md:text-left">© {new Date().getFullYear()} DHL Global Forwarding. All rights reserved.</div>
+            <a
+              href="/m/"
+              data-testid="footer-install-app-link"
+              className="text-center md:text-right hover:text-dhl-red transition-colors"
+            >
+              Install our mobile app →
+            </a>
           </div>
         </div>
       </section>

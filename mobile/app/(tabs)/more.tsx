@@ -72,7 +72,7 @@ export default function More() {
           <Text style={styles.logoutText}>Sign Out</Text>
         </TouchableOpacity>
 
-        <Text style={styles.versionText}>DHL Global Forwarding PNG · Demo Build v1.0.0</Text>
+        <Text style={styles.versionText}>DHL Global Forwarding PNG · v1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );

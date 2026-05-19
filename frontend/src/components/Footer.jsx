@@ -55,7 +55,7 @@ const Footer = () => {
             <span className="text-xs text-white/50">DHL Global Forwarding</span>
           </div>
           <div className="text-xs text-white/40 font-mono">
-            DEMO BUILD · NOT AFFILIATED WITH DEUTSCHE POST DHL GROUP
+            © {new Date().getFullYear()} DHL Global Forwarding
           </div>
         </div>
       </div>

@@ -98,12 +98,9 @@ const ForgotPassword = () => {
               <h2 className="font-display text-3xl font-black text-dhl-text mb-3">
                 Check your inbox.
               </h2>
-              <p className="text-sm text-dhl-muted mb-2">
+              <p className="text-sm text-dhl-muted mb-8">
                 If an account exists for{" "}
                 <span className="font-bold text-dhl-text">{email}</span>, we've sent a reset link.
-              </p>
-              <p className="text-xs text-dhl-muted mb-8 italic">
-                (Demo build — no real email is sent. Check backend logs.)
               </p>
               <Link
                 to="/login"

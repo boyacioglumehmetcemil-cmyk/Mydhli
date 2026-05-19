@@ -146,7 +146,7 @@ export default function Register() {
               <View style={[styles.checkbox, agree && styles.checkboxChecked]}>
                 {agree && <Ionicons name="checkmark" size={14} color={Colors.dhlInk} />}
               </View>
-              <Text style={styles.agreeText}>I agree to the Terms of Service and Privacy Policy. This is a demo build.</Text>
+              <Text style={styles.agreeText}>I agree to the Terms of Service and Privacy Policy.</Text>
             </TouchableOpacity>
 
             {/* Submit */}

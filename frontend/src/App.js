@@ -4,7 +4,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CountryProvider } from "@/contexts/CountryContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import DemoBadge from "@/components/DemoBadge";
 import Landing from "@/pages/Landing";
 import GlobalForwarding from "@/pages/GlobalForwarding";
 import Solutions from "@/pages/Solutions";
@@ -103,7 +102,6 @@ function App() {
 
           <Route path="*" element={<NotFound />} />
         </Routes>
-        <DemoBadge />
         <Toaster position="top-right" richColors closeButton />
       </BrowserRouter>
       </CountryProvider>
