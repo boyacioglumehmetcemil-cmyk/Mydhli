@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Loader2, ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
-import Logo from "@/components/Logo";
+import BrandWordmark from "@/components/BrandWordmark";
 import CountryPicker from "@/components/CountryPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,14 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCountry } from "@/contexts/CountryContext";
+
+const CONTACT_URL = "https://www.dhl.com/global-en/home/footer/contact-us.html";
+const LEGAL_LINKS = [
+  { label: "Privacy Notice", href: "https://www.dhl.com/global-en/home/footer/privacy-notice.html" },
+  { label: "Terms of Use",   href: "https://www.dhl.com/global-en/home/footer/terms-of-use.html" },
+  { label: "Legal Notice",   href: "https://www.dhl.com/global-en/home/footer/legal-notice.html" },
+  { label: "Contact us",     href: CONTACT_URL },
+];
 
 const calcStrength = (pwd) => {
   if (!pwd) return { score: 0, label: "", color: "" };
@@ -108,36 +116,51 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <header className="border-b border-dhl-border px-6 lg:px-10 h-16 flex items-center justify-between bg-white">
-        <Logo size="md" />
-        <div className="text-sm text-dhl-muted">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            data-testid="register-signin-link"
-            className="font-bold text-dhl-text hover:text-dhl-red ml-1"
-          >
-            Sign In →
-          </Link>
-        </div>
+    <div className="min-h-screen flex flex-col bg-stone-100" data-testid="register-page">
+      {/* ─────────────── 1) TOP BAR — same as Login ─────────────── */}
+      <header className="bg-white h-16 px-6 lg:px-10 flex items-center justify-between shrink-0 relative">
+        <Link to="/" className="inline-flex shrink-0">
+          <img
+            src="/assets/dhl/brand/dhl-gf-lockup-v2.png"
+            alt="DHL Global Forwarding"
+            className="h-10 lg:h-12 w-auto"
+            loading="eager"
+            data-testid="register-utility-logo"
+          />
+        </Link>
+        <a
+          href={CONTACT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="register-header-contact"
+          className="text-sm font-semibold text-dhl-ink hover:text-dhl-red inline-flex items-center gap-1"
+        >
+          Contact us <ArrowUpRight className="w-4 h-4" />
+        </a>
+        <div className="absolute left-0 right-0 bottom-0 h-1 bg-dhl-yellow" aria-hidden="true" />
       </header>
 
-      <main className="flex-1 px-4 sm:px-6 lg:px-10 py-10 lg:py-16 max-w-5xl w-full mx-auto">
-        <div className="mb-10">
-          <div className="text-xs font-bold uppercase tracking-[0.2em] text-dhl-red mb-3">
-            Open Account
-          </div>
-          <h1 className="font-display text-4xl lg:text-5xl font-black text-dhl-text leading-tight tracking-tighter mb-3">
-            Start shipping in two minutes.
+      {/* ─────────────── 2) HERO + CENTERED CARD ─────────────── */}
+      <section
+        data-testid="register-hero"
+        className="flex-1 bg-cover bg-center flex items-center justify-center px-4 py-10"
+        style={{
+          backgroundImage: "url('/assets/dhl/login-hero.png')",
+          backgroundPosition: "center 60%",
+        }}
+      >
+        <div className="w-full max-w-[640px] bg-white rounded-sm shadow-2xl p-8 lg:p-10" data-testid="register-card">
+          <h1 className="font-display font-bold text-2xl text-dhl-ink mb-2">
+            Create your myDHLi account
           </h1>
-          <p className="text-base text-dhl-muted max-w-2xl">
-            Create your myDHLi account. Free, no card needed — see
-            contract rates, schedule pickups and track everything in one place.
+          <p className="text-sm text-stone-600 mb-7">
+            Already have an account?{" "}
+            <Link to="/login" data-testid="register-signin-link" className="text-dhl-red font-semibold hover:underline">
+              Sign in here
+            </Link>
           </p>
-        </div>
 
-        <form onSubmit={handleSubmit} data-testid="register-form" className="grid lg:grid-cols-2 gap-x-6 gap-y-5">
+          <form onSubmit={handleSubmit} data-testid="register-form" className="grid sm:grid-cols-2 gap-x-5 gap-y-4">
           <div className="space-y-2">
             <Label className="text-xs font-bold uppercase tracking-wider text-dhl-text">First Name</Label>
             <Input
@@ -274,13 +297,13 @@ const Register = () => {
             <CountryPicker variant="field" className="rounded-none" />
           </div>
 
-          <div className="lg:col-span-2 flex items-start gap-3 pt-2">
+          <div className="sm:col-span-2 flex items-start gap-3 pt-2">
             <Checkbox
               id="agree"
               checked={agree}
               onCheckedChange={(v) => setAgree(!!v)}
               data-testid="register-tnc-checkbox"
-              className="border-dhl-border data-[state=checked]:bg-dhl-yellow data-[state=checked]:text-dhl-ink data-[state=checked]:border-dhl-yellow rounded-none mt-0.5"
+              className="border-dhl-border data-[state=checked]:bg-dhl-red data-[state=checked]:text-white data-[state=checked]:border-dhl-red rounded-sm mt-0.5"
             />
             <Label htmlFor="agree" className="text-sm text-dhl-text font-medium cursor-pointer leading-relaxed">
               I agree to the{" "}
@@ -295,24 +318,55 @@ const Register = () => {
             </Label>
           </div>
 
-          <div className="lg:col-span-2 pt-3">
+          <div className="sm:col-span-2 pt-3">
             <Button
               type="submit"
               disabled={loading}
               data-testid="register-submit-button"
-              className="w-full sm:w-auto h-12 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark font-bold rounded-none uppercase tracking-wider text-sm px-10 border-2 border-dhl-ink hover:-translate-y-0.5 transition-transform disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
+              className="w-full h-12 bg-dhl-red text-white hover:bg-dhl-red-dark font-bold rounded-sm text-base disabled:opacity-70 disabled:cursor-not-allowed inline-flex items-center justify-center"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <>
-                  Create My Account <ArrowRight className="ml-2 w-4 h-4" />
-                </>
+                <>Create my account <ArrowRight className="ml-2 w-4 h-4" /></>
               )}
             </Button>
           </div>
-        </form>
-      </main>
+          </form>
+        </div>
+      </section>
+
+      {/* ─────────────── 3) BOTTOM FOOTER — same as Login ─────────────── */}
+      <footer className="bg-stone-100 py-5 px-6 lg:px-10 shrink-0" data-testid="register-footer">
+        <div className="max-w-[1280px] mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <BrandWordmark placement="footer" data-testid="register-footer-logo" />
+            <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs mt-2">
+              {LEGAL_LINKS.map((l, i) => (
+                <span key={l.label} className="inline-flex items-center gap-3">
+                  <a
+                    href={l.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-stone-700 hover:text-dhl-red"
+                  >
+                    {l.label}
+                  </a>
+                  {i < LEGAL_LINKS.length - 1 && (
+                    <span className="text-stone-300" aria-hidden="true">·</span>
+                  )}
+                </span>
+              ))}
+            </nav>
+            <p className="text-[11px] text-stone-500 mt-2">
+              © {new Date().getFullYear()} DHL Global Forwarding Management GmbH. All rights reserved.
+            </p>
+          </div>
+          <div className="flex flex-col items-start lg:items-end gap-2 flex-shrink-0">
+            <CountryPicker />
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

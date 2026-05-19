@@ -169,13 +169,13 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-100" data-testid="login-page">
-      {/* ─────────────── 1) TOP UTILITY BAR ─────────────── */}
-      <header className="bg-dhl-yellow h-16 px-6 lg:px-10 flex items-center justify-between shrink-0">
+      {/* ─────────────── 1) TOP BAR — myDHLi style (white bg, slim yellow strip below) ─────────────── */}
+      <header className="bg-white h-16 px-6 lg:px-10 flex items-center justify-between shrink-0 relative">
         <Link to="/" className="inline-flex shrink-0">
           <img
             src="/assets/dhl/brand/dhl-gf-lockup-v2.png"
             alt="DHL Global Forwarding"
-            className="h-12 lg:h-14 w-auto"
+            className="h-10 lg:h-12 w-auto"
             loading="eager"
             data-testid="login-utility-logo"
           />
@@ -185,25 +185,25 @@ const Login = () => {
           target="_blank"
           rel="noopener noreferrer"
           data-testid="login-header-contact"
-          className="text-sm font-bold text-dhl-red hover:text-dhl-red-dark inline-flex items-center gap-1"
+          className="text-sm font-semibold text-dhl-ink hover:text-dhl-red inline-flex items-center gap-1"
         >
           Contact us <ArrowUpRight className="w-4 h-4" />
         </a>
+        {/* Slim yellow accent strip under header — myDHLi signature */}
+        <div className="absolute left-0 right-0 bottom-0 h-1 bg-dhl-yellow" aria-hidden="true" />
       </header>
 
-      {/* ─────────────── 2) HERO + CENTERED CARD ─────────────── */}
-      {/* min-h calc keeps the photo filling the gap between utility bar and
-          footer at any viewport. Hero photo: wind turbines at sunset. */}
+      {/* ─────────────── 2) HERO + CENTERED CARD (myDHLi reset-password style) ─────────────── */}
       <section
         data-testid="login-hero"
-        className="flex-1 bg-cover flex items-center justify-center px-4 py-10 min-h-[calc(100vh-64px-160px)]"
+        className="flex-1 bg-cover bg-center flex items-center justify-center px-4 py-10 min-h-[calc(100vh-64px-120px)]"
         style={{
           backgroundImage: "url('/assets/dhl/login-hero.png')",
           backgroundPosition: "center 60%",
         }}
       >
         <div
-          className="w-full max-w-[480px] bg-white rounded-md shadow-2xl p-10 lg:p-12"
+          className="w-full max-w-[420px] bg-white rounded-sm shadow-2xl p-8 lg:p-10"
           data-testid="login-card"
         >
           {/* Conditional banners — stay above H1 inside the card. */}
@@ -228,9 +228,12 @@ const Login = () => {
             </div>
           )}
 
-          <h1 className="font-display font-bold text-2xl lg:text-[28px] text-dhl-ink mb-8">
+          <h1 className="font-display font-bold text-2xl text-dhl-ink mb-2">
             Welcome to myDHLi
           </h1>
+          <p className="text-sm text-stone-600 mb-7">
+            Please sign in with your email and password
+          </p>
 
           {/* Inline auth-failure chip */}
           {errorMsg && (
@@ -291,7 +294,7 @@ const Login = () => {
               type="submit"
               disabled={loading}
               data-testid="login-submit-button"
-              className="w-full h-14 bg-dhl-red text-white text-base font-bold rounded-sm hover:bg-dhl-red-dark transition disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-12 bg-dhl-red text-white text-base font-bold rounded-sm hover:bg-dhl-red-dark transition disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? "Signing in..." : "Login"}
             </button>
@@ -299,45 +302,45 @@ const Login = () => {
         </div>
       </section>
 
-      {/* ─────────────── 3) BOTTOM FOOTER ─────────────── */}
+      {/* ─────────────── 3) BOTTOM FOOTER — myDHLi-style (DHL Group logo top, slim nav, lang picker right) ─────────────── */}
       <footer
-        className="bg-stone-100 py-6 px-6 lg:px-10 shrink-0"
+        className="bg-stone-100 py-5 px-6 lg:px-10 shrink-0"
         data-testid="login-footer"
       >
-        <div className="max-w-[1280px] mx-auto flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
-          <div className="flex flex-col gap-2">
+        <div className="max-w-[1280px] mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex flex-col gap-1">
             <BrandWordmark placement="footer" data-testid="login-footer-logo" />
-            <nav className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+            <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs mt-2">
               {LEGAL_LINKS.map((l, i) => (
-                <span key={l.label} className="inline-flex items-center gap-2">
+                <span key={l.label} className="inline-flex items-center gap-3">
                   <a
                     href={l.href}
                     target="_blank"
                     rel="noopener noreferrer"
                     data-testid={`login-footer-link-${l.label.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="text-stone-700 hover:text-dhl-red underline-offset-4 hover:underline"
+                    className="text-stone-700 hover:text-dhl-red"
                   >
                     {l.label}
                   </a>
                   {i < LEGAL_LINKS.length - 1 && (
-                    <span className="text-stone-400" aria-hidden="true">·</span>
+                    <span className="text-stone-300" aria-hidden="true">·</span>
                   )}
                 </span>
               ))}
             </nav>
-            <p className="text-xs text-stone-500 mt-2">
-              © {new Date().getFullYear()} DHL Global Forwarding. All rights reserved.
+            <p className="text-[11px] text-stone-500 mt-2">
+              © {new Date().getFullYear()} DHL Global Forwarding Management GmbH. All rights reserved.
             </p>
+          </div>
+          <div className="flex flex-col items-start lg:items-end gap-2 flex-shrink-0">
+            <CountryPicker />
             <a
               href="/m/"
               data-testid="login-footer-install-app"
-              className="text-xs text-stone-700 hover:text-dhl-red underline-offset-4 hover:underline mt-1"
+              className="text-[11px] text-stone-500 hover:text-dhl-red"
             >
               Install our mobile app →
             </a>
-          </div>
-          <div className="flex-shrink-0">
-            <CountryPicker />
           </div>
         </div>
       </footer>
