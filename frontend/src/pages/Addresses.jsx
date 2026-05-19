@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Edit2, Trash2, Loader2, BookUser, Search } from "lucide-react";
+import PageBanner from "@/components/PageBanner";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -151,27 +152,20 @@ const Addresses = () => {
 
   return (
     <div className="max-w-7xl mx-auto" data-testid="addresses-page">
-      <div className="flex items-start justify-between mb-7 flex-wrap gap-3">
-        <div>
-          <h1
-            data-testid="parties-title"
-            className="font-display text-3xl lg:text-4xl font-black text-dhl-text leading-tight tracking-tighter"
+      <PageBanner
+        title="Parties"
+        icon={BookUser}
+        data-testid="parties-page-banner"
+        action={
+          <Button
+            onClick={openCreate}
+            data-testid="add-party"
+            className="h-9 bg-dhl-ink text-white hover:bg-dhl-red rounded-md font-bold uppercase tracking-wider text-[11px] px-4"
           >
-            Parties
-          </h1>
-          <p className="text-sm text-dhl-muted mt-2">
-            Your shipper, consignee and notify-party directory — autofill any
-            booking or HBL in a single click.
-          </p>
-        </div>
-        <Button
-          onClick={openCreate}
-          data-testid="add-party"
-          className="h-11 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark rounded-none font-bold uppercase tracking-wider text-xs px-6 border-2 border-dhl-ink"
-        >
-          <Plus className="mr-2 w-4 h-4" /> Add Party
-        </Button>
-      </div>
+            <Plus className="mr-2 w-3.5 h-3.5" /> Add Party
+          </Button>
+        }
+      />
 
       {/* Tabs + search */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-5">

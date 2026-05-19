@@ -13,6 +13,7 @@ import useTitle from "@/hooks/useTitle";
 import api, { API_BASE, TOKEN_KEY } from "@/lib/api";
 import { DOCUMENT_TYPE_LABELS, formatFileSize } from "@/lib/documentTypes";
 import DocumentStatusBadge from "@/components/documents/DocumentStatusBadge";
+import PageBanner from "@/components/PageBanner";
 
 // All document types we treat as "customs paperwork" for this page.
 const CUSTOMS_TYPES = [
@@ -62,19 +63,8 @@ const Customs = () => {
   const pendingCount  = items.filter((d) => d.status === "PENDING").length;
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="customs-page">
-      <nav className="text-xs text-dhl-muted mb-3" aria-label="Breadcrumb">
-        <Link to="/dashboard" className="hover:text-dhl-ink">Dashboard</Link>
-        <ChevronRight className="inline w-3 h-3 mx-1" />
-        <span className="text-dhl-text font-bold">Customs</span>
-      </nav>
-
-      <header className="mb-6">
-        <h1 className="font-display text-3xl font-black text-dhl-text">Customs documents</h1>
-        <p className="text-sm text-dhl-muted mt-1">
-          Customs declarations and clearance paperwork across every shipment — organised by shipment for fast retrieval during port clearance.
-        </p>
-      </header>
+    <div className="max-w-7xl mx-auto" data-testid="customs-page">
+      <PageBanner title="Customs" icon={Stamp} data-testid="customs-page-banner" />
 
       {/* Summary tiles */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">

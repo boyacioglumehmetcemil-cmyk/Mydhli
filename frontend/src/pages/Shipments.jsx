@@ -5,6 +5,8 @@ import {
   PackageOpen, Loader2, ArrowRight, Plane, Ship, Truck,
 } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
+import PageBanner from "@/components/PageBanner";
+import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -93,15 +95,7 @@ const Shipments = () => {
 
   return (
     <div className="max-w-7xl mx-auto" data-testid="shipments-page">
-      <div className="mb-6">
-        <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-dhl-red mb-2">myDHLi</div>
-        <h1 className="font-display text-3xl lg:text-4xl font-bold text-dhl-text leading-tight tracking-tight">
-          My bookings
-        </h1>
-        <p className="text-sm text-dhl-muted mt-2">
-          Search, filter and open any booking for a full chain-of-custody timeline.
-        </p>
-      </div>
+      <PageBanner title="Shipments" icon={Truck} data-testid="shipments-page-banner" />
 
       {/* Mode filter chips */}
       <div className="flex flex-wrap gap-2 mb-4" data-testid="shipments-mode-chips">

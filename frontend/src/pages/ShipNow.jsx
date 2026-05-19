@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { ArrowRight, ArrowLeft, Check, Loader2, Package, Truck, FileText, CreditCard, MapPin, User, FileCheck, Plane, Ship, Leaf } from "lucide-react";
+import PageBanner from "@/components/PageBanner";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -231,14 +232,8 @@ const ShipNow = () => {
   const ModeIcon = MODE_META[mode].icon;
 
   return (
-    <div className="max-w-5xl mx-auto" data-testid="shipnow-page">
-      <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-dhl-red mb-2">myDHLi</div>
-      <h1 className="font-display text-3xl lg:text-4xl font-bold text-dhl-text leading-tight tracking-tight mb-2">
-        Book a freight shipment
-      </h1>
-      <p className="text-sm text-dhl-muted mb-7">
-        Choose a mode, fill in the route and cargo, review your CO₂ estimate, and confirm.
-      </p>
+    <div className="max-w-7xl mx-auto" data-testid="shipnow-page">
+      <PageBanner title="Book a Shipment" icon={Package} data-testid="shipnow-page-banner" />
 
       {/* Progress */}
       <div className="mb-8 bg-white border border-dhl-border p-4 lg:p-5 rounded-lg">

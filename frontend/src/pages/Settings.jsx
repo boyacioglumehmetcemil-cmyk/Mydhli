@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { User, Bell, ShieldCheck, CreditCard, Loader2, Check } from "lucide-react";
+import { User, Bell, ShieldCheck, CreditCard, Loader2, Check, Settings as SettingsIcon } from "lucide-react";
+import PageBanner from "@/components/PageBanner";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,13 +93,8 @@ const Settings = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto" data-testid="settings-page">
-      <h1 className="font-display text-3xl lg:text-4xl font-black text-dhl-text leading-tight tracking-tighter mb-2">
-        Settings
-      </h1>
-      <p className="text-sm text-dhl-muted mb-7">
-        Manage your profile, notifications, security and billing.
-      </p>
+    <div className="max-w-7xl mx-auto" data-testid="settings-page">
+      <PageBanner title="Settings" icon={SettingsIcon} data-testid="settings-page-banner" />
 
       <div className="grid lg:grid-cols-[240px_1fr] gap-6">
         {/* Side nav */}

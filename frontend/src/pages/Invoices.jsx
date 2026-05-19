@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import useTitle from "@/hooks/useTitle";
 import api from "@/lib/api";
+import PageBanner from "@/components/PageBanner";
 
 const fmtDate = (iso) => {
   if (!iso) return "—";
@@ -99,20 +100,8 @@ const Invoices = () => {
   }, [rows]);
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="invoices-page">
-      <nav className="text-xs text-dhl-muted mb-3" aria-label="Breadcrumb">
-        <Link to="/dashboard" className="hover:text-dhl-ink">Dashboard</Link>
-        <ChevronRight className="inline w-3 h-3 mx-1" />
-        <span className="text-dhl-text font-bold">Invoices</span>
-      </nav>
-
-      <header className="mb-6">
-        <h1 className="font-display text-3xl font-black text-dhl-text">Invoices</h1>
-        <p className="text-sm text-dhl-muted mt-1">
-          Freight charge breakdown per shipment — generated from your booking ledger. The actual invoice paperwork
-          travels with each shipment in the Documents tab.
-        </p>
-      </header>
+    <div className="max-w-7xl mx-auto" data-testid="invoices-page">
+      <PageBanner title="Invoices" icon={Receipt} data-testid="invoices-page-banner" />
 
       {/* Summary tiles */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">

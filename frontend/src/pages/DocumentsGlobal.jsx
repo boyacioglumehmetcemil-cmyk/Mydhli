@@ -15,6 +15,7 @@ import {
   formatFileSize,
 } from "@/lib/documentTypes";
 import DocumentStatusBadge from "@/components/documents/DocumentStatusBadge";
+import PageBanner from "@/components/PageBanner";
 
 const STATUS_CHIPS = [
   { key: "ALL",      label: "All" },
@@ -80,20 +81,8 @@ const DocumentsGlobal = () => {
   };
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="documents-global-page">
-      {/* Breadcrumb */}
-      <nav className="text-xs text-dhl-muted mb-3" aria-label="Breadcrumb">
-        <Link to="/dashboard" className="hover:text-dhl-ink">Dashboard</Link>
-        <ChevronRight className="inline w-3 h-3 mx-1" />
-        <span className="text-dhl-text font-bold">Documents</span>
-      </nav>
-
-      <header className="mb-6">
-        <h1 className="font-display text-3xl font-black text-dhl-text">Documents</h1>
-        <p className="text-sm text-dhl-muted mt-1">
-          Every customs, transport and commercial paper attached to your shipments — searchable by type and status.
-        </p>
-      </header>
+    <div className="max-w-7xl mx-auto" data-testid="documents-global-page">
+      <PageBanner title="Documents" icon={FileText} data-testid="documents-page-banner" />
 
       {/* Filter row */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6" data-testid="documents-filter-row">

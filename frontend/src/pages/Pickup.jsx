@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarClock, Check, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
+import PageBanner from "@/components/PageBanner";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,11 +93,8 @@ const Pickup = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto" data-testid="pickup-page">
-      <h1 className="font-display text-3xl lg:text-4xl font-black text-dhl-text leading-tight tracking-tighter mb-2">
-        Schedule Pre-carriage
-      </h1>
-      <p className="text-sm text-dhl-muted mb-7">Request a pre-carriage pickup from your warehouse for the next shipment leg.</p>
+    <div className="max-w-7xl mx-auto" data-testid="pickup-page">
+      <PageBanner title="Schedule Pre-carriage" icon={CalendarClock} data-testid="pickup-page-banner" />
 
       <div className="bg-white border border-dhl-border p-6 lg:p-8 space-y-7">
         <div>

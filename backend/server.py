@@ -622,9 +622,13 @@ async def _run_seed_steps():
     else:
         logger.info(f"[SEED] Demo user already exists: {demo_email}")
 
-    # Seed shipments for demo user
+    # Faz 9 zero-data: demo data seeding is gated behind SEED_DEMO_DATA.
+    # Default OFF — the dashboard starts empty (logbook integration arrives later).
+    seed_demo_data = os.environ.get('SEED_DEMO_DATA', 'false').lower() == 'true'
+
+    # Seed shipments for demo user (only when explicitly enabled)
     demo_user = await db.users.find_one({"email": demo_email})
-    if demo_user:
+    if demo_user and seed_demo_data:
         try:
             await seed_shipments(db, demo_user["id"])
         except Exception as e:
@@ -642,6 +646,8 @@ async def _run_seed_steps():
             await _seed_demo_customs(db, demo_user)
         except Exception as e:
             logger.error(f"[SEED] Demo customs seeding failed: {e}")
+    elif demo_user:
+        logger.info("[SEED] SEED_DEMO_DATA=false — demo shipments/invoices/customs skipped.")
 
     # ===== Seed secondary "shipper" user (Daniel Kavu) =====
     shipper_email = "shipper@dhlpng.com"
@@ -666,40 +672,41 @@ async def _run_seed_steps():
         logger.info(f"[SEED] Shipper user already exists: {shipper_email}")
 
     shipper_user = await db.users.find_one({"email": shipper_email})
-    if shipper_user:
+    if shipper_user and seed_demo_data:
         try:
             from shipments_module import seed_shipper_shipments
             await seed_shipper_shipments(db, shipper_user["id"])
         except Exception as e:
             logger.error(f"[SEED] Shipper shipment seeding failed: {e}")
 
-    # ===== Seed notifications for both users =====
-    for u_email in (demo_email, shipper_email):
-        u = await db.users.find_one({"email": u_email})
-        if u:
-            try:
-                await seed_notifications_for_user(db, u["id"], u_email)
-            except Exception as e:
-                logger.error(f"[SEED] Notification seeding failed for {u_email}: {e}")
-
-    # ===== Seed address book for both users =====
-    try:
-        from address_seed import seed_address_book
+    # ===== Seed notifications for both users (only when SEED_DEMO_DATA=true) =====
+    if seed_demo_data:
         for u_email in (demo_email, shipper_email):
             u = await db.users.find_one({"email": u_email})
             if u:
-                await seed_address_book(db, u["id"], u_email)
-    except Exception as e:
-        logger.error(f"[SEED] Address book seeding failed: {e}")
+                try:
+                    await seed_notifications_for_user(db, u["id"], u_email)
+                except Exception as e:
+                    logger.error(f"[SEED] Notification seeding failed for {u_email}: {e}")
 
-    # ===== Seed shipper-specific invoices + customs =====
-    try:
-        sh = await db.users.find_one({"email": shipper_email})
-        if sh:
-            await seed_shipper_invoices(db, sh)
-            await seed_shipper_customs(db, sh)
-    except Exception as e:
-        logger.error(f"[SEED] Shipper invoices/customs seeding failed: {e}")
+        # ===== Seed address book for both users =====
+        try:
+            from address_seed import seed_address_book
+            for u_email in (demo_email, shipper_email):
+                u = await db.users.find_one({"email": u_email})
+                if u:
+                    await seed_address_book(db, u["id"], u_email)
+        except Exception as e:
+            logger.error(f"[SEED] Address book seeding failed: {e}")
+
+        # ===== Seed shipper-specific invoices + customs =====
+        try:
+            sh = await db.users.find_one({"email": shipper_email})
+            if sh:
+                await seed_shipper_invoices(db, sh)
+                await seed_shipper_customs(db, sh)
+        except Exception as e:
+            logger.error(f"[SEED] Shipper invoices/customs seeding failed: {e}")
 
 
 @app.on_event("shutdown")

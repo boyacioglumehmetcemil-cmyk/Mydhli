@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarClock, X, Plus, Loader2 } from "lucide-react";
+import PageBanner from "@/components/PageBanner";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
@@ -32,15 +33,16 @@ const Pickups = () => {
 
   return (
     <div className="max-w-7xl mx-auto" data-testid="pickups-page">
-      <div className="flex items-start justify-between mb-7 flex-wrap gap-3">
-        <div>
-          <h1 className="font-display text-3xl lg:text-4xl font-black text-dhl-text leading-tight tracking-tighter">My Pickups</h1>
-          <p className="text-sm text-dhl-muted mt-2">Scheduled pre-carriage pickups.</p>
-        </div>
-        <Button onClick={() => navigate("/dashboard/pickup")} data-testid="schedule-pickup-btn" className="h-11 bg-dhl-yellow text-dhl-ink hover:bg-dhl-yellow-dark rounded-none font-bold uppercase tracking-wider text-xs px-6 border-2 border-dhl-ink">
-          <Plus className="mr-2 w-4 h-4" /> Schedule Pickup
-        </Button>
-      </div>
+      <PageBanner
+        title="My Pickups"
+        icon={CalendarClock}
+        data-testid="pickups-page-banner"
+        action={
+          <Button onClick={() => navigate("/dashboard/pickup")} data-testid="schedule-pickup-btn" className="h-9 bg-dhl-ink text-white hover:bg-dhl-red rounded-md font-bold uppercase tracking-wider text-[11px] px-4">
+            <Plus className="mr-2 w-3.5 h-3.5" /> Schedule
+          </Button>
+        }
+      />
 
       <div className="bg-white border border-dhl-border">
         {loading ? (

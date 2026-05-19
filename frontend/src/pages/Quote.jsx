@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Calculator, ArrowRight, Loader2, Plane, Ship, Truck, Leaf, Clock } from "lucide-react";
+import PageBanner from "@/components/PageBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -94,17 +95,8 @@ const Quote = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto" data-testid="quote-page">
-      <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-dhl-red mb-2">
-        myDHLi · Quote{focusMode ? ` · ${MODE_META[focusMode].label}` : ""}
-      </div>
-      <h1 className="font-display text-3xl lg:text-4xl font-bold text-dhl-text leading-tight tracking-tight mb-2">
-        Quote & compare
-      </h1>
-      <p className="text-sm text-dhl-muted mb-7">{focusMode
-        ? `You came in focused on ${MODE_META[focusMode].label.toLowerCase()} — see how it compares to the other two modes below.`
-        : "Live rates across air, ocean and road — side-by-side. No sign-up required to estimate."
-      }</p>
+    <div className="max-w-7xl mx-auto" data-testid="quote-page">
+      <PageBanner title="Quote & Compare" icon={Calculator} data-testid="quote-page-banner" />
 
       <div className="grid lg:grid-cols-[1fr_1.4fr] gap-6">
         {/* Left: form */}

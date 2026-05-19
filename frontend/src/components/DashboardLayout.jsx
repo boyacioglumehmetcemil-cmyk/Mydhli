@@ -47,9 +47,15 @@ const navItems = [
   { to: "/dashboard/settings",   label: "Settings",          icon: Settings },
 ];
 
-const SidebarContent = ({ onNavigate }) => {
+/**
+ * SidebarContent
+ *  - Desktop: icon-only rail (Word image1 style), tooltip label on hover
+ *  - Mobile drawer: full labels (passed via `mode='drawer'`)
+ */
+const SidebarContent = ({ onNavigate, mode = "rail" }) => {
+  const isRail = mode === "rail";
   return (
-    <nav data-testid="sidebar-nav" className="flex flex-col py-4">
+    <nav data-testid="sidebar-nav" className={isRail ? "flex flex-col py-3" : "flex flex-col py-4"}>
       {navItems.map((item) => {
         const Icon = item.icon;
         return (
@@ -59,24 +65,31 @@ const SidebarContent = ({ onNavigate }) => {
             end={item.end}
             data-testid={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
             onClick={onNavigate}
+            title={isRail ? item.label : undefined}
             className={({ isActive }) =>
-              `group relative flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors ${
-                isActive
-                  ? "text-dhl-red bg-dhl-yellow/10"
-                  : "text-dhl-muted hover:text-dhl-text hover:bg-dhl-panel"
-              }`
+              isRail
+                ? `group relative flex items-center justify-center h-12 transition-colors ${
+                    isActive
+                      ? "text-dhl-red bg-dhl-yellow/15"
+                      : "text-dhl-muted hover:text-dhl-text hover:bg-dhl-panel"
+                  }`
+                : `group relative flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "text-dhl-red bg-dhl-yellow/10"
+                      : "text-dhl-muted hover:text-dhl-text hover:bg-dhl-panel"
+                  }`
             }
           >
             {({ isActive }) => (
               <>
                 {isActive && (
-                  <span className="absolute left-0 top-0 bottom-0 w-1 bg-dhl-yellow" />
+                  <span className="absolute left-0 top-0 bottom-0 w-1 bg-dhl-red" />
                 )}
                 <Icon
-                  className={`w-4 h-4 ${isActive ? "text-dhl-red" : "text-dhl-muted"}`}
+                  className={`w-5 h-5 ${isActive ? "text-dhl-red" : "text-dhl-muted"}`}
                   strokeWidth={2}
                 />
-                <span>{item.label}</span>
+                {!isRail && <span>{item.label}</span>}
               </>
             )}
           </NavLink>
@@ -125,7 +138,7 @@ const DashboardLayout = () => {
               <div className="h-16 px-5 flex items-center border-b border-dhl-border">
                 <Logo size="md" to="/dashboard" />
               </div>
-              <SidebarContent onNavigate={() => setMobileOpen(false)} />
+              <SidebarContent mode="drawer" onNavigate={() => setMobileOpen(false)} />
             </SheetContent>
           </Sheet>
 
@@ -200,12 +213,12 @@ const DashboardLayout = () => {
       </header>
 
       <div className="flex flex-1">
-        {/* Desktop Sidebar */}
+        {/* Desktop Sidebar — icon-only rail (myDHLi style, Word image1) */}
         <aside
           data-testid="dashboard-sidebar"
-          className="hidden lg:block w-64 bg-white border-r border-dhl-border sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto scrollbar-thin"
+          className="hidden lg:block w-14 bg-white border-r border-dhl-border sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto scrollbar-thin"
         >
-          <SidebarContent />
+          <SidebarContent mode="rail" />
         </aside>
 
         {/* Main */}

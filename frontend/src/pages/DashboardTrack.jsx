@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import TrackingDetail from "@/components/TrackingDetail";
 import api from "@/lib/api";
 import useTitle from "@/hooks/useTitle";
+import PageBanner from "@/components/PageBanner";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // /dashboard/track — authenticated tracking surface.
@@ -77,30 +78,22 @@ const DashboardTrack = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto" data-testid="dashboard-track-page">
-      {/* Page heading */}
-      <div className="mb-6 flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <h1
-            data-testid="dashboard-track-title"
-            className="font-display text-3xl lg:text-4xl font-black text-dhl-text leading-tight tracking-tighter"
+    <div className="max-w-7xl mx-auto" data-testid="dashboard-track-page">
+      <PageBanner
+        title="Track & Trace"
+        icon={Search}
+        data-testid="dashboard-track-banner"
+        action={
+          <Button
+            variant="outline"
+            onClick={() => navigate("/dashboard/shipments")}
+            data-testid="dashboard-track-all-shipments"
+            className="h-9 rounded-md border border-dhl-ink text-dhl-ink hover:bg-dhl-ink hover:text-white font-bold uppercase tracking-wider text-[11px] px-3"
           >
-            Track &amp; Trace
-          </h1>
-          <p className="text-sm text-dhl-muted mt-2">
-            Look up any booking, HBL/MBL, AWB or container number across your
-            organisation.
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          onClick={() => navigate("/dashboard/shipments")}
-          data-testid="dashboard-track-all-shipments"
-          className="h-11 rounded-none border-2 border-dhl-ink text-dhl-ink hover:bg-dhl-ink hover:text-white font-bold uppercase tracking-wider text-xs px-5"
-        >
-          <FileSearch className="w-4 h-4 mr-2" /> Browse all bookings
-        </Button>
-      </div>
+            <FileSearch className="w-3.5 h-3.5 mr-1.5" /> All bookings
+          </Button>
+        }
+      />
 
       {/* Search band */}
       <form

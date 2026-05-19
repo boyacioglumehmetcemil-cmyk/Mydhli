@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Loader2, PackageX, ChevronRight } from "lucide-react";
+import { ArrowLeft, Loader2, PackageX, ChevronRight, Truck } from "lucide-react";
+import PageBanner from "@/components/PageBanner";
 import { toast } from "sonner";
 import TrackingDetail from "@/components/TrackingDetail";
 import DocumentsSection from "@/components/documents/DocumentsSection";
@@ -39,26 +40,19 @@ const ShipmentDetail = () => {
 
   return (
     <div className="max-w-7xl mx-auto" data-testid="shipment-detail-page">
-      {/* Breadcrumb */}
-      <div className="mb-5 flex items-center gap-2 text-xs text-dhl-muted">
-        <Link
-          to="/dashboard/shipments"
-          data-testid="breadcrumb-shipments"
-          className="font-bold uppercase tracking-wider hover:text-dhl-red"
-        >
-          My Shipments
-        </Link>
-        <ChevronRight className="w-3 h-3" />
-        <span className="font-mono font-bold text-dhl-text">{awb}</span>
-      </div>
+      <PageBanner
+        title={`Shipment ${awb}`}
+        icon={Truck}
+        data-testid="shipment-detail-banner"
+      />
 
       <button
         type="button"
         onClick={() => navigate("/dashboard/shipments")}
         data-testid="shipment-back-link"
-        className="inline-flex items-center gap-2 text-sm font-bold text-dhl-text hover:text-dhl-red mb-5"
+        className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-dhl-muted hover:text-dhl-red mb-5"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="w-3.5 h-3.5" />
         Back to shipments
       </button>
 

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import useTitle from "@/hooks/useTitle";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
+import PageBanner from "@/components/PageBanner";
 
 const KIND_ICON = {
   alert:    AlertTriangle,
@@ -76,29 +77,22 @@ const Notifications = () => {
   const unreadCount = items.filter((n) => !n.readAt).length;
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="notifications-page">
-      <nav className="text-xs text-dhl-muted mb-3" aria-label="Breadcrumb">
-        <Link to="/dashboard" className="hover:text-dhl-ink">Dashboard</Link>
-        <ChevronRight className="inline w-3 h-3 mx-1" />
-        <span className="text-dhl-text font-bold">Notifications</span>
-      </nav>
-
-      <header className="mb-6 flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="font-display text-3xl font-black text-dhl-text">Notifications</h1>
-          <p className="text-sm text-dhl-muted mt-1">
-            Shipment, pickup deadline and document activity across your account.
-          </p>
-        </div>
-        <Button
-          onClick={markAllRead}
-          disabled={unreadCount === 0}
-          data-testid="notif-mark-all-read"
-          className="h-10 bg-white text-dhl-ink hover:bg-dhl-yellow rounded-md font-bold uppercase tracking-wider text-[11px] border-2 border-dhl-ink disabled:opacity-40 px-4"
-        >
-          Mark all as read
-        </Button>
-      </header>
+    <div className="max-w-7xl mx-auto" data-testid="notifications-page">
+      <PageBanner
+        title="Notifications"
+        icon={Bell}
+        data-testid="notifications-page-banner"
+        action={
+          <Button
+            onClick={markAllRead}
+            disabled={unreadCount === 0}
+            data-testid="notif-mark-all-read"
+            className="h-9 bg-dhl-ink text-white hover:bg-dhl-red rounded-md font-bold uppercase tracking-wider text-[11px] disabled:opacity-40 px-4"
+          >
+            Mark all as read
+          </Button>
+        }
+      />
 
       {/* Tabs */}
       <div className="flex flex-wrap gap-2 mb-6" data-testid="notif-tabs">
