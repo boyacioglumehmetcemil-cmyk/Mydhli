@@ -16,6 +16,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/colors';
 import StatusBadge from '../../src/components/StatusBadge';
+import PageBanner from '../../src/components/PageBanner';
+import HeaderBell from '../../src/components/HeaderBell';
 import api from '../../src/lib/api';
 import {
   formatDateTime, STATUS_PROGRESS, getPickupBadge, formatRouteCodes,
@@ -60,6 +62,12 @@ export default function TrackTab() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <PageBanner
+        title="Track & Trace"
+        icon="search-outline"
+        right={<HeaderBell />}
+        testID="track-banner"
+      />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           {/* Title */}

@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/colors';
 import { useAuth } from '../../src/contexts/AuthContext';
+import PageBanner from '../../src/components/PageBanner';
+import HeaderBell from '../../src/components/HeaderBell';
 
 const menuItems = [
   { icon: 'send' as const, label: 'Ship Now', sub: 'Book a new shipment', route: '/ship' },
@@ -30,6 +32,12 @@ export default function More() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <PageBanner
+        title="More"
+        icon="menu-outline"
+        right={<HeaderBell />}
+        testID="more-banner"
+      />
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         {/* User Card */}
         <View style={styles.userCard}>

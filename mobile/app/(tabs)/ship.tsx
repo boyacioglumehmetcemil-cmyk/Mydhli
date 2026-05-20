@@ -10,6 +10,8 @@ import { Colors } from '../../src/constants/colors';
 import { useAuth } from '../../src/contexts/AuthContext';
 import api from '../../src/lib/api';
 import { formatPGK, SERVICE_LABELS } from '../../src/lib/shipmentUtils';
+import PageBanner from '../../src/components/PageBanner';
+import HeaderBell from '../../src/components/HeaderBell';
 
 const STEPS = ['Sender', 'Receiver', 'Package', 'Service', 'Confirm'];
 const blankParty = { name: '', company: '', address: '', city: '', country: 'PG', postalCode: '', phone: '', email: '' };
@@ -76,6 +78,12 @@ export default function ShipNow() {
   if (success) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
+        <PageBanner
+          title="Book a Shipment"
+          icon="send-outline"
+          right={<HeaderBell />}
+          testID="shipnow-success-banner"
+        />
         <ScrollView contentContainerStyle={styles.successContainer}>
           <View testID="shipnow-success" style={styles.successCard}>
             <View style={styles.successCircle}>
@@ -100,10 +108,15 @@ export default function ShipNow() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <PageBanner
+        title="Book a Shipment"
+        icon="send-outline"
+        right={<HeaderBell />}
+        testID="shipnow-banner"
+      />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.formScroll} keyboardShouldPersistTaps="handled">
           <View testID="shipnow-page" style={styles.headerSection}>
-            <Text style={styles.pageTitle}>Ship Now</Text>
             <Text style={styles.pageSub}>Create a shipment in {STEPS.length} steps.</Text>
           </View>
 
