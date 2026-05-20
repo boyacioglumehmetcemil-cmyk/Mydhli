@@ -57,9 +57,10 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "craco build",
+    "build": "(yarn build:mobile-to-public || echo 'WARN mobile export failed, continuing with web-only build') && craco build",
+    "build:web-only": "craco build",
     "build:full": "yarn build:mobile-to-public && craco build",
-    "build:mobile-to-public": "cd ../mobile && (test -d node_modules || yarn install --ignore-scripts --network-timeout 600000 --non-interactive) && yarn expo export --platform web --output-dir ../frontend/public/m",
+    "build:mobile-to-public": "cd ../mobile && (test -d node_modules || yarn install --ignore-scripts --network-timeout 600000 --non-interactive) && yarn expo export --platform web --output-dir ../frontend/public/m && node scripts/fix-paths.js",
     "build:web-root": "craco build",
     "build:mobile-subpath": "yarn build:mobile-to-public && craco build",
     "build:web-legacy": "craco build",
