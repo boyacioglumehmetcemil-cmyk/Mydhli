@@ -1,58 +1,45 @@
 /**
- * CountryPicker — the country/currency selector used in the utility bar and
- * the mobile drawer.
+ * CountryPicker — DHL country chip that opens the full-page Choose
+ * Location selector.
  *
- * Why a Command (combobox) instead of a flat DropdownMenu? With ~240
- * countries a plain list is unscannable. The shadcn `Command` primitive
- * provides fuzzy search + keyboard nav out of the box, grouped by region
- * for visual chunking.
+ * On dhl.com, the country switch is not a dropdown — it's a link in the
+ * top utility bar (e.g. "🇸🇬 Singapore") that opens a full "Choose your
+ * location" page. We mirror that behaviour: this component now renders
+ * a plain link/button that navigates to `/choose-location` and passes
+ * the current route through `location.state.from` so the picker page
+ * can return the user back when they pick.
  *
- * The trigger renders as a compact chip: 🌐 globe + 2-letter country code
- * + chevron. Selecting a country updates global state via `useCountry()`,
- * which persists to localStorage and re-labels every money display in the
- * app via `formatCurrency`.
+ * Three trigger variants are supported so we don't have to fork the
+ * component everywhere it's used:
+ *
+ *   `chip`  — compact utility-bar pill (🇸🇬 Singapore ⌄) used in headers
+ *   `row`   — full-width drawer row used in the mobile menu
+ *   `field` — full-width form-input style used in Register/Login flows
+ *
+ * All three variants navigate to the same `/choose-location` route.
  */
-import { useMemo, useState } from "react";
-import { Check, ChevronDown, Globe } from "lucide-react";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { COUNTRIES, REGIONS, flagFor } from "@/data/countries";
+import { ChevronDown, ChevronRight, Globe } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { flagFor } from "@/data/countries";
 import { useCountry } from "@/contexts/CountryContext";
 
-/**
- * Group COUNTRIES by region once (module-scope) so the picker doesn't
- * rebuild the bucket map on every render.
- */
-const COUNTRIES_BY_REGION = REGIONS.map((region) => ({
-  region,
-  items: COUNTRIES.filter((c) => c.region === region).sort((a, b) => a.name.localeCompare(b.name)),
-}));
-
 const CountryPicker = ({ variant = "chip", className = "" }) => {
-  const { country, setCountry } = useCountry();
-  const [open, setOpen] = useState(false);
+  const { country } = useCountry();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSelect = (code) => {
-    setCountry(code);
-    setOpen(false);
+  const goToPicker = () => {
+    navigate("/choose-location", {
+      state: { from: `${location.pathname}${location.search}` },
+    });
   };
 
-  // Trigger styles per variant:
-  //   `chip`  — compact utility-bar pill (Globe + code + chevron)
-  //   `row`   — full-width drawer/menu row (Globe + label + flag/code on right)
-  //   `field` — full-width form-input shape (flag + name + chevron) — use
-  //             this when the picker needs to sit alongside other Inputs.
-  const trigger =
-    variant === "row" ? (
+  // Trigger styles per variant. All three call the same handler.
+  if (variant === "row") {
+    return (
       <button
         type="button"
+        onClick={goToPicker}
         data-testid="country-picker-trigger"
         className={`w-full flex items-center justify-between px-5 py-3 text-sm font-semibold text-dhl-text hover:bg-dhl-panel ${className}`}
       >
@@ -61,98 +48,51 @@ const CountryPicker = ({ variant = "chip", className = "" }) => {
           <span>Country &amp; currency</span>
         </span>
         <span className="flex items-center gap-1.5 text-dhl-muted">
-          <span>{flagFor(country.code)}</span>
-          <span className="font-mono text-xs">{country.code}</span>
-          <ChevronDown className="w-3.5 h-3.5" />
+          <span aria-hidden="true">{flagFor(country)}</span>
+          <span className="text-xs">{country.name}</span>
+          <ChevronRight className="w-3.5 h-3.5" />
         </span>
       </button>
-    ) : variant === "field" ? (
+    );
+  }
+
+  if (variant === "field") {
+    return (
       <button
         type="button"
+        onClick={goToPicker}
         data-testid="country-picker-trigger"
         className={`w-full h-12 px-4 inline-flex items-center justify-between bg-dhl-panel border-2 border-dhl-border focus:border-dhl-yellow focus:outline-none text-dhl-text font-medium transition-colors hover:border-dhl-yellow/60 ${className}`}
       >
         <span className="flex items-center gap-2.5 min-w-0">
-          <span className="text-lg leading-none" aria-hidden="true">{flagFor(country.code)}</span>
+          <span className="text-lg leading-none" aria-hidden="true">
+            {flagFor(country)}
+          </span>
           <span className="truncate">{country.name}</span>
         </span>
         <span className="flex items-center gap-2 text-dhl-muted shrink-0 pl-3">
-          <span data-testid="country-picker-code" className="font-mono text-xs">{country.code}</span>
+          <span data-testid="country-picker-code" className="font-mono text-xs">
+            {country.code}
+          </span>
           <ChevronDown className="w-4 h-4" />
         </span>
       </button>
-    ) : (
-      <button
-        type="button"
-        data-testid="country-picker-trigger"
-        className={`text-sm font-medium h-8 px-3 inline-flex items-center gap-1.5 rounded-sm hover:bg-black/5 outline-none focus-visible:ring-2 focus-visible:ring-dhl-red/40 ${className}`}
-      >
-        <Globe className="w-4 h-4" />
-        <span data-testid="country-picker-code" className="font-mono">{country.code}</span>
-        <ChevronDown className="w-[14px] h-[14px]" />
-      </button>
     );
+  }
 
+  // Default: `chip` — the compact utility-bar link (DHL standard).
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent
-        align="end"
-        sideOffset={6}
-        className="w-[360px] p-0 bg-white shadow-xl rounded-md border border-stone-200 overflow-hidden"
-        data-testid="country-picker-panel"
-      >
-        <Command
-          // Custom filter: match against name + code + region so users can
-          // type "DE", "Germany", or "Europe" with equal success.
-          filter={(value, search) => {
-            if (!search) return 1;
-            return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
-          }}
-        >
-          <CommandInput
-            placeholder="Search country..."
-            data-testid="country-picker-search"
-          />
-          <CommandList
-            className="max-h-[420px] overflow-y-auto"
-            data-testid="country-picker-list"
-          >
-            <CommandEmpty>No country found.</CommandEmpty>
-            {COUNTRIES_BY_REGION.map(({ region, items }) => (
-              <CommandGroup key={region} heading={region}>
-                {items.map((c) => {
-                  const isSelected = c.code === country.code;
-                  return (
-                    <CommandItem
-                      key={c.code}
-                      // `value` powers cmdk's filter — include name + code +
-                      // language + currency so search hits any of them.
-                      value={`${c.name} ${c.code} ${c.languageLabel} ${c.currency} ${c.region}`}
-                      onSelect={() => handleSelect(c.code)}
-                      data-country-row={c.code}
-                      data-testid={`country-row-${c.code}`}
-                      className="flex items-center gap-2.5 py-2 cursor-pointer"
-                    >
-                      <span className="text-base leading-none" aria-hidden="true">
-                        {flagFor(c.code)}
-                      </span>
-                      <span className="flex-1 min-w-0">
-                        <span className="text-sm text-dhl-text truncate block">{c.name}</span>
-                        <span className="text-[11px] text-stone-500">
-                          {c.languageLabel} · {c.currency}
-                        </span>
-                      </span>
-                      {isSelected && <Check className="w-4 h-4 text-dhl-red shrink-0" />}
-                    </CommandItem>
-                  );
-                })}
-              </CommandGroup>
-            ))}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <button
+      type="button"
+      onClick={goToPicker}
+      data-testid="country-picker-trigger"
+      className={`text-sm font-medium h-8 px-2 inline-flex items-center gap-1.5 rounded-sm hover:bg-black/5 outline-none focus-visible:ring-2 focus-visible:ring-dhl-red/40 ${className}`}
+    >
+      <span className="text-base leading-none" aria-hidden="true">
+        {flagFor(country)}
+      </span>
+      <span data-testid="country-picker-name">{country.name}</span>
+    </button>
   );
 };
 

@@ -49,7 +49,7 @@ const blank = {
   company: "",
   address: "",
   city: "",
-  country: "PG",
+  country: "SG",
   postalCode: "",
   phone: "",
   email: "",

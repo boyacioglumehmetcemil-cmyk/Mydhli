@@ -11,6 +11,7 @@ import Help from "@/pages/Help";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
+import ChooseLocation from "@/pages/ChooseLocation";
 import Track from "@/pages/Track";
 import Shipments from "@/pages/Shipments";
 import ShipmentDetail from "@/pages/ShipmentDetail";
@@ -69,6 +70,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/choose-location" element={<ChooseLocation />} />
           <Route path="/track" element={<Track />} />
           <Route path="/track/:awb" element={<Track />} />
 
